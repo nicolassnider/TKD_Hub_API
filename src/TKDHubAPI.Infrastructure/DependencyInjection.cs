@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TKDHubAPI.Domain.Entities;
 using TKDHubAPI.Domain.Repositories;
 using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.Infrastructure.Repositories;
@@ -16,6 +17,8 @@ public static class DependencyInjection
 
         // Register repositories and unit of work
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IGenericRepository<Dojang>, GenericRepository<Dojang>>(); // Add this line for Dojang
+        services.AddScoped<IDojangRepository, DojangRepository>();
         // Register other repositories here as you implement them, e.g.:
         // services.AddScoped<IRankRepository, RankRepository>();
         // services.AddScoped<ITournamentRepository, TournamentRepository>();
