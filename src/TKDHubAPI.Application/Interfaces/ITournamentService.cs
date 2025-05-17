@@ -1,11 +1,13 @@
 ﻿using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.Application.Interfaces;
-public interface ITournamentService
+public interface ITournamentService : ICrudService<Tournament>
 {
-    Task<IEnumerable<Tournament>> GetAllAsync();
-    Task<Tournament?> GetByIdAsync(int id);
-    Task AddAsync(Tournament tournament);
-    Task UpdateAsync(Tournament tournament);
-    Task DeleteAsync(int id);
+    Task<IEnumerable<Tournament>> GetTournamentsByDojangIdAsync(int dojangId);
+    Task<IEnumerable<Tournament>> GetTournamentsByUserIdAsync(int userId);
+    Task<IEnumerable<Tournament>> GetTournamentsByCoachIdAsync(int coachId);
+    Task<IEnumerable<Tournament>> GetTournamentsByDateRangeAsync(DateTime startDate, DateTime endDate);
+    Task<IEnumerable<Tournament>> GetTournamentsByLocationAsync(string location);
+    Task<IEnumerable<Tournament>> GetTournamentsByNameAsync(string name);
+
 }

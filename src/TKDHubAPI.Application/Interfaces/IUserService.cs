@@ -1,11 +1,10 @@
 ﻿using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.Application.Interfaces;
-public interface IUserService
+public interface IUserService : ICrudService<User>
 {
-    Task<IEnumerable<User>> GetAllAsync();
-    Task<User?> GetByIdAsync(int id);
-    Task AddAsync(User user);
-    Task UpdateAsync(User user);
-    Task DeleteAsync(int id);
+    Task<User> GetUserByEmailAsync(string email);
+    Task<User> GetUserByPhoneNumberAsync(string phoneNumber);
+    Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role);
+    Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender);
 }

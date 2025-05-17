@@ -24,6 +24,41 @@ public class EventService : IEventService
         throw new NotImplementedException();
     }
 
+    public Task<IEnumerable<Event>> GetEventsByCoachIdAsync(int coachId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Event>> GetEventsByDojangIdAsync(int dojangId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Event>> GetEventsByLocationAsync(string location)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Event>> GetEventsByNameAsync(string name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Event>> GetEventsByTypeAsync(Event.EventType eventType)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task UpdateAsync(Event ev)
     {
         throw new NotImplementedException();

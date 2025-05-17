@@ -12,6 +12,7 @@ public static class DependencyInjection
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<ITournamentService, TournamentService>();
         services.AddScoped<IRankService, RankService>();
+        services.AddScoped<IDojangService, DojangService>();
         return services;
     }
 
