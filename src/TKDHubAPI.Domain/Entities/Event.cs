@@ -10,6 +10,12 @@ public class Event
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public string Location { get; set; } = string.Empty;
-    public int CoachId { get; set; }
 
+    public int CoachId { get; set; }
+    public User Coach { get; set; } = null!;
+
+    public int? DojangId { get; set; }
+    public Dojang? Dojang { get; set; }
+
+    public ICollection<EventAttendance> Attendances { get; set; } = new List<EventAttendance>();
 }

@@ -9,4 +9,6 @@ public class Tournament
     public DateTime EndDate { get; set; }
     public string Location { get; set; } = string.Empty;
     public string Organizer { get; set; } = string.Empty;
+
+    public ICollection<TournamentRegistration> Registrations { get; set; } = new List<TournamentRegistration>();
 }
