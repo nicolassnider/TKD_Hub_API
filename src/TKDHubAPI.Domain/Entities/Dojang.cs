@@ -8,4 +8,21 @@ public class Dojang
     public string Email { get; set; } = string.Empty;
     public string KoreanName { get; set; } = string.Empty;
     public string KoreanNamePhonetic { get; set; } = string.Empty;
+
+    // Navigation properties
+
+    /// <summary>
+    /// Users (students and coaches) associated with this dojang.
+    /// </summary>
+    public ICollection<User> Users { get; set; } = new List<User>();
+
+    /// <summary>
+    /// Events (classes, seminars, etc.) held at this dojang.
+    /// </summary>
+    public ICollection<Event> Events { get; set; } = new List<Event>();
+
+    /// <summary>
+    /// Tournaments organized or hosted by this dojang.
+    /// </summary>
+    public ICollection<Tournament> Tournaments { get; set; } = new List<Tournament>();
 }

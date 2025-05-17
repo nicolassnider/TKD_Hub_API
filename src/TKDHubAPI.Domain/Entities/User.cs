@@ -20,7 +20,9 @@ public class User
     public DateTime DateOfBirth { get; set; }
     public Gender Gender { get; set; }
     public string PhoneNumber { get; set; }
-    public int? DojoId { get; set; }
+    public int? DojaangId { get; set; }
     public int? CurrentRankId { get; set; }
     public DateTime JoinDate { get; set; }
+
+    public ICollection<TournamentRegistration> TournamentRegistrations { get; set; } = new List<TournamentRegistration>();
 }

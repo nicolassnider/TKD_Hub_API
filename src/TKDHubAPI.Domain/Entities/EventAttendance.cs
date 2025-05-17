@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-internal class EventAttendance
+public class EventAttendance
 {
     public enum AttendanceStatus { Attended, Absent, Late }
 
@@ -9,4 +9,8 @@ internal class EventAttendance
     public DateTime AttendanceDate { get; set; }
     public DateTime AttendanceTime { get; set; }
     public AttendanceStatus Status { get; set; }
+
+    // Navigation properties
+    public Event Event { get; set; } = null!;
+    public User Student { get; set; } = null!;
 }
