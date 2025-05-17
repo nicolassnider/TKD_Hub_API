@@ -9,6 +9,9 @@ public class Dojang
     public string KoreanName { get; set; } = string.Empty;
     public string KoreanNamePhonetic { get; set; } = string.Empty;
 
+    public int CoachId { get; set; } // FK to User (Coach)
+    public User Coach { get; set; } = null!;
+
     // Navigation properties
 
     /// <summary>
