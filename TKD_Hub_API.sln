@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36109.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D19FDAC8-6491-467C-A7A5-B64EC121DB84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TKDHubAPI.Core", "src\TKDHubAPI.Core\TKDHubAPI.Core.csproj", "{F49D0F51-17F9-48D2-9C82-7F733B49CC71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TKDHubAPI.Application", "src\TKDHubAPI.Application\TKDHubAPI.Application.csproj", "{29AFDC34-DE58-4C87-9AE8-4AB6B9CA266D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TKDHubAPI.Infrastructure", "src\TKDHubAPI.Infrastructure\TKDHubAPI.Infrastructure.csproj", "{5C6DBF34-324E-425E-949F-5B01E1234677}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TKDHubAPI.Domain", "src\TKDHubAPI.Domain\TKDHubAPI.Domain.csproj", "{BCFED3F9-ACDF-4175-8613-3112430B7D84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TKDHubAPI.WebAPI", "src\TKDHubAPI.WebAPI\TKDHubAPI.WebAPI.csproj", "{44B1FFC5-D7AB-4A9D-8AF2-B84747AC5545}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F49D0F51-17F9-48D2-9C82-7F733B49CC71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F49D0F51-17F9-48D2-9C82-7F733B49CC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F49D0F51-17F9-48D2-9C82-7F733B49CC71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F49D0F51-17F9-48D2-9C82-7F733B49CC71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29AFDC34-DE58-4C87-9AE8-4AB6B9CA266D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29AFDC34-DE58-4C87-9AE8-4AB6B9CA266D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29AFDC34-DE58-4C87-9AE8-4AB6B9CA266D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29AFDC34-DE58-4C87-9AE8-4AB6B9CA266D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C6DBF34-324E-425E-949F-5B01E1234677}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C6DBF34-324E-425E-949F-5B01E1234677}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C6DBF34-324E-425E-949F-5B01E1234677}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C6DBF34-324E-425E-949F-5B01E1234677}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCFED3F9-ACDF-4175-8613-3112430B7D84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCFED3F9-ACDF-4175-8613-3112430B7D84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCFED3F9-ACDF-4175-8613-3112430B7D84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCFED3F9-ACDF-4175-8613-3112430B7D84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44B1FFC5-D7AB-4A9D-8AF2-B84747AC5545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44B1FFC5-D7AB-4A9D-8AF2-B84747AC5545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44B1FFC5-D7AB-4A9D-8AF2-B84747AC5545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44B1FFC5-D7AB-4A9D-8AF2-B84747AC5545}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F49D0F51-17F9-48D2-9C82-7F733B49CC71} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{29AFDC34-DE58-4C87-9AE8-4AB6B9CA266D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{5C6DBF34-324E-425E-949F-5B01E1234677} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{BCFED3F9-ACDF-4175-8613-3112430B7D84} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{44B1FFC5-D7AB-4A9D-8AF2-B84747AC5545} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DAA5ED6F-1742-4FAF-B4FA-3BAF94148CDC}
+	EndGlobalSection
+EndGlobal
