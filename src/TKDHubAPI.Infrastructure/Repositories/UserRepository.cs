@@ -1,4 +1,5 @@
-﻿using TKDHubAPI.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using TKDHubAPI.Domain.Entities;
 using TKDHubAPI.Domain.Repositories;
 using TKDHubAPI.Infrastructure.Data;
 
