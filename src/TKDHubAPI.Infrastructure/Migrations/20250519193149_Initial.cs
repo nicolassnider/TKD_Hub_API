@@ -53,15 +53,22 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     RecommendedRankId = table.Column<int>(type: "int", nullable: false),
-                    VideoUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    VideoUrl = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tuls", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tuls_Ranks_RecommendedRankId",
+                        column: x => x.RecommendedRankId,
+                        principalTable: "Ranks",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -95,12 +102,12 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KoreanName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KoreanNamePhonetic = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    KoreanName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    KoreanNamePhonetic = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CoachId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -116,20 +123,20 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Organizer = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DojangId = table.Column<int>(type: "int", nullable: true)
+                    Location = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Organizer = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    DojaangId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tournaments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tournaments_Dojangs_DojangId",
-                        column: x => x.DojangId,
+                        name: "FK_Tournaments_Dojangs_DojaangId",
+                        column: x => x.DojaangId,
                         principalTable: "Dojangs",
                         principalColumn: "Id");
                 });
@@ -142,25 +149,33 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Gender = table.Column<int>(type: "int", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     DojaangId = table.Column<int>(type: "int", nullable: true),
                     CurrentRankId = table.Column<int>(type: "int", nullable: true),
                     JoinDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DojangId = table.Column<int>(type: "int", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Dojangs_DojangId",
-                        column: x => x.DojangId,
+                        name: "FK_Users_Dojangs_DojaangId",
+                        column: x => x.DojaangId,
                         principalTable: "Dojangs",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Users_Ranks_CurrentRankId",
+                        column: x => x.CurrentRankId,
+                        principalTable: "Ranks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -176,14 +191,14 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CoachId = table.Column<int>(type: "int", nullable: false),
-                    DojangId = table.Column<int>(type: "int", nullable: true)
+                    DojaangId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Events_Dojangs_DojangId",
-                        column: x => x.DojangId,
+                        name: "FK_Events_Dojangs_DojaangId",
+                        column: x => x.DojaangId,
                         principalTable: "Dojangs",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -209,14 +224,14 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     Round = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     MatchDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DojangId = table.Column<int>(type: "int", nullable: true)
+                    DojaangId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Matches", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Matches_Dojangs_DojangId",
-                        column: x => x.DojangId,
+                        name: "FK_Matches_Dojangs_DojaangId",
+                        column: x => x.DojaangId,
                         principalTable: "Dojangs",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -255,14 +270,16 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     PromotionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CoachId = table.Column<int>(type: "int", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DojangId = table.Column<int>(type: "int", nullable: false)
+                    DojaangId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Promotions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Promotions_Dojangs_DojangId",
-                        column: x => x.DojangId,
+                        name: "FK_Promotions_Dojangs_DojaangId",
+                        column: x => x.DojaangId,
                         principalTable: "Dojangs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -282,8 +299,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         name: "FK_Promotions_Users_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -295,8 +311,8 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     TournamentId = table.Column<int>(type: "int", nullable: false),
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     RegistrationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    Category = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -305,8 +321,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         name: "FK_TournamentRegistrations_Tournaments_TournamentId",
                         column: x => x.TournamentId,
                         principalTable: "Tournaments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_TournamentRegistrations_Users_StudentId",
                         column: x => x.StudentId,
@@ -324,8 +339,10 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     EventId = table.Column<int>(type: "int", nullable: false),
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     AttendanceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AttendanceTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    AttendanceTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -334,20 +351,19 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         name: "FK_EventAttendances_Events_EventId",
                         column: x => x.EventId,
                         principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_EventAttendances_Users_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Dojangs_CoachId",
                 table: "Dojangs",
-                column: "CoachId");
+                column: "CoachId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventAttendances_EventId",
@@ -365,9 +381,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 column: "CoachId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Events_DojangId",
+                name: "IX_Events_DojaangId",
                 table: "Events",
-                column: "DojangId");
+                column: "DojaangId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Matches_BlueCornerStudentId",
@@ -375,9 +391,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 column: "BlueCornerStudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Matches_DojangId",
+                name: "IX_Matches_DojaangId",
                 table: "Matches",
-                column: "DojangId");
+                column: "DojaangId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Matches_RedCornerStudentId",
@@ -400,9 +416,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 column: "CoachId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Promotions_DojangId",
+                name: "IX_Promotions_DojaangId",
                 table: "Promotions",
-                column: "DojangId");
+                column: "DojaangId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Promotions_RankId",
@@ -425,9 +441,14 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 column: "TournamentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tournaments_DojangId",
+                name: "IX_Tournaments_DojaangId",
                 table: "Tournaments",
-                column: "DojangId");
+                column: "DojaangId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tuls_RecommendedRankId",
+                table: "Tuls",
+                column: "RecommendedRankId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TulTechniques_TechniqueId",
@@ -435,17 +456,27 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 column: "TechniqueId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_DojangId",
+                name: "IX_Users_CurrentRankId",
                 table: "Users",
-                column: "DojangId");
+                column: "CurrentRankId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_DojaangId",
+                table: "Users",
+                column: "DojaangId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Dojangs_Users_CoachId",
                 table: "Dojangs",
                 column: "CoachId",
                 principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
@@ -474,9 +505,6 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "Ranks");
-
-            migrationBuilder.DropTable(
                 name: "Tournaments");
 
             migrationBuilder.DropTable(
@@ -490,6 +518,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Dojangs");
+
+            migrationBuilder.DropTable(
+                name: "Ranks");
         }
     }
 }

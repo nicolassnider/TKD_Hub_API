@@ -1,11 +1,10 @@
 ﻿using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.Domain.Repositories;
-public interface IUserRepository
+public interface IUserRepository : IGenericRepository<User>
 {
-    Task<User?> GetByIdAsync(int id);
-    Task<IEnumerable<User>> GetAllAsync();
-    Task AddAsync(User user);
-    void Update(User user);
-    void Remove(User user);
+    Task<User?> GetUserByEmailAsync(string email);
+    Task<User?> GetUserByPhoneNumberAsync(string phoneNumber);
+    Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender);
+    Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role);
 }

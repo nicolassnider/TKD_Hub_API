@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TKDHubAPI.Application\TKDHubAPI.Application.csproj" />
     <ProjectReference Include="..\TKDHubAPI.Domain\TKDHubAPI.Domain.csproj" />
   </ItemGroup>
 

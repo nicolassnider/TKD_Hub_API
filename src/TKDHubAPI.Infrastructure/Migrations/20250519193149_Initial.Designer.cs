@@ -12,7 +12,7 @@ using TKDHubAPI.Infrastructure.Data;
 namespace TKDHubAPI.Infrastructure.Migrations
 {
     [DbContext(typeof(TkdHubDbContext))]
-    [Migration("20250519033427_Initial")]
+    [Migration("20250519193149_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Dojang", b =>
+            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Dojaang", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -35,7 +35,8 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("CoachId")
                         .HasColumnType("int");
@@ -47,23 +48,28 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("KoreanName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("KoreanNamePhonetic")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
@@ -72,9 +78,10 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoachId");
+                    b.HasIndex("CoachId")
+                        .IsUnique();
 
-                    b.ToTable("Dojangs");
+                    b.ToTable("Dojangs", (string)null);
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.Event", b =>
@@ -92,7 +99,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("DojangId")
+                    b.Property<int?>("DojaangId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
@@ -116,7 +123,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.HasIndex("CoachId");
 
-                    b.HasIndex("DojangId");
+                    b.HasIndex("DojaangId");
 
                     b.ToTable("Events");
                 });
@@ -132,17 +139,28 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.Property<DateTime>("AttendanceDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("AttendanceTime")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("AttendanceTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -150,7 +168,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("EventAttendances");
+                    b.ToTable("EventAttendances", (string)null);
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.Match", b =>
@@ -164,7 +182,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.Property<int>("BlueCornerStudentId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("DojangId")
+                    b.Property<int?>("DojaangId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("MatchDate")
@@ -195,7 +213,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.HasIndex("BlueCornerStudentId");
 
-                    b.HasIndex("DojangId");
+                    b.HasIndex("DojaangId");
 
                     b.HasIndex("RedCornerStudentId");
 
@@ -217,7 +235,12 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.Property<int>("CoachId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DojangId")
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("DojaangId")
                         .HasColumnType("int");
 
                     b.Property<string>("Notes")
@@ -233,11 +256,16 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CoachId");
 
-                    b.HasIndex("DojangId");
+                    b.HasIndex("DojaangId");
 
                     b.HasIndex("RankId");
 
@@ -325,9 +353,10 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int?>("DojangId")
+                    b.Property<int?>("DojaangId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
@@ -335,24 +364,27 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Organizer")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DojangId");
+                    b.HasIndex("DojaangId");
 
-                    b.ToTable("Tournaments");
+                    b.ToTable("Tournaments", (string)null);
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.TournamentRegistration", b =>
@@ -365,13 +397,15 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
@@ -385,7 +419,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("TournamentRegistrations");
+                    b.ToTable("TournamentRegistrations", (string)null);
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.Tul", b =>
@@ -396,26 +430,42 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("RecommendedRankId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<string>("VideoUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RecommendedRankId");
 
                     b.ToTable("Tuls");
                 });
@@ -446,31 +496,35 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<int?>("CurrentRankId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("DojaangId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("DojangId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("JoinDate")
+                    b.Property<DateTime?>("JoinDate")
+                        .IsRequired()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastName")
@@ -484,25 +538,38 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DojangId");
+                    b.HasIndex("CurrentRankId");
 
-                    b.ToTable("Users");
+                    b.HasIndex("DojaangId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Dojang", b =>
+            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Dojaang", b =>
                 {
                     b.HasOne("TKDHubAPI.Domain.Entities.User", "Coach")
-                        .WithMany()
-                        .HasForeignKey("CoachId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithOne()
+                        .HasForeignKey("TKDHubAPI.Domain.Entities.Dojaang", "CoachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_Dojangs_Users_CoachId");
 
                     b.Navigation("Coach");
                 });
@@ -515,27 +582,27 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TKDHubAPI.Domain.Entities.Dojang", "Dojang")
+                    b.HasOne("TKDHubAPI.Domain.Entities.Dojaang", "Dojaang")
                         .WithMany("Events")
-                        .HasForeignKey("DojangId");
+                        .HasForeignKey("DojaangId");
 
                     b.Navigation("Coach");
 
-                    b.Navigation("Dojang");
+                    b.Navigation("Dojaang");
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.EventAttendance", b =>
                 {
                     b.HasOne("TKDHubAPI.Domain.Entities.Event", "Event")
-                        .WithMany("Attendances")
+                        .WithMany("EventAttendances")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("TKDHubAPI.Domain.Entities.User", "Student")
-                        .WithMany()
+                        .WithMany("EventAttendances")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Event");
@@ -551,9 +618,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TKDHubAPI.Domain.Entities.Dojang", "Dojang")
+                    b.HasOne("TKDHubAPI.Domain.Entities.Dojaang", "Dojaang")
                         .WithMany()
-                        .HasForeignKey("DojangId");
+                        .HasForeignKey("DojaangId");
 
                     b.HasOne("TKDHubAPI.Domain.Entities.User", "RedCornerStudent")
                         .WithMany()
@@ -573,7 +640,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
                     b.Navigation("BlueCornerStudent");
 
-                    b.Navigation("Dojang");
+                    b.Navigation("Dojaang");
 
                     b.Navigation("RedCornerStudent");
 
@@ -590,9 +657,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TKDHubAPI.Domain.Entities.Dojang", "Dojang")
+                    b.HasOne("TKDHubAPI.Domain.Entities.Dojaang", "Dojaang")
                         .WithMany()
-                        .HasForeignKey("DojangId")
+                        .HasForeignKey("DojaangId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -605,12 +672,13 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.HasOne("TKDHubAPI.Domain.Entities.User", "Student")
                         .WithMany()
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_Promotions_Users_StudentId");
 
                     b.Navigation("Coach");
 
-                    b.Navigation("Dojang");
+                    b.Navigation("Dojaang");
 
                     b.Navigation("Rank");
 
@@ -619,9 +687,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.Tournament", b =>
                 {
-                    b.HasOne("TKDHubAPI.Domain.Entities.Dojang", null)
+                    b.HasOne("TKDHubAPI.Domain.Entities.Dojaang", null)
                         .WithMany("Tournaments")
-                        .HasForeignKey("DojangId");
+                        .HasForeignKey("DojaangId");
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.TournamentRegistration", b =>
@@ -635,12 +703,23 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.HasOne("TKDHubAPI.Domain.Entities.Tournament", "Tournament")
                         .WithMany("Registrations")
                         .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Student");
 
                     b.Navigation("Tournament");
+                });
+
+            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Tul", b =>
+                {
+                    b.HasOne("TKDHubAPI.Domain.Entities.Rank", "RecommendedRank")
+                        .WithMany("Tuls")
+                        .HasForeignKey("RecommendedRankId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("RecommendedRank");
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.TulTechnique", b =>
@@ -664,12 +743,22 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.User", b =>
                 {
-                    b.HasOne("TKDHubAPI.Domain.Entities.Dojang", null)
+                    b.HasOne("TKDHubAPI.Domain.Entities.Rank", "CurrentRank")
                         .WithMany("Users")
-                        .HasForeignKey("DojangId");
+                        .HasForeignKey("CurrentRankId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TKDHubAPI.Domain.Entities.Dojaang", "Dojaang")
+                        .WithMany("Users")
+                        .HasForeignKey("DojaangId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CurrentRank");
+
+                    b.Navigation("Dojaang");
                 });
 
-            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Dojang", b =>
+            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Dojaang", b =>
                 {
                     b.Navigation("Events");
 
@@ -680,7 +769,14 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.Event", b =>
                 {
-                    b.Navigation("Attendances");
+                    b.Navigation("EventAttendances");
+                });
+
+            modelBuilder.Entity("TKDHubAPI.Domain.Entities.Rank", b =>
+                {
+                    b.Navigation("Tuls");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.Technique", b =>
@@ -700,6 +796,8 @@ namespace TKDHubAPI.Infrastructure.Migrations
 
             modelBuilder.Entity("TKDHubAPI.Domain.Entities.User", b =>
                 {
+                    b.Navigation("EventAttendances");
+
                     b.Navigation("TournamentRegistrations");
                 });
 #pragma warning restore 612, 618

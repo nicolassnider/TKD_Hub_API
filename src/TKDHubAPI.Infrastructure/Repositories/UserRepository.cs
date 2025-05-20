@@ -4,18 +4,33 @@ using TKDHubAPI.Domain.Repositories;
 using TKDHubAPI.Infrastructure.Data;
 
 namespace TKDHubAPI.Infrastructure.Repositories;
-public class UserRepository : IUserRepository
+public class UserRepository : GenericRepository<User>, IUserRepository
 {
     private readonly TkdHubDbContext _context;
-    public UserRepository(TkdHubDbContext context) => _context = context;
 
-    public async Task<User?> GetByIdAsync(int id) => await _context.Users.FindAsync(id);
+    public UserRepository(TkdHubDbContext context) : base(context)
+    {
+        _context = context;
+    }
 
-    public async Task<IEnumerable<User>> GetAllAsync() => await _context.Users.ToListAsync();
+    //  Example User-specific methods
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    }
 
-    public async Task AddAsync(User user) => await _context.Users.AddAsync(user);
+    public async Task<User?> GetUserByPhoneNumberAsync(string phoneNumber)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+    }
 
-    public void Update(User user) => _context.Users.Update(user);
+    public async Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender)
+    {
+        return await _context.Users.Where(u => u.Gender == gender).ToListAsync();
+    }
 
-    public void Remove(User user) => _context.Users.Remove(user);
+    public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
+    {
+        return await _context.Users.Where(u => u.Role == role).ToListAsync();
+    }
 }

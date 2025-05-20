@@ -49,7 +49,7 @@ public class RankService : IRankService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByDojangIdAsync(int dojangId)
+    public Task<IEnumerable<Rank>> GetRanksByDojaangIdAsync(int dojaangId)
     {
         throw new NotImplementedException();
     }

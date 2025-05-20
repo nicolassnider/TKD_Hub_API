@@ -3,7 +3,7 @@
 namespace TKDHubAPI.Application.Interfaces;
 public interface IEventService : ICrudService<Event>
 {
-    Task<IEnumerable<Event>> GetEventsByDojangIdAsync(int dojangId);
+    Task<IEnumerable<Event>> GetEventsByDojaangIdAsync(int dojaangId);
     Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId);
     Task<IEnumerable<Event>> GetEventsByCoachIdAsync(int coachId);
     Task<IEnumerable<Event>> GetEventsByTypeAsync(Event.EventType eventType);

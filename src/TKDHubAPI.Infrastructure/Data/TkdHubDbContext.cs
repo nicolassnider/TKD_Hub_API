@@ -6,7 +6,7 @@ public class TkdHubDbContext : DbContext
 {
     public TkdHubDbContext(DbContextOptions<TkdHubDbContext> options) : base(options) { }
 
-    public DbSet<Dojang> Dojangs { get; set; }
+    public DbSet<Dojaang> Dojaangs { get; set; }
     public DbSet<Event> Events { get; set; }
     public DbSet<EventAttendance> EventAttendances { get; set; }
     public DbSet<Match> Matches { get; set; }

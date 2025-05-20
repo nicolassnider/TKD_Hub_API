@@ -2,7 +2,7 @@
 using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.Application.Services;
-internal class TournamentService : ITournamentService
+public class TournamentService : ITournamentService
 {
     public Task AddAsync(Tournament tournament)
     {
@@ -34,7 +34,7 @@ internal class TournamentService : ITournamentService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByDojangIdAsync(int dojangId)
+    public Task<IEnumerable<Tournament>> GetTournamentsByDojaangIdAsync(int dojaangId)
     {
         throw new NotImplementedException();
     }

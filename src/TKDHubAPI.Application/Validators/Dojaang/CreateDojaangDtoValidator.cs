@@ -1,14 +1,14 @@
 ﻿using FluentValidation;
-using TKDHubAPI.Application.DTOs.Dojang;
+using TKDHubAPI.Application.DTOs.Dojaang;
 
-namespace TKDHubAPI.Application.Validators;
-public class CreateDojangDtoValidator : AbstractValidator<CreateDojangDto>
+namespace TKDHubAPI.Application.Validators.Dojaang;
+public class CreateDojaangDtoValidator : AbstractValidator<CreateDojaangDto>
 {
-    public CreateDojangDtoValidator()
+    public CreateDojaangDtoValidator()
     {
         RuleFor(d => d.Name)
-            .NotEmpty().WithMessage("Dojang name is required.")
-            .MaximumLength(200).WithMessage("Dojang name cannot exceed 200 characters.");
+            .NotEmpty().WithMessage("Dojaang name is required.")
+            .MaximumLength(200).WithMessage("Dojaang name cannot exceed 200 characters.");
 
         RuleFor(d => d.Address)
             .NotEmpty().WithMessage("Address is required.")

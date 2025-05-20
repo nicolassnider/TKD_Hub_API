@@ -1,7 +1,6 @@
-﻿namespace TKDHubAPI.Application.DTOs.Dojang;
-public class UpdateDojangDto
+﻿namespace TKDHubAPI.Application.DTOs.Dojaang;
+public class CreateDojaangDto
 {
-    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;

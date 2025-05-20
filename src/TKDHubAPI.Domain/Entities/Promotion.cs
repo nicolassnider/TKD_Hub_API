@@ -21,6 +21,6 @@ public class Promotion
     public Rank Rank { get; set; } = null!;
     public User Coach { get; set; } = null!;
 
-    public int DojangId { get; set; } // FK to Dojang
-    public Dojang Dojang { get; set; } = null;
+    public int DojaangId { get; set; } // FK to Dojaang
+    public Dojaang Dojaang { get; set; } = null;
 }

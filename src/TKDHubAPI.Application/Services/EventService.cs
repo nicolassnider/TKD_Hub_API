@@ -34,7 +34,7 @@ public class EventService : IEventService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Event>> GetEventsByDojangIdAsync(int dojangId)
+    public Task<IEnumerable<Event>> GetEventsByDojaangIdAsync(int dojaangId)
     {
         throw new NotImplementedException();
     }

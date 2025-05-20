@@ -29,7 +29,7 @@ public class Match
     public User BlueCornerStudent { get; set; } = null!;
     public User? WinnerStudent { get; set; }
 
-    // Optional: If you want to track the Dojang where the match took place
-    public int? DojangId { get; set; }
-    public Dojang? Dojang { get; set; }
+    // Optional: If you want to track the Dojaang where the match took place
+    public int? DojaangId { get; set; }
+    public Dojaang? Dojaang { get; set; }
 }

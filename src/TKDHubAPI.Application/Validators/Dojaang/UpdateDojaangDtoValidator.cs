@@ -1,17 +1,17 @@
 ﻿using FluentValidation;
-using TKDHubAPI.Application.DTOs.Dojang;
+using TKDHubAPI.Application.DTOs.Dojaang;
 
-namespace TKDHubAPI.Application.Validators;
-public class UpdateDojangDtoValidator : AbstractValidator<UpdateDojangDto>
+namespace TKDHubAPI.Application.Validators.Dojaang;
+public class UpdateDojaangDtoValidator : AbstractValidator<UpdateDojaangDto>
 {
-    public UpdateDojangDtoValidator()
+    public UpdateDojaangDtoValidator()
     {
         RuleFor(d => d.Id)
-            .GreaterThan(0).WithMessage("Dojang ID must be a positive number.");
+            .GreaterThan(0).WithMessage("Dojaang ID must be a positive number.");
 
         RuleFor(d => d.Name)
-            .NotEmpty().WithMessage("Dojang name is required.")
-            .MaximumLength(200).WithMessage("Dojang name cannot exceed 200 characters.");
+            .NotEmpty().WithMessage("Dojaang name is required.")
+            .MaximumLength(200).WithMessage("Dojaang name cannot exceed 200 characters.");
 
         RuleFor(d => d.Address)
             .NotEmpty().WithMessage("Address is required.")

@@ -13,7 +13,7 @@ public interface IRankService : ICrudService<Rank>
     Task<IEnumerable<Rank>> GetRanksByStripeColorAsync(Rank.BeltColor stripeColor);
     Task<IEnumerable<Rank>> GetRanksByDescriptionAsync(string description);
     Task<IEnumerable<Rank>> GetRanksByNameAsync(string name);
-    Task<IEnumerable<Rank>> GetRanksByDojangIdAsync(int dojangId);
+    Task<IEnumerable<Rank>> GetRanksByDojaangIdAsync(int dojaangId);
     Task<IEnumerable<Rank>> GetRanksByUserIdAsync(int userId);
     Task<IEnumerable<Rank>> GetRanksByCoachIdAsync(int coachId);
     Task<IEnumerable<Rank>> GetRanksByTypeAsync(Rank.BeltColor rankType);

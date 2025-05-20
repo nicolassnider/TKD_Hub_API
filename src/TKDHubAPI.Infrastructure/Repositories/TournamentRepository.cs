@@ -1,0 +1,29 @@
+﻿using Microsoft.EntityFrameworkCore;
+using TKDHubAPI.Domain.Entities;
+using TKDHubAPI.Domain.Repositories;
+using TKDHubAPI.Infrastructure.Data;
+
+namespace TKDHubAPI.Infrastructure.Repositories;
+public class TournamentRepository : GenericRepository<Tournament>, ITournamentRepository
+{
+    private readonly TkdHubDbContext _context;
+
+    public TournamentRepository(TkdHubDbContext context) : base(context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Tournament>> GetTournamentsWithDetailsAsync()
+    {
+        return await _context.Tournaments
+           .Include(t => t.Registrations)  // Example: Eager load registrations
+           .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Tournament>> GetUpcomingTournamentsAsync()
+    {
+        return await _context.Tournaments
+            .Where(t => t.StartDate > DateTime.Now)
+            .ToListAsync();
+    }
+}

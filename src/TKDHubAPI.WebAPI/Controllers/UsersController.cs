@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TKDHubAPI.Infrastructure.Data;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using TKDHubAPI.Application.DTOs.User;
+using TKDHubAPI.Application.Interfaces;
+using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
@@ -8,27 +10,46 @@ namespace TKDHubAPI.WebAPI.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly TkdHubDbContext _context;
+    private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
-    public UsersController(TkdHubDbContext context)
+    public UsersController(IUserService userService, IMapper mapper)
     {
-        _context = context;
+        _userService = userService;
+        _mapper = mapper;
     }
 
+
     [HttpGet]
-    public async Task<IActionResult> GetUsers()
+    public async Task<ActionResult<IEnumerable<User>>> Get()
     {
-        var users = await _context.Users.ToListAsync();
+        var users = await _userService.GetAllAsync();
         return Ok(users);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(int id)
+    public async Task<ActionResult<User>> Get(int id)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null) return NotFound();
+        var user = await _userService.GetByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
         return Ok(user);
     }
 
-    // Add POST, PUT, DELETE as needed
+    [HttpPost]
+    public async Task<ActionResult<User>> Post([FromBody] CreateUserDto createUserDto)
+    {
+
+        var user = _mapper.Map<User>(createUserDto);
+        // PasswordHash should be set by the UserService
+
+        // 3. Call the UserService to add the user
+        await _userService.AddAsync(user);
+
+        // 4. Return CreatedAtAction
+        var resultDto = _mapper.Map<UserDto>(user);
+        return CreatedAtAction(nameof(Get), new { id = user.Id }, resultDto);
+    }
 }
