@@ -3,15 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TKDHubAPI.Domain.Entities;
 
-
-public enum UserRole
-{
-    Admin,
-    Instructor,
-    Member,
-    Guest
-}
-
 public enum Gender
 {
     Male,
@@ -38,8 +29,6 @@ public class User
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
 
-    [Required]
-    public UserRole Role { get; set; }
 
     public DateTime? DateOfBirth { get; set; }
 
@@ -64,4 +53,13 @@ public class User
 
     public ICollection<TournamentRegistration> TournamentRegistrations { get; set; } = new List<TournamentRegistration>();
     public ICollection<EventAttendance> EventAttendances { get; set; } = new List<EventAttendance>();
+    public ICollection<UserUserRole> UserRoles { get; set; } = new List<UserUserRole>();
+    public ICollection<Promotion> PromotionsAsStudent { get; set; } = new List<Promotion>();
+    public ICollection<Promotion> PromotionsAsCoach { get; set; } = new List<Promotion>();
+    public ICollection<Match> MatchesAsRedCorner { get; set; } = new List<Match>();
+    public ICollection<Match> MatchesAsBlueCorner { get; set; } = new List<Match>();
+    public ICollection<Match> MatchesAsWinner { get; set; } = new List<Match>();
+    public ICollection<Event> EventsCoached { get; set; } = new List<Event>();
+    public ICollection<Dojaang> DojaangsCoached { get; set; } = new List<Dojaang>();
+    public ICollection<Dojaang> DojaangsMember { get; set; } = new List<Dojaang>();
 }
