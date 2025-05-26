@@ -1,7 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class EventAttendance
+public partial class EventAttendance
 {
-    public enum AttendanceStatus { Attended, Absent, Late }
 
     public int Id { get; set; }
     public int EventId { get; set; }

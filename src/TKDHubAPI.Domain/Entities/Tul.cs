@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace TKDHubAPI.Domain.Entities;
+﻿namespace TKDHubAPI.Domain.Entities;
 public class Tul
 {
     public int Id { get; set; }

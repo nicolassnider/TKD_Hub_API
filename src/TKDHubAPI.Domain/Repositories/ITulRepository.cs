@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Domain.Repositories;
+﻿namespace TKDHubAPI.Domain.Repositories;
 public interface ITulRepository : IGenericRepository<Tul>
 {
     Task<IEnumerable<Tul>> GetTulsWithTechniquesAsync();

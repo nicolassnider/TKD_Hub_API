@@ -1,7 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Event
+public partial class Event
 {
-    public enum EventType { Class, Seminar, Grading, Tournament, Other }
 
     public int Id { get; set; }
     public string Name { get; set; }
@@ -11,7 +10,7 @@ public class Event
     public DateTime EndDate { get; set; }
     public string Location { get; set; } = string.Empty;
 
-    public int CoachId { get; set; }
+    public int? CoachId { get; set; }
     public User Coach { get; set; } = null!;
 
     public int? DojaangId { get; set; }

@@ -1,17 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace TKDHubAPI.Domain.Entities;
-public class Rank
+public partial class Rank
 {
-    public enum BeltColor
-    {
-        White,
-        Yellow,
-        Green,
-        Blue,
-        Red,
-        Black
-    }
 
     public int Id { get; set; }
 
@@ -29,6 +20,8 @@ public class Rank
     public BeltColor? StripeColor { get; set; }
 
     public int? DanLevel { get; set; }
+
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
     // Navigation Property for Users
     public ICollection<User> Users { get; set; } = new List<User>();

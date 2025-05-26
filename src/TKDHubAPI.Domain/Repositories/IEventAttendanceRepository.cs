@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Domain.Repositories;
+﻿namespace TKDHubAPI.Domain.Repositories;
 public interface IEventAttendanceRepository : IGenericRepository<EventAttendance>
 {
     Task<IEnumerable<EventAttendance>> GetEventAttendanceByEventIdAsync(int eventId);

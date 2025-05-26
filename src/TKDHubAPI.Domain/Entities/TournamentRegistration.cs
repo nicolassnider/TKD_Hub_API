@@ -2,9 +2,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TKDHubAPI.Domain.Entities;
-public class TournamentRegistration
+public partial class TournamentRegistration
 {
-    public enum RegistrationStatus { Registered, Confirmed, Canceled }
 
     [Key]
     public int Id { get; set; }
@@ -34,3 +33,4 @@ public class TournamentRegistration
         return $"TournamentRegistration: {Id}, TournamentId: {TournamentId}, StudentId: {StudentId}, RegistrationDate: {RegistrationDate}, Category: {Category}, Status: {Status}";
     }
 }
+

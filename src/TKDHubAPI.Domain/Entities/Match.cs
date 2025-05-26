@@ -1,7 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Match
+public partial class Match
 {
-    public enum MatchStatus { Scheduled, InProgress, Completed, Cancelled }
 
     public int Id { get; set; }
 
