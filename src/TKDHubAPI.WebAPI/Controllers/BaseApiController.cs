@@ -25,4 +25,15 @@ public abstract class BaseApiController : ControllerBase
     {
         return Ok(new { data = result });
     }
+
+    protected List<string> GetCurrentUserRoles()
+    {
+        if (User?.Identity?.IsAuthenticated != true)
+            return new List<string>();
+
+        return User.Claims
+            .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+    }
 }

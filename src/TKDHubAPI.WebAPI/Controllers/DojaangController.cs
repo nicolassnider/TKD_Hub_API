@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TKDHubAPI.Application.DTOs.Dojaang;
 using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 [ApiController]
@@ -11,18 +12,26 @@ public class DojaangController : BaseApiController
     private readonly IDojaangService _dojaangService;
     private readonly ILogger<DojaangController> _logger;
     private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
-    public DojaangController(IDojaangService dojaangService, IUserService userService, ILogger<DojaangController> logger) : base(logger)
+    public DojaangController(
+        IDojaangService dojaangService,
+        IUserService userService,
+        ILogger<DojaangController> logger,
+        IMapper mapper
+    ) : base(logger)
     {
         _dojaangService = dojaangService;
         _userService = userService;
+        _mapper = mapper;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var dojangs = await _dojaangService.GetAllAsync();
-        return Ok(dojangs);
+        var dojaangs = await _dojaangService.GetAllAsync();
+        var result = dojaangs.Select(_mapper.Map<DojaangDto>);
+        return SuccessResponse(result);
     }
 
     [HttpGet("{id}")]
@@ -31,70 +40,64 @@ public class DojaangController : BaseApiController
         var dojaang = await _dojaangService.GetByIdAsync(id);
         if (dojaang == null)
         {
-            return NotFound();
+            return ErrorResponse("Dojaang not found", 404);
         }
-        return Ok(dojaang);
+        var result = _mapper.Map<DojaangDto>(dojaang);
+        return SuccessResponse(result);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateDojaangDto createDto)
+    public async Task<IActionResult> Create([FromBody] CreateDojaangDto dto)
     {
-        // 1. Validate that the CoachId exists in the Users table.
-        var coachExists = await _userService.GetByIdAsync(createDto.CoachId);
-        if (coachExists is null)
-        {
-            return BadRequest($"Coach with Id '{createDto.CoachId}' does not exist.");
-        }
+        // Get the current user (admin) from the JWT claims
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            return ErrorResponse("Invalid user context.", 401);
 
-        // 2. Map the DTO to a Dojaang entity.
-        var dojaang = new Dojaang
-        {
-            Name = createDto.Name,
-            Address = createDto.Address,
-            PhoneNumber = createDto.PhoneNumber,
-            Email = createDto.Email,
-            KoreanName = createDto.KoreanName,
-            KoreanNamePhonetic = createDto.KoreanNamePhonetic,
-            CoachId = createDto.CoachId
-        };
+        var currentUser = await _userService.GetByIdAsync(userId);
+        if (currentUser == null)
+            return ErrorResponse("User not found.", 404);
 
-        await _dojaangService.AddAsync(dojaang);
-        return CreatedAtAction(nameof(GetById), new { id = dojaang.Id }, dojaang);
+        var dojaang = await _dojaangService.CreateDojangAsync(dto, currentUser);
+        var result = _mapper.Map<DojaangDto>(dojaang);
+        return SuccessResponse(result);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDojaangDto updateDto)
     {
         if (id != updateDto.Id)
         {
-            return BadRequest("ID mismatch.");
+            return ErrorResponse("ID mismatch.");
         }
 
-        // 1.  Get the existing Dojaang from the database.
         var existingDojaang = await _dojaangService.GetByIdAsync(id);
         if (existingDojaang == null)
         {
-            return NotFound(); // Or perhaps a 410 Gone
+            return ErrorResponse("Dojaang not found", 404);
         }
 
+        // Only admins reach this point due to the [Authorize] attribute
 
-        // 2. Update the properties of the existing Dojaang
-        //    with the values from the DTO.
-        existingDojaang.Name = updateDto.Name;
-        existingDojaang.Address = updateDto.Address;
-        existingDojaang.PhoneNumber = updateDto.PhoneNumber;
-        existingDojaang.Email = updateDto.Email;
-        existingDojaang.KoreanName = updateDto.KoreanName;
-        existingDojaang.KoreanNamePhonetic = updateDto.KoreanNamePhonetic;
-        existingDojaang.CoachId = updateDto.CoachId;
+        // Use AutoMapper to map the DTO to the existing entity
+        _mapper.Map(updateDto, existingDojaang);
 
         await _dojaangService.UpdateAsync(existingDojaang);
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var existingDojaang = await _dojaangService.GetByIdAsync(id);
+        if (existingDojaang == null)
+        {
+            return ErrorResponse("Dojaang not found", 404);
+        }
+
         await _dojaangService.DeleteAsync(id);
         return NoContent();
     }
