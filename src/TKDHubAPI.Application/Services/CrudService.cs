@@ -1,7 +1,4 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Repositories;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class CrudService<TEntity, TRepository> : ICrudService<TEntity>
     where TEntity : class
     where TRepository : IGenericRepository<TEntity>

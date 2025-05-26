@@ -1,17 +1,120 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.Domain.Repositories;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using TKDHubAPI.Application.DTOs.User;
+using TKDHubAPI.Application.Settings;
 
 namespace TKDHubAPI.Application.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly PasswordHasher<User> _passwordHasher = new();
+    private readonly JwtSettings _jwtSettings;
+    private readonly IMapper _mapper;
 
-    public UserService(IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public UserService(
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
+        IUserRoleRepository userRoleRepository,
+        IOptions<JwtSettings> jwtOptions,
+        IMapper mapper)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _userRoleRepository = userRoleRepository;
+        _jwtSettings = jwtOptions.Value;
+        _mapper = mapper;
+    }
+
+    public async Task<User?> RegisterAsync(CreateUserDto createUserDto, string password)
+    {
+        var existingUser = await _userRepository.GetUserByEmailAsync(createUserDto.Email);
+        if (existingUser != null)
+            return null;
+
+        // Enforce: Student must belong to only one dojaang
+        if (await IsStudentRoleAsync(createUserDto.RoleIds) && createUserDto.DojaangId == null)
+            throw new Exception("A student must be assigned to exactly one dojang.");
+
+        var user = new User
+        {
+            FirstName = createUserDto.FirstName,
+            LastName = createUserDto.LastName,
+            Email = createUserDto.Email,
+            PhoneNumber = createUserDto.PhoneNumber,
+            Gender = createUserDto.Gender,
+            DojaangId = createUserDto.DojaangId,
+            CurrentRankId = createUserDto.RankId,
+            JoinDate = DateTime.UtcNow,
+            PasswordHash = _passwordHasher.HashPassword(null, password)
+        };
+
+        var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
+        user.UserUserRoles = roles
+            .Select(role => new UserUserRole
+            {
+                User = user,
+                UserRole = role
+            })
+            .ToList();
+
+        await _userRepository.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return user;
+    }
+
+    public async Task<User?> LoginAsync(string email, string password)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(email);
+        if (user == null)
+            return null;
+
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        return result == PasswordVerificationResult.Success ? user : null;
+    }
+
+    public async Task<string?> LoginWithTokenAsync(string email, string password)
+    {
+        var user = await LoginAsync(email, password);
+        if (user == null)
+            return null;
+
+        var roles = user.UserUserRoles?.Select(uur => uur.UserRole.Name).ToList() ?? new List<string>();
+        return GenerateJwtToken(user, roles);
+    }
+
+    private string GenerateJwtToken(User user, List<string> roles)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
+        };
+
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _jwtSettings.Issuer,
+            audience: _jwtSettings.Audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public async Task<IEnumerable<User>> GetAllAsync()
@@ -26,30 +129,23 @@ public class UserService : IUserService
 
     public async Task<User> GetUserByEmailAsync(string email)
     {
-        //  Consider adding error handling if no user is found.
-        var user = await _userRepository.GetUserByPhoneNumberAsync(email);
+        var user = await _userRepository.GetUserByEmailAsync(email);
         if (user == null)
-        {
-            throw new Exception($"User with email {email} not found"); //Or return null, or a custom exception
-        }
+            throw new Exception($"User with email {email} not found");
         return user;
-
     }
 
     public async Task<User> GetUserByPhoneNumberAsync(string phoneNumber)
     {
-        //  Consider adding error handling.
         var user = await _userRepository.GetUserByPhoneNumberAsync(phoneNumber);
         if (user == null)
-        {
-            throw new Exception($"User with phone number {phoneNumber} not found"); //Or return null, or a custom exception
-        }
+            throw new Exception($"User with phone number {phoneNumber} not found");
         return user;
     }
 
-    public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
+    public async Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName)
     {
-        return await _userRepository.GetUsersByRoleAsync(role);
+        return await _userRepository.GetUsersByRoleAsync(roleName);
     }
 
     public async Task AddAsync(User user)
@@ -60,6 +156,10 @@ public class UserService : IUserService
 
     public async Task UpdateAsync(User user)
     {
+        // Enforce: Student must belong to only one dojaang
+        if (user.HasRole("Student") && user.DojaangId == null)
+            throw new Exception("A student must be assigned to exactly one dojang.");
+
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -72,11 +172,195 @@ public class UserService : IUserService
             _userRepository.Remove(user);
             await _unitOfWork.SaveChangesAsync();
         }
-        //  Consider adding error handling if the user to delete is not found.
     }
 
     public Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender)
     {
-        throw new NotImplementedException();
+        return _userRepository.GetUsersByGenderAsync(gender);
+    }
+
+    public async Task<User> AddUserWithRolesAsync(CreateUserDto createUserDto)
+    {
+        // Enforce: Student must belong to only one dojaang
+        if (await IsStudentRoleAsync(createUserDto.RoleIds) && createUserDto.DojaangId == null)
+            throw new Exception("A student must be assigned to exactly one dojang.");
+
+        var user = new User
+        {
+            FirstName = createUserDto.FirstName,
+            LastName = createUserDto.LastName,
+            Email = createUserDto.Email,
+            PhoneNumber = createUserDto.PhoneNumber,
+            Gender = createUserDto.Gender,
+            DateOfBirth = createUserDto.DateOfBirth,
+            DojaangId = createUserDto.DojaangId,
+            CurrentRankId = createUserDto.RankId,
+            JoinDate = createUserDto.JoinDate ?? DateTime.UtcNow,
+            PasswordHash = !string.IsNullOrEmpty(createUserDto.Password)
+                ? _passwordHasher.HashPassword(null, createUserDto.Password)
+                : string.Empty
+        };
+
+        var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
+        user.UserUserRoles = roles
+            .Select(role => new UserUserRole
+            {
+                User = user,
+                UserRole = role
+            })
+            .ToList();
+
+        await _userRepository.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Add UserDojaang relation if DojaangId is present
+        if (createUserDto.DojaangId.HasValue)
+        {
+            // Determine the user's main role for this dojaang
+            var mainRole = roles.FirstOrDefault()?.Name ?? "Student"; // Default to Student if not specified
+
+            user.UserDojaangs.Add(new UserDojaang
+            {
+                UserId = user.Id,
+                DojaangId = createUserDto.DojaangId.Value,
+                Role = mainRole
+            });
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        return user;
+    }
+
+    public async Task<string?> GetRoleNameById(int roleId)
+    {
+        var role = await _userRoleRepository.GetByIdAsync(roleId);
+        return role?.Name;
+    }
+
+    /// <summary>
+    /// Only an Admin can assign Admin or Coach roles.
+    /// </summary>
+    public bool CanAssignRoles(IEnumerable<string> currentUserRoles, IEnumerable<string> newUserRoleNames)
+    {
+        var sensitiveRoles = new[] { "Admin", "Coach" };
+        bool isAssigningSensitive = newUserRoleNames.Any(r => sensitiveRoles.Contains(r, StringComparer.OrdinalIgnoreCase));
+        bool isAdmin = currentUserRoles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+        return !isAssigningSensitive || isAdmin;
+    }
+
+    public async Task<(string? Token, UserDto? User)> LoginAndGetTokenAsync(LoginDto loginDto)
+    {
+        var user = await LoginAsync(loginDto.Email, loginDto.Password);
+        if (user == null)
+            return (null, null);
+
+        var roles = user.UserUserRoles?.Select(uur => uur.UserRole.Name).ToList() ?? new List<string>();
+        var token = GenerateJwtToken(user, roles);
+
+        var userDto = _mapper.Map<UserDto>(user);
+        userDto.Roles = roles;
+
+        return (token, userDto);
+    }
+
+    public async Task<List<string>> GetRoleNamesByIdsAsync(List<int> roleIds)
+    {
+        var roles = await _userRoleRepository.GetRolesByIdsAsync(roleIds);
+        return roles.Select(r => r.Name).ToList();
+    }
+
+    /// <summary>
+    /// Checks if a user (coach) manages a specific dojaang.
+    /// </summary>
+    public async Task<bool> CoachManagesDojangAsync(int coachId, int dojaangId)
+    {
+        var coach = await _userRepository.GetByIdAsync(coachId);
+        if (coach == null)
+            return false;
+        return coach.HasRole("Coach") && coach.ManagesDojang(dojaangId);
+    }
+
+    /// <summary>
+    /// Checks if the given role IDs include the Student role.
+    /// </summary>
+    private async Task<bool> IsStudentRoleAsync(IEnumerable<int> roleIds)
+    {
+        var roles = await _userRoleRepository.GetRolesByIdsAsync(roleIds);
+        return roles.Any(r => r.Name.Equals("Student", StringComparison.OrdinalIgnoreCase));
+    }
+
+    public bool CanManageDojaang(User user, int dojaangId)
+    {
+        // Admins can manage any dojaang
+        if (user.HasRole("Admin"))
+            return true;
+
+        // Coaches/students: check if they are linked to the dojaang
+        return user.UserDojaangs.Any(ud => ud.DojaangId == dojaangId && ud.Role == "Coach");
+    }
+
+    public async Task<User> AddCoachToDojaangAsync(int requestingUserId, CreateUserDto createCoachDto)
+    {
+        // Get the requesting user (coach or admin)
+        var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
+        if (requestingUser == null)
+            throw new Exception("Requesting user not found.");
+
+        // Get the role names to assign
+        var newUserRoleNames = await GetRoleNamesByIdsAsync(createCoachDto.RoleIds);
+
+        // Only allow if the new user is a coach
+        if (!newUserRoleNames.Any(r => r.Equals("Coach", StringComparison.OrdinalIgnoreCase)))
+            throw new UnauthorizedAccessException("Only coach role assignment is allowed in this operation.");
+
+        // Admins can add a coach to any dojaang
+        if (!requestingUser.HasRole("Admin"))
+        {
+            // Coaches can only add a coach to dojaangs they manage
+            if (createCoachDto.DojaangId == null || !requestingUser.ManagesDojang(createCoachDto.DojaangId.Value))
+                throw new UnauthorizedAccessException("You can only add a coach to a dojaang you manage.");
+        }
+
+        // Proceed to create the coach user
+        var user = new User
+        {
+            FirstName = createCoachDto.FirstName,
+            LastName = createCoachDto.LastName,
+            Email = createCoachDto.Email,
+            PhoneNumber = createCoachDto.PhoneNumber,
+            Gender = createCoachDto.Gender,
+            DateOfBirth = createCoachDto.DateOfBirth,
+            DojaangId = createCoachDto.DojaangId,
+            CurrentRankId = createCoachDto.RankId,
+            JoinDate = createCoachDto.JoinDate ?? DateTime.UtcNow,
+            PasswordHash = _passwordHasher.HashPassword(null, createCoachDto.Password)
+        };
+
+        var roles = await _userRoleRepository.GetRolesByIdsAsync(createCoachDto.RoleIds);
+        user.UserUserRoles = roles
+            .Select(role => new UserUserRole
+            {
+                User = user,
+                UserRole = role
+            })
+            .ToList();
+
+        await _userRepository.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Optionally, add to UserDojaangs as a coach for the dojaang
+        if (createCoachDto.DojaangId.HasValue)
+        {
+            user.UserDojaangs.Add(new UserDojaang
+            {
+                UserId = user.Id,
+                DojaangId = createCoachDto.DojaangId.Value,
+                Role = "Coach"
+            });
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        return user;
     }
 }
+

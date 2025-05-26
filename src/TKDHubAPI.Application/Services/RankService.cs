@@ -1,91 +1,117 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class RankService : IRankService
 {
-    public Task AddAsync(Rank rank)
+    private readonly IRankRepository _rankRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public RankService(IRankRepository rankRepository, IUnitOfWork unitOfWork)
     {
-        throw new NotImplementedException();
+        _rankRepository = rankRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public Task DeleteAsync(int id)
+    public async Task AddAsync(Rank rank)
     {
-        throw new NotImplementedException();
+        await _rankRepository.AddAsync(rank);
+        await _unitOfWork.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<Rank>> GetAllAsync()
+    public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var rank = await _rankRepository.GetByIdAsync(id);
+        if (rank != null)
+        {
+            _rankRepository.Remove(rank);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 
-    public Task<Rank?> GetByIdAsync(int id)
+    public async Task<IEnumerable<Rank>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await _rankRepository.GetAllAsync();
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByCoachIdAsync(int coachId)
+    public async Task<Rank?> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        return await _rankRepository.GetByIdAsync(id);
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByColorAsync(Rank.BeltColor color)
+    public async Task<IEnumerable<Rank>> GetRanksByCoachIdAsync(int coachId)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Users.Any(u => u.UserDojaangs.Any(ud => ud.UserId == coachId && ud.Role == "Coach")));
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByDanLevelAsync(int danLevel)
+    public async Task<IEnumerable<Rank>> GetRanksByColorAsync(BeltColor color)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Color == color);
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<Rank>> GetRanksByDanLevelAsync(int danLevel)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.DanLevel.HasValue && r.DanLevel.Value == danLevel);
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByDescriptionAsync(string description)
+    public async Task<IEnumerable<Rank>> GetRanksByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.CreatedDate >= startDate && r.CreatedDate <= endDate);
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByDojaangIdAsync(int dojaangId)
+    public async Task<IEnumerable<Rank>> GetRanksByDescriptionAsync(string description)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Description != null && r.Description.Contains(description, StringComparison.OrdinalIgnoreCase));
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByLocationAsync(string location)
+    public async Task<IEnumerable<Rank>> GetRanksByDojaangIdAsync(int dojaangId)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Users.Any(u => u.DojaangId == dojaangId));
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByNameAsync(string name)
+    public async Task<IEnumerable<Rank>> GetRanksByLocationAsync(string location)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Users.Any(u => u.Dojaang != null && u.Dojaang.Location != null && u.Dojaang.Location.Contains(location, StringComparison.OrdinalIgnoreCase)));
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByOrderAsync(int order)
+    public async Task<IEnumerable<Rank>> GetRanksByNameAsync(string name)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Name != null && r.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByStripeColorAsync(Rank.BeltColor stripeColor)
+    public async Task<IEnumerable<Rank>> GetRanksByOrderAsync(int order)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Order == order);
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByTypeAsync(Rank.BeltColor rankType)
+    public async Task<IEnumerable<Rank>> GetRanksByStripeColorAsync(BeltColor stripeColor)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.StripeColor.HasValue && r.StripeColor.Value == stripeColor);
     }
 
-    public Task<IEnumerable<Rank>> GetRanksByUserIdAsync(int userId)
+    public async Task<IEnumerable<Rank>> GetRanksByTypeAsync(BeltColor rankType)
     {
-        throw new NotImplementedException();
+        // Assuming "type" means the main color
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Color == rankType);
     }
 
-    public Task UpdateAsync(Rank rank)
+    public async Task<IEnumerable<Rank>> GetRanksByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        var all = await _rankRepository.GetAllAsync();
+        return all.Where(r => r.Users.Any(u => u.Id == userId));
+    }
+
+    public async Task UpdateAsync(Rank rank)
+    {
+        _rankRepository.Update(rank);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

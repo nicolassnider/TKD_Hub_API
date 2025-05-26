@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Application.Interfaces;
+﻿namespace TKDHubAPI.Application.Interfaces;
 public interface ITulService
 {
     Task<IEnumerable<Tul>> GetAllAsync();

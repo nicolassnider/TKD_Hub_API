@@ -1,8 +1,4 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.Domain.Repositories;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class TulService : ITulService // Corrected base class to TulService
 {
     private readonly ITulRepository _tulRepository;

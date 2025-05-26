@@ -1,61 +1,80 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class TournamentService : ITournamentService
 {
-    public Task AddAsync(Tournament tournament)
+    private readonly ITournamentRepository _tournamentRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public TournamentService(ITournamentRepository tournamentRepository, IUnitOfWork unitOfWork)
     {
-        throw new NotImplementedException();
+        _tournamentRepository = tournamentRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public Task DeleteAsync(int id)
+    public async Task AddAsync(Tournament tournament)
     {
-        throw new NotImplementedException();
+        await _tournamentRepository.AddAsync(tournament);
+        await _unitOfWork.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<Tournament>> GetAllAsync()
+    public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var tournament = await _tournamentRepository.GetByIdAsync(id);
+        if (tournament != null)
+        {
+            _tournamentRepository.Remove(tournament);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 
-    public Task<Tournament?> GetByIdAsync(int id)
+    public async Task<IEnumerable<Tournament>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await _tournamentRepository.GetAllAsync();
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByCoachIdAsync(int coachId)
+    public async Task<Tournament?> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        return await _tournamentRepository.GetByIdAsync(id);
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<Tournament>> GetTournamentsByCoachIdAsync(int coachId)
     {
-        throw new NotImplementedException();
+        var all = await _tournamentRepository.GetAllAsync();
+        return all.Where(t => t.Dojaang != null && t.Dojaang.CoachId == coachId);
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByDojaangIdAsync(int dojaangId)
+    public async Task<IEnumerable<Tournament>> GetTournamentsByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        throw new NotImplementedException();
+        var all = await _tournamentRepository.GetAllAsync();
+        return all.Where(t => t.StartDate >= startDate && t.EndDate <= endDate);
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByLocationAsync(string location)
+    public async Task<IEnumerable<Tournament>> GetTournamentsByDojaangIdAsync(int dojaangId)
     {
-        throw new NotImplementedException();
+        var all = await _tournamentRepository.GetAllAsync();
+        return all.Where(t => t.DojaangId == dojaangId);
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByNameAsync(string name)
+    public async Task<IEnumerable<Tournament>> GetTournamentsByLocationAsync(string location)
     {
-        throw new NotImplementedException();
+        var all = await _tournamentRepository.GetAllAsync();
+        return all.Where(t => t.Location != null && t.Location.Contains(location, StringComparison.OrdinalIgnoreCase));
     }
 
-    public Task<IEnumerable<Tournament>> GetTournamentsByUserIdAsync(int userId)
+    public async Task<IEnumerable<Tournament>> GetTournamentsByNameAsync(string name)
     {
-        throw new NotImplementedException();
+        var all = await _tournamentRepository.GetAllAsync();
+        return all.Where(t => t.Name != null && t.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
     }
 
-    public Task UpdateAsync(Tournament tournament)
+    public async Task<IEnumerable<Tournament>> GetTournamentsByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        var all = await _tournamentRepository.GetAllAsync();
+        return all.Where(t => t.Registrations != null && t.Registrations.Any(r => r.StudentId == userId));
+    }
+
+    public async Task UpdateAsync(Tournament tournament)
+    {
+        _tournamentRepository.Update(tournament);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

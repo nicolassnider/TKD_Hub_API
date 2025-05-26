@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using TKDHubAPI.Application.DTOs.User;
+﻿using TKDHubAPI.Application.DTOs.User;
 
 namespace TKDHubAPI.Application.Validators.User;
 public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
@@ -26,8 +25,10 @@ public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
         RuleFor(dto => dto.Gender)
             .IsInEnum().WithMessage("Gender is required and must be a valid Gender value.");
 
-        RuleFor(dto => dto.Role)
-            .IsInEnum().WithMessage("Role is required and must be a valid UserRole value.");
+        RuleFor(dto => dto.RoleIds)
+            .NotNull().WithMessage("At least one role is required.")
+            .Must(list => list != null && list.Count > 0).WithMessage("At least one role is required.")
+            .ForEach(idRule => idRule.GreaterThan(0).WithMessage("RoleId must be greater than 0."));
 
         RuleFor(dto => dto.RankId)
             .Null().When(dto => dto.RankId == null)

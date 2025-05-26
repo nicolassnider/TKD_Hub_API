@@ -1,66 +1,86 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class EventService : IEventService
 {
-    public Task AddAsync(Event ev)
+    private readonly IEventRepository _eventRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public EventService(IEventRepository eventRepository, IUnitOfWork unitOfWork)
     {
-        throw new NotImplementedException();
+        _eventRepository = eventRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public Task DeleteAsync(int id)
+    public async Task AddAsync(Event ev)
     {
-        throw new NotImplementedException();
+        await _eventRepository.AddAsync(ev);
+        await _unitOfWork.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<Event>> GetAllAsync()
+    public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var ev = await _eventRepository.GetByIdAsync(id);
+        if (ev != null)
+        {
+            _eventRepository.Remove(ev);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 
-    public Task<Event?> GetByIdAsync(int id)
+    public async Task<IEnumerable<Event>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await _eventRepository.GetAllAsync();
     }
 
-    public Task<IEnumerable<Event>> GetEventsByCoachIdAsync(int coachId)
+    public async Task<Event?> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        return await _eventRepository.GetByIdAsync(id);
     }
 
-    public Task<IEnumerable<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<Event>> GetEventsByCoachIdAsync(int coachId)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.CoachId == coachId);
     }
 
-    public Task<IEnumerable<Event>> GetEventsByDojaangIdAsync(int dojaangId)
+    public async Task<IEnumerable<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.StartDate >= startDate && e.EndDate <= endDate);
     }
 
-    public Task<IEnumerable<Event>> GetEventsByLocationAsync(string location)
+    public async Task<IEnumerable<Event>> GetEventsByDojaangIdAsync(int dojaangId)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.DojaangId == dojaangId);
     }
 
-    public Task<IEnumerable<Event>> GetEventsByNameAsync(string name)
+    public async Task<IEnumerable<Event>> GetEventsByLocationAsync(string location)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.Location != null && e.Location.Contains(location, StringComparison.OrdinalIgnoreCase));
     }
 
-    public Task<IEnumerable<Event>> GetEventsByTypeAsync(Event.EventType eventType)
+    public async Task<IEnumerable<Event>> GetEventsByNameAsync(string name)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.Name != null && e.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
     }
 
-    public Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
+    public async Task<IEnumerable<Event>> GetEventsByTypeAsync(EventType eventType)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.Type == eventType);
     }
 
-    public Task UpdateAsync(Event ev)
+    public async Task<IEnumerable<Event>> GetEventsByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        var all = await _eventRepository.GetAllAsync();
+        return all.Where(e => e.EventAttendances.Any(a => a.StudentId == userId));
+    }
+
+    public async Task UpdateAsync(Event ev)
+    {
+        _eventRepository.Update(ev);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

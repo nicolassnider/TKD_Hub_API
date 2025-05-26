@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using TKDHubAPI.Application.DTOs.Dojaang;
+﻿using TKDHubAPI.Application.DTOs.Dojaang;
 using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.Application.Mappings;
 public class MappingProfile : Profile

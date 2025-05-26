@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using TKDHubAPI.Application.DTOs.Dojaang;
+﻿using TKDHubAPI.Application.DTOs.Dojaang;
 
 namespace TKDHubAPI.Application.Validators.Dojaang;
 public class CreateDojaangDtoValidator : AbstractValidator<CreateDojaangDto>

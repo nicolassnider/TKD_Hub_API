@@ -1,17 +1,17 @@
-﻿using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.Domain.Repositories;
+﻿using TKDHubAPI.Application.DTOs.Dojaang;
 
 namespace TKDHubAPI.Application.Services;
 public class DojaangService : IDojaangService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGenericRepository<Dojaang> _dojaangRepository;
+    private readonly IMapper _mapper;
 
-    public DojaangService(IUnitOfWork unitOfWork, IGenericRepository<Dojaang> dojaangRepository)
+    public DojaangService(IUnitOfWork unitOfWork, IGenericRepository<Dojaang> dojaangRepository, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _dojaangRepository = dojaangRepository;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<Dojaang>> GetAllAsync() => await _dojaangRepository.GetAllAsync();
@@ -39,4 +39,17 @@ public class DojaangService : IDojaangService
             await _unitOfWork.SaveChangesAsync();
         }
     }
+
+    public async Task<Dojaang> CreateDojangAsync(CreateDojaangDto dto, User currentUser)
+    {
+        if (!currentUser.HasRole("Admin"))
+            throw new UnauthorizedAccessException("Only admins can create dojangs.");
+
+        var dojaang = _mapper.Map<Dojaang>(dto);
+
+        await _dojaangRepository.AddAsync(dojaang);
+        await _unitOfWork.SaveChangesAsync();
+        return dojaang;
+    }
 }
+

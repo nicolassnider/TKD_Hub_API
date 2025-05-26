@@ -1,7 +1,13 @@
-﻿using TKDHubAPI.Domain.Entities;
+﻿using TKDHubAPI.Application.DTOs.Dojaang;
 
 namespace TKDHubAPI.Application.Interfaces;
 public interface IDojaangService : ICrudService<Dojaang>
 {
-    // Add Dojaang-specific service methods here if needed in the future
+    /// <summary>
+    /// Creates a new dojaang. Only admins are allowed to perform this action.
+    /// </summary>
+    /// <param name="dto">The dojaang creation DTO.</param>
+    /// <param name="currentUser">The user performing the action.</param>
+    /// <returns>The created Dojaang entity.</returns>
+    Task<Dojaang> CreateDojangAsync(CreateDojaangDto dto, User currentUser);
 }
