@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Infrastructure.Data.Configurations;
+﻿namespace TKDHubAPI.Infrastructure.Data.Configurations;
 public class TournamentConfiguration : IEntityTypeConfiguration<Tournament>
 {
     public void Configure(EntityTypeBuilder<Tournament> builder)

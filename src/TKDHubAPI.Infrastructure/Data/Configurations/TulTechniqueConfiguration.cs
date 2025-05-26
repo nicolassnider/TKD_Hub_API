@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Infrastructure.Data.Configurations;
+﻿namespace TKDHubAPI.Infrastructure.Data.Configurations;
 public class TulTechniqueConfiguration : BaseEntityConfiguration<TulTechnique>
 {
     public override void Configure(EntityTypeBuilder<TulTechnique> builder)
@@ -15,3 +12,4 @@ public class TulTechniqueConfiguration : BaseEntityConfiguration<TulTechnique>
             .HasForeignKey(tt => tt.TechniqueId);
     }
 }
+

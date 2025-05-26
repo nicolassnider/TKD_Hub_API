@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.Domain.Repositories;
-using TKDHubAPI.Infrastructure.Data;
-
-namespace TKDHubAPI.Infrastructure.Repositories;
+﻿namespace TKDHubAPI.Infrastructure.Repositories;
+/// <summary>
+/// Repository implementation for User entity.
+/// </summary>
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
     private readonly TkdHubDbContext _context;
@@ -13,10 +11,24 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         _context = context;
     }
 
-    //  Example User-specific methods
+    public async Task<User?> GetByIdAsync(int id)
+    {
+        return await _context.Users
+            .Include(u => u.UserDojaangs)
+                .ThenInclude(ud => ud.Dojaang)
+            .Include(u => u.UserUserRoles)
+                .ThenInclude(uur => uur.UserRole)
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
     public async Task<User?> GetUserByEmailAsync(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await _context.Users
+            .Include(u => u.UserDojaangs)
+                .ThenInclude(ud => ud.Dojaang)
+            .Include(u => u.UserUserRoles)
+                .ThenInclude(uur => uur.UserRole)
+            .FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public async Task<User?> GetUserByPhoneNumberAsync(string phoneNumber)
@@ -29,8 +41,10 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         return await _context.Users.Where(u => u.Gender == gender).ToListAsync();
     }
 
-    public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
+    public async Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName)
     {
-        return await _context.Users.Where(u => u.Role == role).ToListAsync();
+        return await _context.Users
+            .Where(u => u.UserUserRoles.Any(uur => uur.UserRole.Name == roleName))
+            .ToListAsync();
     }
 }

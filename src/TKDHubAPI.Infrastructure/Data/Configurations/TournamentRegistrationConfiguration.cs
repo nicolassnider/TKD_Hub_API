@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Infrastructure.Data.Configurations;
+﻿namespace TKDHubAPI.Infrastructure.Data.Configurations;
 public class TournamentRegistrationConfiguration : IEntityTypeConfiguration<TournamentRegistration>
 {
     public void Configure(EntityTypeBuilder<TournamentRegistration> builder)
@@ -47,3 +43,4 @@ public class TournamentRegistrationConfiguration : IEntityTypeConfiguration<Tour
             .OnDelete(DeleteBehavior.NoAction);     // Or other appropriate behavior
     }
 }
+

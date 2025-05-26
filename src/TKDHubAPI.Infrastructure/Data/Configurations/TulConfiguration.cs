@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Infrastructure.Data.Configurations;
+﻿namespace TKDHubAPI.Infrastructure.Data.Configurations;
 public class TulConfiguration : BaseEntityConfiguration<Tul>
 {
     public override void Configure(EntityTypeBuilder<Tul> builder)
@@ -35,3 +31,4 @@ public class TulConfiguration : BaseEntityConfiguration<Tul>
                .OnDelete(DeleteBehavior.NoAction);
     }
 }
+

@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace TKDHubAPI.Infrastructure.Data.Configurations;
+﻿namespace TKDHubAPI.Infrastructure.Data.Configurations;
 public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguration<TEntity>
     where TEntity : class
 {
@@ -21,3 +18,4 @@ public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguratio
 
     }
 }
+

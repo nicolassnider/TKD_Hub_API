@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Application.Services;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.Domain.Repositories;
-using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.Infrastructure.Repositories;
 
 namespace TKDHubAPI.Infrastructure;
@@ -26,7 +22,8 @@ public static class DependencyInjection
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<ITulRepository, TulRepository>();
         services.AddScoped<IEventAttendanceRepository, EventAttendanceRepository>();
-
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IPromotionRepository, PromotionRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -37,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ITournamentService, TournamentService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<ITulService, TulService>();
+        services.AddScoped<IPromotionService, PromotionService>();
 
         // 4. Add Logging (Optional, but highly recommended) - Already handled by default, but configure if needed
         //   If you are using the default ASP.NET Core logging, you don't need to do anything here.

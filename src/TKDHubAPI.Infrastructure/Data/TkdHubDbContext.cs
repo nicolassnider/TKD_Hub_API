@@ -1,10 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TKDHubAPI.Domain.Entities;
+﻿using Microsoft.Extensions.Options;
+using TKDHubAPI.Application.Settings;
 
 namespace TKDHubAPI.Infrastructure.Data;
 public class TkdHubDbContext : DbContext
 {
-    public TkdHubDbContext(DbContextOptions<TkdHubDbContext> options) : base(options) { }
+    private readonly IOptions<DojaangSettings> _dojaangSettings;
+    private readonly IOptions<GrandMasterSettings> _grandMasterSettings;
+
+    public TkdHubDbContext(
+        DbContextOptions<TkdHubDbContext> options,
+        IOptions<DojaangSettings> dojaangSettings,
+        IOptions<GrandMasterSettings> grandMasterSettings
+    ) : base(options)
+    {
+        _dojaangSettings = dojaangSettings;
+        _grandMasterSettings = grandMasterSettings;
+    }
 
     public DbSet<Dojaang> Dojaangs { get; set; }
     public DbSet<Event> Events { get; set; }
@@ -18,11 +29,21 @@ public class TkdHubDbContext : DbContext
     public DbSet<Tul> Tuls { get; set; }
     public DbSet<TulTechnique> TulTechniques { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
+    public DbSet<UserUserRole> UserUserRoles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TkdHubDbContext).Assembly);
+
+        // Seed initial Values using settings
+        modelBuilder.Entity<Rank>().HasData(SeedData.GetRanks());
+        modelBuilder.Entity<User>().HasData(SeedData.GetUsers());
+        modelBuilder.Entity<Dojaang>().HasData(SeedData.GetDojaangs());
+        modelBuilder.Entity<UserRole>().HasData(SeedData.GetUserRoles());
+        modelBuilder.Entity<UserUserRole>().HasData(SeedData.GetUserUserRoles());
+        modelBuilder.Entity<UserDojaang>().HasData(SeedData.GetUserDojaangs());
+        modelBuilder.Entity<Tul>().HasData(SeedData.GetTuls());
     }
-
-
 }
+

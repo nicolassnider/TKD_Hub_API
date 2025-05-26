@@ -1,7 +1,4 @@
-﻿using TKDHubAPI.Domain.Repositories;
-using TKDHubAPI.Infrastructure.Data;
-
-namespace TKDHubAPI.Infrastructure.Repositories;
+﻿namespace TKDHubAPI.Infrastructure.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly TkdHubDbContext _context;

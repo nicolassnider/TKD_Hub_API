@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.Domain.Repositories;
-using TKDHubAPI.Infrastructure.Data;
-
-namespace TKDHubAPI.Infrastructure.Repositories;
+﻿namespace TKDHubAPI.Infrastructure.Repositories;
 public class RankRepository : GenericRepository<Rank>, IRankRepository
 {
     private readonly TkdHubDbContext _context;

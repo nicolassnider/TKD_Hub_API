@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TKDHubAPI.Domain.Entities;
-
-namespace TKDHubAPI.Infrastructure.Data.Configurations;
+﻿namespace TKDHubAPI.Infrastructure.Data.Configurations;
 public class EventAttendanceConfiguration : BaseEntityConfiguration<EventAttendance>
 {
     public override void Configure(EntityTypeBuilder<EventAttendance> builder)
@@ -48,3 +44,5 @@ public class EventAttendanceConfiguration : BaseEntityConfiguration<EventAttenda
             .OnDelete(DeleteBehavior.NoAction);
     }
 }
+
+
