@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Application.Services;
 using TKDHubAPI.Infrastructure.Repositories;
 
 namespace TKDHubAPI.Infrastructure;
@@ -13,9 +11,22 @@ public static class DependencyInjection
         services.AddDbContext<TkdHubDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        // 2. Register Repositories and Unit of Work
-        services.AddScoped<IUserRepository, UserRepository>();
+        // Register IUnitOfWork for DI
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Register generic repositories for all relevant entities
+        services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
         services.AddScoped<IGenericRepository<Dojaang>, GenericRepository<Dojaang>>();
+        services.AddScoped<IGenericRepository<Rank>, GenericRepository<Rank>>();
+        services.AddScoped<IGenericRepository<Tournament>, GenericRepository<Tournament>>();
+        services.AddScoped<IGenericRepository<Event>, GenericRepository<Event>>();
+        services.AddScoped<IGenericRepository<Tul>, GenericRepository<Tul>>();
+        services.AddScoped<IGenericRepository<EventAttendance>, GenericRepository<EventAttendance>>();
+        services.AddScoped<IGenericRepository<UserRole>, GenericRepository<UserRole>>();
+        services.AddScoped<IGenericRepository<Promotion>, GenericRepository<Promotion>>();
+
+        // Register specific repositories
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDojaangRepository, DojaangRepository>();
         services.AddScoped<IRankRepository, RankRepository>();
         services.AddScoped<ITournamentRepository, TournamentRepository>();
@@ -24,17 +35,6 @@ public static class DependencyInjection
         services.AddScoped<IEventAttendanceRepository, EventAttendanceRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IPromotionRepository, PromotionRepository>();
-
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        // 3.  Register Application Services (if you have them in this project)
-        services.AddScoped<IDojaangService, DojaangService>();
-        services.AddScoped<IRankService, RankService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ITournamentService, TournamentService>();
-        services.AddScoped<IEventService, EventService>();
-        services.AddScoped<ITulService, TulService>();
-        services.AddScoped<IPromotionService, PromotionService>();
 
         // 4. Add Logging (Optional, but highly recommended) - Already handled by default, but configure if needed
         //   If you are using the default ASP.NET Core logging, you don't need to do anything here.

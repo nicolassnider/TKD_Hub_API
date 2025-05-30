@@ -1,4 +1,6 @@
-﻿namespace TKDHubAPI.Infrastructure.Data;
+﻿using Microsoft.AspNetCore.Http;
+
+namespace TKDHubAPI.Infrastructure.Data;
 public class TkdHubDbContext : DbContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
