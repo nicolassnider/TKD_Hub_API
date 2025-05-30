@@ -7,7 +7,11 @@ public class UserMappingProfile : Profile
     {
         CreateMap<CreateUserDto, User>()
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
-        CreateMap<User, UserDto>();
+
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.ManagedDojaangIds,
+                opt => opt.MapFrom(src => src.UserDojaangs != null
+                    ? src.UserDojaangs.Select(ud => ud.DojaangId).ToList()
+                    : new List<int>()));
     }
 }
-

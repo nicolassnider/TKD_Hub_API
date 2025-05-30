@@ -10,14 +10,22 @@ public class EventService : IEventService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task AddAsync(Event ev)
+    // Only Admins can create events
+    public async Task AddAsync(Event ev, User user)
     {
+        if (user == null || !user.HasRole("Admin"))
+            throw new UnauthorizedAccessException("Only Admins can create events.");
+
         await _eventRepository.AddAsync(ev);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    // Only Admins can delete events
+    public async Task DeleteAsync(int id, User user)
     {
+        if (user == null || !user.HasRole("Admin"))
+            throw new UnauthorizedAccessException("Only Admins can delete events.");
+
         var ev = await _eventRepository.GetByIdAsync(id);
         if (ev != null)
         {
@@ -78,9 +86,31 @@ public class EventService : IEventService
         return all.Where(e => e.EventAttendances.Any(a => a.StudentId == userId));
     }
 
-    public async Task UpdateAsync(Event ev)
+    // Only Admins can update events
+    public async Task UpdateAsync(Event ev, User user)
     {
+        if (user == null || !user.HasRole("Admin"))
+            throw new UnauthorizedAccessException("Only Admins can update events.");
+
         _eventRepository.Update(ev);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    // Explicit interface implementation to satisfy ICrudService<Event>
+    Task ICrudService<Event>.AddAsync(Event ev)
+    {
+        throw new NotSupportedException("Use AddAsync(Event ev, User user) to enforce admin-only event creation.");
+    }
+
+    // Explicit interface implementation to satisfy ICrudService<Event>
+    Task ICrudService<Event>.UpdateAsync(Event ev)
+    {
+        throw new NotSupportedException("Use UpdateAsync(Event ev, User user) to enforce admin-only event update.");
+    }
+
+    // Explicit interface implementation to satisfy ICrudService<Event>
+    Task ICrudService<Event>.DeleteAsync(int id)
+    {
+        throw new NotSupportedException("Use DeleteAsync(int id, User user) to enforce admin-only event deletion.");
     }
 }

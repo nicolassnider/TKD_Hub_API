@@ -3,6 +3,8 @@
 namespace TKDHubAPI.Application.Interfaces;
 public interface IUserService : ICrudService<User>
 {
+
+    Task<UserDto> CreateUserAsync(int requestingUserId, IEnumerable<string> currentUserRoles, CreateUserDto createUserDto);
     Task<User> GetUserByEmailAsync(string email);
     Task<User> GetUserByPhoneNumberAsync(string phoneNumber);
     Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName);
@@ -58,7 +60,7 @@ public interface IUserService : ICrudService<User>
     /// <param name="coachId">The coach's user ID.</param>
     /// <param name="dojaangId">The dojaang ID.</param>
     /// <returns>True if the coach manages the dojaang, false otherwise.</returns>
-    Task<bool> CoachManagesDojangAsync(int coachId, int dojaangId);
+    Task<bool> CoachManagesDojaangAsync(int coachId, int dojaangId);
 
     /// <summary>
     /// Allows a coach to add another coach only for the dojaang(s) they manage.
@@ -68,4 +70,16 @@ public interface IUserService : ICrudService<User>
     /// <param name="createCoachDto">The DTO for the new coach.</param>
     /// <returns>The created coach user.</returns>
     Task<User> AddCoachToDojaangAsync(int requestingUserId, CreateUserDto createCoachDto);
+
+    /// <summary>
+    /// Gets the list of dojaang IDs managed by the given user (coach).
+    /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <returns>List of managed dojaang IDs.</returns>
+    Task<List<int>> GetManagedDojaangIdsAsync(int coachId);
+
+    /// <summary>
+    /// Gets all students belonging to a specific dojaang.
+    /// </summary>
+    Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId);
 }

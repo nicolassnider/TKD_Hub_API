@@ -12,4 +12,5 @@ public class UserDto
     public int? CurrentRankId { get; set; }
     public DateTime? JoinDate { get; set; }
     public List<string> Roles { get; set; }
+    public List<int> ManagedDojaangIds { get; set; }
 }

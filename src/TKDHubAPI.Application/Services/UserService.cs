@@ -31,6 +31,26 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
+    // Common validation for update and delete
+    private async Task ValidateUserUpdateOrDeleteAsync(User user)
+    {
+        // Enforce: Student must belong to only one dojaang
+        if (user.HasRole("Student") && user.DojaangId == null)
+            throw new Exception("A student must be assigned to exactly one Dojaang.");
+
+        // Add more shared business rules here as needed
+        // Example: Prevent deleting last admin, etc.
+    }
+
+    public async Task<List<int>> GetManagedDojaangIdsAsync(int coachId)
+    {
+        var user = await _userRepository.GetByIdAsync(coachId);
+        if (user == null || user.UserDojaangs == null)
+            return new List<int>();
+
+        return user.UserDojaangs.Select(ud => ud.DojaangId).ToList();
+    }
+
     public async Task<User?> RegisterAsync(CreateUserDto createUserDto, string password)
     {
         var existingUser = await _userRepository.GetUserByEmailAsync(createUserDto.Email);
@@ -39,7 +59,7 @@ public class UserService : IUserService
 
         // Enforce: Student must belong to only one dojaang
         if (await IsStudentRoleAsync(createUserDto.RoleIds) && createUserDto.DojaangId == null)
-            throw new Exception("A student must be assigned to exactly one dojang.");
+            throw new Exception("A student must be assigned to exactly one Dojaang.");
 
         var user = new User
         {
@@ -156,9 +176,7 @@ public class UserService : IUserService
 
     public async Task UpdateAsync(User user)
     {
-        // Enforce: Student must belong to only one dojaang
-        if (user.HasRole("Student") && user.DojaangId == null)
-            throw new Exception("A student must be assigned to exactly one dojang.");
+        await ValidateUserUpdateOrDeleteAsync(user);
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
@@ -169,6 +187,8 @@ public class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(id);
         if (user != null)
         {
+            await ValidateUserUpdateOrDeleteAsync(user);
+
             _userRepository.Remove(user);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -183,7 +203,7 @@ public class UserService : IUserService
     {
         // Enforce: Student must belong to only one dojaang
         if (await IsStudentRoleAsync(createUserDto.RoleIds) && createUserDto.DojaangId == null)
-            throw new Exception("A student must be assigned to exactly one dojang.");
+            throw new Exception("A student must be assigned to exactly one Dojaang.");
 
         var user = new User
         {
@@ -272,12 +292,12 @@ public class UserService : IUserService
     /// <summary>
     /// Checks if a user (coach) manages a specific dojaang.
     /// </summary>
-    public async Task<bool> CoachManagesDojangAsync(int coachId, int dojaangId)
+    public async Task<bool> CoachManagesDojaangAsync(int coachId, int dojaangId)
     {
         var coach = await _userRepository.GetByIdAsync(coachId);
         if (coach == null)
             return false;
-        return coach.HasRole("Coach") && coach.ManagesDojang(dojaangId);
+        return coach.HasRole("Coach") && coach.ManagesDojaang(dojaangId);
     }
 
     /// <summary>
@@ -317,7 +337,7 @@ public class UserService : IUserService
         if (!requestingUser.HasRole("Admin"))
         {
             // Coaches can only add a coach to dojaangs they manage
-            if (createCoachDto.DojaangId == null || !requestingUser.ManagesDojang(createCoachDto.DojaangId.Value))
+            if (createCoachDto.DojaangId == null || !requestingUser.ManagesDojaang(createCoachDto.DojaangId.Value))
                 throw new UnauthorizedAccessException("You can only add a coach to a dojaang you manage.");
         }
 
@@ -362,5 +382,110 @@ public class UserService : IUserService
 
         return user;
     }
-}
 
+    /// <summary>
+    /// Business rule: Handles user creation with all role and dojaang assignment logic.
+    /// </summary>
+    public async Task<UserDto> CreateUserAsync(int requestingUserId, IEnumerable<string> currentUserRoles, CreateUserDto createUserDto)
+    {
+        // Get new user role names
+        var newUserRoleNames = new List<string>();
+        foreach (var roleId in createUserDto.RoleIds ?? Enumerable.Empty<int>())
+        {
+            var roleName = await GetRoleNameById(roleId);
+            if (!string.IsNullOrEmpty(roleName))
+                newUserRoleNames.Add(roleName);
+        }
+
+        // Students cannot create users
+        if (currentUserRoles.Contains("Student") && !currentUserRoles.Contains("Admin") && !currentUserRoles.Contains("Coach"))
+            throw new UnauthorizedAccessException("Students cannot create users.");
+
+        // If current user is Coach (but not Admin), can only create Coach/Student for dojaangs they manage
+        if (currentUserRoles.Contains("Coach") && !currentUserRoles.Contains("Admin"))
+        {
+            if (!newUserRoleNames.All(r => r == "Coach" || r == "Student"))
+                throw new UnauthorizedAccessException("Coach can only create Coach or Student users.");
+
+            // If creating a student and DojaangId is not provided, assign to first managed dojaang
+            if (newUserRoleNames.Contains("Student") && createUserDto.DojaangId == null)
+            {
+                var managedDojaangs = await GetManagedDojaangIdsAsync(requestingUserId);
+                var firstDojaangId = managedDojaangs.FirstOrDefault();
+                if (firstDojaangId == 0)
+                    throw new ArgumentException("Coach does not manage any dojaang. Cannot assign student.");
+
+                createUserDto.DojaangId = firstDojaangId;
+            }
+
+            if (createUserDto.DojaangId == null)
+                throw new ArgumentException("DojaangId is required when a coach creates a user.");
+
+            var manages = await CoachManagesDojaangAsync(requestingUserId, createUserDto.DojaangId.Value);
+            if (!manages)
+                throw new UnauthorizedAccessException("Coach can only create users for dojaangs they manage.");
+        }
+
+        // Only Admin can create Admins or Coaches for any dojaang
+        if (newUserRoleNames.Any(r => r == "Admin" || r == "Coach"))
+        {
+            if (!currentUserRoles.Contains("Admin"))
+                throw new UnauthorizedAccessException("Only an Admin can create Admin or Coach users.");
+        }
+
+        // Enforce: Student must belong to only one dojaang
+        if (await IsStudentRoleAsync(createUserDto.RoleIds) && createUserDto.DojaangId == null)
+            throw new ArgumentException("A student must be assigned to exactly one Dojaang.");
+
+        // Create user
+        var user = new User
+        {
+            FirstName = createUserDto.FirstName,
+            LastName = createUserDto.LastName,
+            Email = createUserDto.Email,
+            PhoneNumber = createUserDto.PhoneNumber,
+            Gender = createUserDto.Gender,
+            DateOfBirth = createUserDto.DateOfBirth,
+            DojaangId = createUserDto.DojaangId,
+            CurrentRankId = createUserDto.RankId,
+            JoinDate = createUserDto.JoinDate ?? DateTime.UtcNow,
+            PasswordHash = !string.IsNullOrEmpty(createUserDto.Password)
+                ? _passwordHasher.HashPassword(null, createUserDto.Password)
+                : string.Empty
+        };
+
+        var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
+        user.UserUserRoles = roles
+            .Select(role => new UserUserRole
+            {
+                User = user,
+                UserRole = role
+            })
+            .ToList();
+
+        await _userRepository.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Add UserDojaang relation if DojaangId is present
+        if (createUserDto.DojaangId.HasValue)
+        {
+            var mainRole = roles.FirstOrDefault()?.Name ?? "Student";
+            user.UserDojaangs.Add(new UserDojaang
+            {
+                UserId = user.Id,
+                DojaangId = createUserDto.DojaangId.Value,
+                Role = mainRole
+            });
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        var userDto = _mapper.Map<UserDto>(user);
+        userDto.Roles = roles.Select(r => r.Name).ToList();
+        return userDto;
+    }
+
+    public async Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId)
+    {
+        return await _userRepository.GetStudentsByDojaangIdAsync(dojaangId);
+    }
+}

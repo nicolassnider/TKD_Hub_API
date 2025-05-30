@@ -9,5 +9,11 @@ public interface IDojaangService : ICrudService<Dojaang>
     /// <param name="dto">The dojaang creation DTO.</param>
     /// <param name="currentUser">The user performing the action.</param>
     /// <returns>The created Dojaang entity.</returns>
-    Task<Dojaang> CreateDojangAsync(CreateDojaangDto dto, User currentUser);
+    Task<Dojaang> CreateDojaangAsync(CreateDojaangDto dto, User currentUser);
+
+    /// <summary>
+    /// Assign a Coach to a Dojaang
+    /// </summary>
+
+    Task<Dojaang> AssignCoachToDojaangAsync(UpdateDojaangDto dto);
 }
