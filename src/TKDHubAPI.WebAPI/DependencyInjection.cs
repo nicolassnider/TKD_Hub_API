@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using TKDHubAPI.Application.Settings;
 
 namespace TKDHubAPI.WebAPI;
 
@@ -19,7 +20,12 @@ public static class DependencyInjection
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "TKDHub API", Version = "v1" });
         });
 
+        services.AddHttpContextAccessor();
 
+        // Bind JwtSettings from configuration
+        var jwtSection = configuration.GetSection("Jwt");
+        services.Configure<JwtSettings>(jwtSection);
+        var jwtSettings = jwtSection.Get<JwtSettings>();
 
         // Add Authentication (JWT Bearer)
         services.AddAuthentication(options =>
@@ -27,20 +33,21 @@ public static class DependencyInjection
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
-.AddJwtBearer(options =>
-{
-    // Configure JWT options here as needed
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = configuration["Jwt:Issuer"],
-        ValidAudience = configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
-    };
-});
+            .AddJwtBearer(options =>
+            {
+                // Configure JWT options here as needed
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+
+                };
+            });
 
         // Add Authorization
         services.AddAuthorization();
@@ -52,3 +59,4 @@ public static class DependencyInjection
         return services;
     }
 }
+

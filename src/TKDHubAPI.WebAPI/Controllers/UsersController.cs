@@ -9,6 +9,10 @@ using TKDHubAPI.WebAPI.Middlewares;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
+/// <summary>
+/// API controller for managing users, including creation, retrieval, update, deletion, and registration.
+/// Provides endpoints for user management with role-based authorization.
+/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -17,12 +21,21 @@ public partial class UsersController : ControllerBase
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UsersController"/> class.
+    /// </summary>
+    /// <param name="userService">The user service instance.</param>
+    /// <param name="mapper">The AutoMapper instance.</param>
     public UsersController(IUserService userService, IMapper mapper)
     {
         _userService = userService;
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Retrieves all users.
+    /// </summary>
+    /// <returns>A list of all users.</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<User>>> Get()
     {
@@ -30,6 +43,11 @@ public partial class UsersController : ControllerBase
         return Ok(users);
     }
 
+    /// <summary>
+    /// Retrieves a user by their unique identifier.
+    /// </summary>
+    /// <param name="id">The user ID.</param>
+    /// <returns>The user with the specified ID, or NotFound if not found.</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<User>> Get(int id)
     {
@@ -41,8 +59,13 @@ public partial class UsersController : ControllerBase
         return Ok(user);
     }
 
+    /// <summary>
+    /// Creates a new user.
+    /// </summary>
+    /// <param name="createUserDto">The user creation DTO.</param>
+    /// <returns>The created user DTO.</returns>
     [HttpPost]
-    public async Task<ActionResult<User>> Post([FromBody] CreateUserDto createUserDto)
+    public async Task<ActionResult<UserDto>> Post([FromBody] CreateUserDto createUserDto)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
@@ -53,49 +76,114 @@ public partial class UsersController : ControllerBase
             .Select(c => c.Value)
             .ToList();
 
-        // Get new user role names
-        var newUserRoleNames = new List<string>();
-        foreach (var roleId in createUserDto.RoleIds ?? Enumerable.Empty<int>())
+        try
         {
-            var roleName = await _userService.GetRoleNameById(roleId);
-            if (!string.IsNullOrEmpty(roleName))
-                newUserRoleNames.Add(roleName);
+            var userDto = await _userService.CreateUserAsync(requestingUserId, currentUserRoles, createUserDto);
+            return CreatedAtAction(nameof(Get), new { id = userDto.Id }, userDto);
         }
-
-        // Students cannot create users
-        if (currentUserRoles.Contains("Student") && !currentUserRoles.Contains("Admin") && !currentUserRoles.Contains("Coach"))
+        catch (UnauthorizedAccessException ex)
         {
-            CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, "Students cannot create users.");
+            CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, ex.Message);
             return Forbid();
         }
-
-        // If current user is Coach (but not Admin), can only create Coach/Student for dojaangs they manage
-        if (currentUserRoles.Contains("Coach") && !currentUserRoles.Contains("Admin"))
+        catch (ArgumentException ex)
         {
-            if (!newUserRoleNames.All(r => r == "Coach" || r == "Student"))
-            {
-                CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, "Coach can only create Coach or Student users.");
-                return Forbid();
-            }
-
-            if (createUserDto.DojaangId == null)
-                return BadRequest("DojaangId is required when a coach creates a user.");
-
-            var manages = await _userService.CoachManagesDojangAsync(requestingUserId, createUserDto.DojaangId.Value);
-            if (!manages)
-            {
-                CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, "Coach can only create users for dojaangs they manage.");
-                return Forbid();
-            }
+            return BadRequest(ex.Message);
         }
-
-        // Create user
-        var user = _mapper.Map<User>(createUserDto);
-        await _userService.AddAsync(user);
-        var resultDto = _mapper.Map<UserDto>(user);
-        return CreatedAtAction(nameof(Get), new { id = user.Id }, resultDto);
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
+    /// <summary>
+    /// Updates an existing user.
+    /// </summary>
+    /// <param name="id">The user ID.</param>
+    /// <param name="updateUserDto">The user update DTO.</param>
+    /// <returns>The updated user DTO.</returns>
+    [HttpPut("{id}")]
+    public async Task<ActionResult<UserDto>> Put(int id, [FromBody] CreateUserDto updateUserDto)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
+            return Unauthorized("Invalid user context.");
+
+        var currentUserRoles = User.Claims
+            .Where(c => c.Type == ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+
+        try
+        {
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            // Use AutoMapper to map the DTO to the existing user entity
+            _mapper.Map(updateUserDto, user);
+
+            await _userService.UpdateAsync(user);
+            var userDto = _mapper.Map<UserDto>(user);
+            return Ok(userDto);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, ex.Message);
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Deletes a user by their unique identifier.
+    /// </summary>
+    /// <param name="id">The user ID.</param>
+    /// <returns>No content if successful, or an error response.</returns>
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
+            return Unauthorized("Invalid user context.");
+
+        try
+        {
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            await _userService.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, ex.Message);
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Registers a new user with a password.
+    /// </summary>
+    /// <param name="dto">The user registration DTO.</param>
+    /// <param name="password">The user's password.</param>
+    /// <returns>The registered user or an error response.</returns>
     [HttpPost("register")]
     public async Task<IActionResult> Register(CreateUserDto dto, string password)
     {
@@ -145,7 +233,7 @@ public partial class UsersController : ControllerBase
             if (dto.DojaangId == null)
                 return BadRequest("DojaangId is required when a coach creates a user.");
 
-            var manages = await _userService.CoachManagesDojangAsync(requestingUserId, dto.DojaangId.Value);
+            var manages = await _userService.CoachManagesDojaangAsync(requestingUserId, dto.DojaangId.Value);
             if (!manages)
             {
                 CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, "Coach can only create users for dojaangs they manage.");
