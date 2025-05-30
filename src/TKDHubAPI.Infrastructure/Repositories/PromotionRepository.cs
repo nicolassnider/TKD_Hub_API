@@ -8,5 +8,5 @@ public class PromotionRepository : GenericRepository<Promotion>, IPromotionRepos
         _context = context;
     }
 
-    // Add promotion-specific methods here if needed
+    // TODO: Add promotion-specific methods here if needed
 }

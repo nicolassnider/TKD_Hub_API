@@ -33,13 +33,13 @@ public class EventAttendanceConfiguration : BaseEntityConfiguration<EventAttenda
 
         // Relationship with Event
         builder.HasOne(ea => ea.Event)
-            .WithMany(e => e.EventAttendances) // Assuming Event has this collection
+            .WithMany(e => e.EventAttendances)
             .HasForeignKey(ea => ea.EventId)
             .OnDelete(DeleteBehavior.NoAction);
 
         // Relationship with User (Student)
         builder.HasOne(ea => ea.Student)
-            .WithMany(u => u.EventAttendances) // Assuming User has this collection
+            .WithMany(u => u.EventAttendances)
             .HasForeignKey(ea => ea.StudentId)
             .OnDelete(DeleteBehavior.NoAction);
     }

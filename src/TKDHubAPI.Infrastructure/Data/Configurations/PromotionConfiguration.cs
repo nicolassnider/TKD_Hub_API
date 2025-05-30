@@ -19,14 +19,14 @@ public class PromotionConfiguration : BaseEntityConfiguration<Promotion>
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_Promotions_Users_CoachId");
 
-        // Rank relationship (optional, but explicit is good practice)
+        // Rank relationship
         builder.HasOne(p => p.Rank)
             .WithMany()
             .HasForeignKey(p => p.RankId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_Promotions_Ranks_RankId");
 
-        // Dojaang relationship (optional, but explicit is good practice)
+        // Dojaang relationship
         builder.HasOne(p => p.Dojaang)
             .WithMany()
             .HasForeignKey(p => p.DojaangId)

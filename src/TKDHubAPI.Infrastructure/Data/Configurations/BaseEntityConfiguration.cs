@@ -6,7 +6,6 @@ public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguratio
     {
         builder.HasKey("Id");
 
-        // add createad at and updated at properties for auditory purposes
         builder.Property<DateTime>("CreatedAt")
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .ValueGeneratedOnAdd()

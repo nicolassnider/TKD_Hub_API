@@ -82,7 +82,6 @@ public class TkdHubDbContext : DbContext
                 case EntityState.Added:
                     audit.Operation = AuditOperation.Create;
                     audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
-                    // Don't add to auditEntries yet, wait until after SaveChanges
                     break;
                 case EntityState.Modified:
                     audit.Operation = AuditOperation.Update;

@@ -29,7 +29,6 @@ public class DojaangConfiguration : BaseEntityConfiguration<Dojaang>
         builder.Property(d => d.KoreanNamePhonetic)
             .HasMaxLength(200);
 
-        // Coach (optional, single coach per dojaang)
         builder.HasOne(d => d.Coach)
             .WithMany() // No navigation property on User for DojaangsCoached
             .HasForeignKey(d => d.CoachId)

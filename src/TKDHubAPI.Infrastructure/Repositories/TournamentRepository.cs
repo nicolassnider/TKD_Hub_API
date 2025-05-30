@@ -11,7 +11,7 @@ public class TournamentRepository : GenericRepository<Tournament>, ITournamentRe
     public async Task<IEnumerable<Tournament>> GetTournamentsWithDetailsAsync()
     {
         return await _context.Tournaments
-           .Include(t => t.Registrations)  // Example: Eager load registrations
+           .Include(t => t.Registrations)
            .ToListAsync();
     }
 

@@ -22,7 +22,7 @@ public class TournamentRegistrationConfiguration : IEntityTypeConfiguration<Tour
 
         builder.Property(tr => tr.Category)
             .IsRequired()
-            .HasMaxLength(255); // Set a reasonable max length
+            .HasMaxLength(255);
 
         builder.Property(tr => tr.Status)
             .IsRequired()
@@ -34,13 +34,13 @@ public class TournamentRegistrationConfiguration : IEntityTypeConfiguration<Tour
         builder.HasOne(tr => tr.Tournament)
             .WithMany(t => t.Registrations) // Use the collection name from Tournament.cs
             .HasForeignKey(tr => tr.TournamentId)
-            .OnDelete(DeleteBehavior.NoAction); // Or other appropriate behavior
+            .OnDelete(DeleteBehavior.NoAction);
 
         // Relationship with User (Student)
         builder.HasOne(tr => tr.Student)
             .WithMany(s => s.TournamentRegistrations) // Use the collection name from User.cs
             .HasForeignKey(tr => tr.StudentId)
-            .OnDelete(DeleteBehavior.NoAction);     // Or other appropriate behavior
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
 

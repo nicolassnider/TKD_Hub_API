@@ -12,11 +12,11 @@ public class TournamentConfiguration : IEntityTypeConfiguration<Tournament>
         // Properties Configuration
         builder.Property(t => t.Name)
             .IsRequired()
-            .HasMaxLength(255); // Set a reasonable max length
+            .HasMaxLength(255);
 
         builder.Property(t => t.Description)
             .IsRequired()
-            .HasMaxLength(1000); // Or an appropriate length
+            .HasMaxLength(1000);
 
         builder.Property(t => t.StartDate)
             .IsRequired()
@@ -39,6 +39,6 @@ public class TournamentConfiguration : IEntityTypeConfiguration<Tournament>
         builder.HasMany(t => t.Registrations)
             .WithOne(tr => tr.Tournament)
             .HasForeignKey(tr => tr.TournamentId)
-            .OnDelete(DeleteBehavior.NoAction); // Or other appropriate behavior
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

@@ -50,7 +50,5 @@ public class UserConfiguration : BaseEntityConfiguration<User>
             .WithOne(uur => uur.User)
             .HasForeignKey(uur => uur.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // ... (other relationships as needed)
     }
 }

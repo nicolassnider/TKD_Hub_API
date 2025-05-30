@@ -8,11 +8,11 @@ public class TulConfiguration : BaseEntityConfiguration<Tul>
         // Properties Configuration
         builder.Property(t => t.Name)
             .IsRequired()
-            .HasMaxLength(255); // Set a reasonable max length
+            .HasMaxLength(255);
 
         builder.Property(t => t.Description)
             .IsRequired()
-            .HasMaxLength(1000); // Or an appropriate length
+            .HasMaxLength(1000);
 
         builder.Property(t => t.RecommendedRankId)
             .IsRequired();
@@ -26,7 +26,7 @@ public class TulConfiguration : BaseEntityConfiguration<Tul>
         // Relationships Configuration
         //  Foreign Key relationship with Rank
         builder.HasOne(t => t.RecommendedRank)
-               .WithMany(r => r.Tuls)  // Assuming Rank has a Tuls collection.
+               .WithMany(r => r.Tuls)
                .HasForeignKey(t => t.RecommendedRankId)
                .OnDelete(DeleteBehavior.NoAction);
     }
