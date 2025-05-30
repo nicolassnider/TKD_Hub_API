@@ -56,7 +56,7 @@ public class User
     public bool HasRole(string roleName) =>
         UserUserRoles.Any(uur => uur.UserRole.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
 
-    public bool ManagesDojang(int dojaangId) =>
+    public bool ManagesDojaang(int dojaangId) =>
         UserDojaangs.Any(ud => ud.DojaangId == dojaangId);
 
     public bool IsCoachOfDojaang(int dojaangId)
