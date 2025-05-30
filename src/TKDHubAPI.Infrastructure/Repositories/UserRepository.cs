@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Infrastructure.Repositories;
+
 /// <summary>
 /// Repository implementation for User entity.
 /// </summary>
@@ -45,6 +46,17 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await _context.Users
             .Where(u => u.UserUserRoles.Any(uur => uur.UserRole.Name == roleName))
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId)
+    {
+        return await _context.Users
+            .Include(u => u.UserUserRoles)
+                .ThenInclude(uur => uur.UserRole)
+            .Where(u =>
+                u.DojaangId == dojaangId &&
+                u.UserUserRoles.Any(uur => uur.UserRole.Name == "Student"))
             .ToListAsync();
     }
 }
