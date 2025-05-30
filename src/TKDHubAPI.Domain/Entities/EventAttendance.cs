@@ -6,7 +6,7 @@ public partial class EventAttendance
     public int EventId { get; set; }
     public int StudentId { get; set; }
     public DateTime AttendanceDate { get; set; }
-    public TimeSpan AttendanceTime { get; set; } // Changed to TimeSpan
+    public TimeSpan AttendanceTime { get; set; }
     public AttendanceStatus Status { get; set; }
 
     // Navigation properties

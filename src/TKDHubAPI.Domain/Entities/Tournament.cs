@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TKDHubAPI.Domain.Entities;
+﻿namespace TKDHubAPI.Domain.Entities;
 public class Tournament
 {
     public int Id { get; set; }
@@ -20,7 +18,6 @@ public class Tournament
     [MaxLength(200)]
     public string Organizer { get; set; } = string.Empty;
 
-    // Optional: Foreign key to Dojaang
     public int? DojaangId { get; set; }
     public Dojaang? Dojaang { get; set; }
 
