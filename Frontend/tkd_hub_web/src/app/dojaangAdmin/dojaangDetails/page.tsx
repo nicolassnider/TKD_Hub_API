@@ -95,8 +95,12 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
       });
       if (!res.ok) throw new Error("Failed to update dojaang");
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Update failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "An error occurred");
+      } else {
+        setError("An error occurred");
+      }
     } finally {
       setSaving(false);
     }

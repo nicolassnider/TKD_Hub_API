@@ -1,9 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import EditDojaang from "./dojaangDetails/page";
-import { useRole } from "../context/RoleContext"; // Adjust the path if needed
-import DescriptionIcon from "@mui/icons-material/Description";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { useRole } from "../context/RoleContext";
 
 
 type Dojaang = {
@@ -13,9 +11,7 @@ type Dojaang = {
   // Add other fields as needed
 };
 
-
 const baseUrl = "https://localhost:7046/api";
-
 
 export default function DojaangAdmin() {
   const [dojaangs, setDojaangs] = useState<Dojaang[]>([]);
@@ -25,20 +21,16 @@ export default function DojaangAdmin() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-
   const { role } = useRole();
-
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-
 
     if (!token) {
       setError("Not authenticated.");
       setLoading(false);
       return;
     }
-
 
     fetch(`${baseUrl}/Dojaang`, {
       headers: {
@@ -61,7 +53,6 @@ export default function DojaangAdmin() {
       .finally(() => setLoading(false));
   }, []);
 
-
   async function handleDelete() {
     if (deleteId == null) return;
     setDeleting(true);
@@ -77,17 +68,25 @@ export default function DojaangAdmin() {
       if (!res.ok) throw new Error("Failed to delete dojaang");
       setDojaangs((prev) => prev.filter((d) => d.id !== deleteId));
       setDeleteId(null);
-    } catch (err: any) {
-      setError(err.message || "Delete failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Delete failed");
+      } else {
+        setError("Delete failed");
+      }
     } finally {
       setDeleting(false);
     }
   }
 
-
   return (
     <div className="w-full max-w-2xl mx-auto my-8 bg-white dark:bg-neutral-900 rounded shadow p-6 sm:p-8">
       <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">Dojaang Administration</h2>
+
+      <div className="mb-4 text-sm text-gray-700 dark:text-gray-300 text-center">
+        Current role: <span className="font-semibold">{role ?? "None"}</span>
+      </div>
+
       {loading && <div className="text-center">Loading...</div>}
       {error && <div className="text-red-600 text-center">{error}</div>}
       {!loading && !error && (
@@ -108,19 +107,19 @@ export default function DojaangAdmin() {
                 <td className="py-2">{d.location}</td>
                 <td className="py-2">
                   <button
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2"
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2 flex items-center"
                     onClick={() => setEditId(d.id)}
                     title="Details"
                   >
-                    <DescriptionIcon fontSize="small" />
+                    <i className="bi bi-info-circle mr-1"></i>
                   </button>
                   {role === "Admin" && (
                     <button
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors flex items-center"
                       onClick={() => setDeleteId(d.id)}
                       title="Delete"
                     >
-                      <DeleteIcon fontSize="small" />
+                      <i className="bi bi-trash mr-1"></i>
                     </button>
                   )}
                 </td>
@@ -132,7 +131,6 @@ export default function DojaangAdmin() {
       {editId !== null && (
         <EditDojaang dojaangId={editId} onClose={() => setEditId(null)} />
       )}
-
 
       {/* Confirmation Modal */}
       {deleteId !== null && (

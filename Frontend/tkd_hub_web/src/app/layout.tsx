@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RoleProvider } from "./context/RoleContext";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 
 const geistSans = Geist({
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-     <html lang="en">
+    <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <RoleProvider>
           {children}

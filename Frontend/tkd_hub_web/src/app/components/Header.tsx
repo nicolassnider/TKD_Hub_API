@@ -1,53 +1,80 @@
-import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { useState } from 'react';
-
+import React, { useState, useRef } from "react";
 
 const Header: React.FC = () => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    }
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   return (
-    <AppBar position="static">
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          TKD_Hub
-        </Typography>
-        <Button color="inherit">Home</Button>
-        <Button color="inherit">Blog</Button>
-        <Button color="inherit">Events</Button>
-        <Button color="inherit" onClick={handleMenuClick}>
-          Manage
-        </Button>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem onClick={handleMenuClose}>Users</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Students</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Coaches</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Dojaangs</MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div className="container-fluid">
+        <span className="navbar-brand fw-bold">TKD_Hub</span>
+        <div className="d-flex align-items-center gap-2">
+          <a className="btn btn-link text-white text-decoration-none" href="#">
+            Home
+          </a>
+          <a className="btn btn-link text-white text-decoration-none" href="#">
+            Blog
+          </a>
+          <a className="btn btn-link text-white text-decoration-none" href="#">
+            Events
+          </a>
+          <div className="dropdown" ref={dropdownRef}>
+            <button
+              className="btn btn-link text-white text-decoration-none dropdown-toggle"
+              type="button"
+              onClick={() => setShowDropdown((v) => !v)}
+              aria-expanded={showDropdown} // Pass as boolean
+            >
+              Manage
+            </button>
+            <ul
+              className={`dropdown-menu${showDropdown ? " show" : ""}`}
+              style={{ minWidth: "8rem" }}
+            >
+              <li>
+                <a className="dropdown-item" href="#">
+                  Users
+                </a>
+              </li>
+              <li>
+                <a className="dropdown-item" href="#">
+                  Students
+                </a>
+              </li>
+              <li>
+                <a className="dropdown-item" href="#">
+                  Coaches
+                </a>
+              </li>
+              <li>
+                <a className="dropdown-item" href="#">
+                  Dojaangs
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 };
-
 
 export default Header;
