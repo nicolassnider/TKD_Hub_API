@@ -14,18 +14,35 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddEndpointsApiExplorer();
 
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowLocal3000", policy =>
+            {
+                policy.WithOrigins("http://localhost:3000")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
+
+
+
+
         // Add Swagger/OpenAPI
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "TKDHub API", Version = "v1" });
         });
 
+
         services.AddHttpContextAccessor();
+
 
         // Bind JwtSettings from configuration
         var jwtSection = configuration.GetSection("Jwt");
         services.Configure<JwtSettings>(jwtSection);
         var jwtSettings = jwtSection.Get<JwtSettings>();
+
 
         // Add Authentication (JWT Bearer)
         services.AddAuthentication(options =>
@@ -46,17 +63,22 @@ public static class DependencyInjection
                     ValidAudience = jwtSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
 
+
                 };
             });
 
+
         // Add Authorization
         services.AddAuthorization();
+
 
         // Add any WebAPI-specific services or filters here
         // Example:
         // services.AddScoped<ExceptionHandlingMiddleware>();
 
+
         return services;
     }
 }
+
 

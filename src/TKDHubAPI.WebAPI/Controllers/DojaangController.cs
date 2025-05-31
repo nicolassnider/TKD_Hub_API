@@ -17,7 +17,6 @@ public class DojaangController : BaseApiController
     private readonly IDojaangService _dojaangService;
     private readonly ILogger<DojaangController> _logger;
     private readonly IUserService _userService;
-    private readonly IMapper _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DojaangController"/> class.
@@ -35,8 +34,8 @@ public class DojaangController : BaseApiController
     {
         _dojaangService = dojaangService;
         _userService = userService;
-        _mapper = mapper;
     }
+
 
     /// <summary>
     /// Retrieves all dojaangs.
@@ -46,9 +45,9 @@ public class DojaangController : BaseApiController
     public async Task<IActionResult> GetAll()
     {
         var dojaangs = await _dojaangService.GetAllAsync();
-        var result = dojaangs.Select(_mapper.Map<DojaangDto>);
-        return SuccessResponse(result);
+        return SuccessResponse(dojaangs);
     }
+
 
     /// <summary>
     /// Retrieves a dojaang by its unique identifier.
@@ -63,9 +62,9 @@ public class DojaangController : BaseApiController
         {
             return ErrorResponse("Dojaang not found", 404);
         }
-        var result = _mapper.Map<DojaangDto>(dojaang);
-        return SuccessResponse(result);
+        return SuccessResponse(dojaang);
     }
+
 
     /// <summary>
     /// Creates a new dojaang. Only admins are allowed to perform this action.
@@ -76,19 +75,20 @@ public class DojaangController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDojaangDto dto)
     {
-        // Get the current user (admin) from the JWT claims
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             return ErrorResponse("Invalid user context.", 401);
+
 
         var currentUser = await _userService.GetByIdAsync(userId);
         if (currentUser == null)
             return ErrorResponse("User not found.", 404);
 
+
         var dojaang = await _dojaangService.CreateDojaangAsync(dto, currentUser);
-        var result = _mapper.Map<DojaangDto>(dojaang);
-        return SuccessResponse(result);
+        return SuccessResponse(dojaang);
     }
+
 
     /// <summary>
     /// Updates an existing dojaang. Only admins are allowed to perform this action.
@@ -100,10 +100,13 @@ public class DojaangController : BaseApiController
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDojaangDto updateDto)
     {
-        if (id != updateDto.Id)
+        if (updateDto.Id != id)
         {
-            return ErrorResponse("ID mismatch.");
+            return ErrorResponse("ID in URL does not match ID in body.", 400);
         }
+
+
+
 
         var existingDojaang = await _dojaangService.GetByIdAsync(id);
         if (existingDojaang == null)
@@ -111,14 +114,11 @@ public class DojaangController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
-        // Only admins reach this point due to the [Authorize] attribute
 
-        // Use AutoMapper to map the DTO to the existing entity
-        _mapper.Map(updateDto, existingDojaang);
-
-        await _dojaangService.UpdateAsync(existingDojaang);
+        await _dojaangService.UpdateAsync(updateDto);
         return NoContent();
     }
+
 
     /// <summary>
     /// Deletes a dojaang by its unique identifier. Only admins are allowed to perform this action.
@@ -135,7 +135,9 @@ public class DojaangController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
+
         await _dojaangService.DeleteAsync(id);
         return NoContent();
     }
+
 }
