@@ -12,7 +12,7 @@ using TKDHubAPI.Infrastructure.Data;
 namespace TKDHubAPI.Infrastructure.Migrations
 {
     [DbContext(typeof(TkdHubDbContext))]
-    [Migration("20250530163714_initial")]
+    [Migration("20250531161753_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -374,7 +374,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 1,
                             Color = 0,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6523),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3756),
                             Description = "Beginner",
                             Name = "White Belt",
                             Order = 1
@@ -383,7 +383,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 2,
                             Color = 0,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6529),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3762),
                             Description = "Beginner with yellow stripe",
                             Name = "White Belt with Yellow Stripe",
                             Order = 1,
@@ -393,7 +393,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 3,
                             Color = 1,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6532),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3764),
                             Description = "Basic fundamentals",
                             Name = "Yellow Belt",
                             Order = 2
@@ -402,7 +402,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 4,
                             Color = 1,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6534),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3766),
                             Description = "Basic fundamentals with green stripe",
                             Name = "Yellow Belt with Green Stripe",
                             Order = 2,
@@ -412,7 +412,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 5,
                             Color = 2,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6536),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3799),
                             Description = "Intermediate",
                             Name = "Green Belt",
                             Order = 3
@@ -421,7 +421,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 6,
                             Color = 2,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6538),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3801),
                             Description = "Intermediate with blue stripe",
                             Name = "Green Belt with Blue Stripe",
                             Order = 3,
@@ -431,7 +431,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 7,
                             Color = 3,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6539),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3803),
                             Description = "Advanced intermediate",
                             Name = "Blue Belt",
                             Order = 4
@@ -440,7 +440,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 8,
                             Color = 3,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6541),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3804),
                             Description = "Advanced intermediate with red stripe",
                             Name = "Blue Belt with Red Stripe",
                             Order = 4,
@@ -450,7 +450,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 9,
                             Color = 4,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6542),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3806),
                             Description = "Advanced",
                             Name = "Red Belt",
                             Order = 5
@@ -459,7 +459,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 10,
                             Color = 4,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6544),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3808),
                             Description = "Advanced with black stripe",
                             Name = "Red Belt with Black Stripe",
                             Order = 5,
@@ -469,7 +469,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 11,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6546),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3810),
                             DanLevel = 1,
                             Description = "Il Dan (1st Degree Black Belt)",
                             Name = "Black Belt 1st Dan",
@@ -479,7 +479,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 12,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6547),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3812),
                             DanLevel = 2,
                             Description = "Ee Dan (2nd Degree) - Boo Sabeom Nim (Assistant Instructor)",
                             Name = "Black Belt 2nd Dan",
@@ -489,7 +489,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 13,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6549),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3814),
                             DanLevel = 3,
                             Description = "Sam Dan (3rd Degree) - Boo Sabeom Nim (Assistant Instructor)",
                             Name = "Black Belt 3rd Dan",
@@ -499,7 +499,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 14,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6550),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3817),
                             DanLevel = 4,
                             Description = "Sa Dan (4th Degree) - Sabeom Nim (Instructor)",
                             Name = "Black Belt 4th Dan",
@@ -509,7 +509,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 15,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6551),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3819),
                             DanLevel = 5,
                             Description = "Oh Dan (5th Degree) - Sabeom Nim (Instructor)",
                             Name = "Black Belt 5th Dan",
@@ -519,7 +519,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 16,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6553),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3820),
                             DanLevel = 6,
                             Description = "Yuk Dan (6th Degree) - Sabeom Nim (Instructor)",
                             Name = "Black Belt 6th Dan",
@@ -529,7 +529,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 17,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6554),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3822),
                             DanLevel = 7,
                             Description = "Chil Dan (7th Degree) - Sahyeon Nim (Master Instructor)",
                             Name = "Black Belt 7th Dan",
@@ -539,7 +539,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 18,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6556),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3824),
                             DanLevel = 8,
                             Description = "Pal Dan (8th Degree) - Sahyeon Nim (Master Instructor)",
                             Name = "Black Belt 8th Dan",
@@ -549,7 +549,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 19,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 5, 30, 16, 37, 13, 637, DateTimeKind.Utc).AddTicks(6557),
+                            CreatedDate = new DateTime(2025, 5, 31, 16, 17, 52, 604, DateTimeKind.Utc).AddTicks(3825),
                             DanLevel = 9,
                             Description = "Gu Dan (9th Degree) - Saseong Nim (Grandmaster)",
                             Name = "Black Belt 9th Dan",
@@ -1058,9 +1058,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                             Email = "admin@tkdhub.com",
                             FirstName = "System",
                             Gender = "OTHER",
-                            JoinDate = new DateTime(2025, 5, 30, 16, 37, 13, 678, DateTimeKind.Utc).AddTicks(4594),
+                            JoinDate = new DateTime(2025, 5, 31, 16, 17, 52, 647, DateTimeKind.Utc).AddTicks(4041),
                             LastName = "Administrator",
-                            PasswordHash = "AQAAAAIAAYagAAAAEErh38QOWq1TZouv+c/e04Ojo1qVpBFU2Igy7QZXNcSMqRsMHukueQwlWbq/Qf4ScQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHNwAfBGFuigaoA1+IkHqZauHQgSu05jsx/9yAROCxzVhWHITzB9KMIsZShzfzZciw==",
                             PhoneNumber = "0000000000"
                         },
                         new
@@ -1071,9 +1071,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                             Email = "grandmaster@tkdhub.com",
                             FirstName = "Grand",
                             Gender = "OTHER",
-                            JoinDate = new DateTime(2025, 5, 30, 16, 37, 13, 719, DateTimeKind.Utc).AddTicks(2207),
+                            JoinDate = new DateTime(2025, 5, 31, 16, 17, 52, 687, DateTimeKind.Utc).AddTicks(1906),
                             LastName = "Master",
-                            PasswordHash = "AQAAAAIAAYagAAAAENkgaCL6VVcjwQMd24WIRo9Gvnf14aeJ7yEGLwpAeGx7ka8tIMTOgItApqzggDQD1w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKRzozr4G3pmr4mR9MCNBEwB7u0XiAShYvo0sqHrK9O9gmv/AqCfovQLfvHYtkIWYw==",
                             PhoneNumber = "1112223333"
                         });
                 });
