@@ -1,5 +1,5 @@
 "use client";
-import CoachSelector from "@/app/components/CoachSelector";
+import CoachSelector from "@/app/components/coaches/CoachSelector";
 import { useEffect, useState } from "react";
 
 type EditDojaangProps = {

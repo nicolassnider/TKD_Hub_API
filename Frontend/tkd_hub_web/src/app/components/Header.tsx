@@ -44,9 +44,10 @@ export const Header = () => {
                     <Link href="/students" className="block px-4 py-2 hover:bg-gray-600">
                       <i className="bi bi-person-lines-fill mr-2"></i> Students
                     </Link>
-                    <Link href="/coaches" className="block px-4 py-2 hover:bg-gray-600">
+                    <Link href="/coachesAdmin" className="block px-4 py-2 hover:bg-gray-600">
                       <i className="bi bi-person-check-fill mr-2"></i> Coaches
                     </Link>
+                    
                     <Link
                       href="#"
                       className="block px-4 py-2 hover:bg-gray-600"
@@ -83,7 +84,8 @@ export const Header = () => {
               <button
                 onClick={() => {
                   logout();
-                  setRole("Guest");
+                  setRole("Guest"); // use lowercase "guest"
+                  router.push("/");
                 }}
                 className="ml-4 px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
               >
@@ -175,7 +177,8 @@ export const Header = () => {
             <button
               onClick={() => {
                 logout();
-                setRole("Guest");
+                setRole("Guest"); // use lowercase "guest"
+                router.push("/");
               }}
               className="w-full mt-2 px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
             >

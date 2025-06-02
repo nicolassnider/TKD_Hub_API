@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRole } from "../context/RoleContext"; // <-- Import RoleContext
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 
 type LoginPageProps = {
   onLogin?: () => void;
@@ -17,6 +19,8 @@ const errorAnimationStyle = `
 `;
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
+  const { setIsLoggedIn } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +55,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       }
       localStorage.setItem("role", roleValue);
       setRole(roleValue); // <-- Update RoleContext
+      setIsLoggedIn(true);
 
       if (onLogin) onLogin();
+      // Route to home after successful login
+      router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Login failed");

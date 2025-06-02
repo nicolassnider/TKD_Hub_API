@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { isTokenExpired } from "../utils/auth";
 
 export type UserRole = "Guest" | "Student" | "Coach" | "Admin";
 
@@ -17,9 +18,16 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<UserRole>("Guest");
 
   useEffect(() => {
-    // Example: get role from localStorage or API
+    // Get role and token from localStorage
     const storedRole = localStorage.getItem("role") as UserRole | null;
-    if (storedRole) setRole(storedRole);
+    const token = localStorage.getItem("token");
+    // If token is missing or expired, remove role and set to Guest
+    if (!token || isTokenExpired(token)) {
+      localStorage.removeItem("role");
+      setRole("Guest");
+    } else if (storedRole) {
+      setRole(storedRole);
+    }
   }, []);
 
   return (

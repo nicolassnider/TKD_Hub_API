@@ -1,10 +1,13 @@
+AuthContext.tsx
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { isTokenExpired } from "../utils/auth";
 
 type AuthContextType = {
   isLoggedIn: boolean;
   setIsLoggedIn: (loggedIn: boolean) => void;
-  logout: () => void; // Add logout to the context type
+  logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -15,15 +18,23 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem("token"));
-  }, []);
+    const token = localStorage.getItem("token");
+    if (!token || isTokenExpired(token)) {
+      localStorage.removeItem("token");
+      setIsLoggedIn(false);
+      router.push("/login");
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [router]);
 
   const logout = () => {
-    console.log('loging out');
     localStorage.removeItem("token");
     setIsLoggedIn(false);
+    router.push("/login");
   };
 
   return (
