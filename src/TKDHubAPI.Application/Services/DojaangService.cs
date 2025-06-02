@@ -6,31 +6,69 @@ public class DojaangService : IDojaangService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGenericRepository<User> _userRepository;
     private readonly IMapper _mapper;
-
-
+    private readonly IGenericRepository<UserDojaang> _userDojaangRepository;
     private readonly IDojaangRepository _dojaangRepository;
+    private readonly ICurrentUserService _currentUserService;
 
 
     public DojaangService(
         IUnitOfWork unitOfWork,
         IDojaangRepository dojaangRepository,
         IMapper mapper,
-        IGenericRepository<User> userRepository)
+        IGenericRepository<User> userRepository,
+        IGenericRepository<UserDojaang> userDojaangRepository,
+        ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _dojaangRepository = dojaangRepository;
         _mapper = mapper;
         _userRepository = userRepository;
+        _userDojaangRepository = userDojaangRepository;
+        _currentUserService = currentUserService;
     }
     public async Task<IEnumerable<DojaangDto>> GetAllAsync()
     {
-        var dojaangs = await _dojaangRepository.GetAllAsync();
+        IEnumerable<Dojaang> dojaangs;
+        var currentUser = _currentUserService.GetCurrentUser();
+
+        if (currentUser.HasRole("Admin"))
+        {
+            dojaangs = await _dojaangRepository.GetAllAsync();
+        }
+        else if (currentUser.HasRole("Coach"))
+        {
+            // Get dojaangs where the user is a coach
+            var userDojaangs = await _userDojaangRepository.GetAllAsync();
+            var coachDojaangIds = userDojaangs
+                .Where(ud => ud.User.Id == currentUser.Id && ud.Role == "Coach")
+                .Select(ud => ud.DojaangId)
+                .ToList();
+
+            dojaangs = (await _dojaangRepository.GetAllAsync())
+                .Where(d => coachDojaangIds.Contains(d.Id));
+        }
+        else if (currentUser.HasRole("Student"))
+        {
+            // Get dojaangs where the user is a student
+            var userDojaangs = await _userDojaangRepository.GetAllAsync();
+            var studentDojaangIds = userDojaangs
+                .Where(ud => ud.User.Id == currentUser.Id && ud.Role == "Student")
+                .Select(ud => ud.DojaangId)
+                .ToList();
+
+            dojaangs = (await _dojaangRepository.GetAllAsync())
+                .Where(d => studentDojaangIds.Contains(d.Id));
+        }
+        else
+        {
+            // No role: return empty
+            dojaangs = Enumerable.Empty<Dojaang>();
+        }
+
         var dtos = _mapper.Map<IEnumerable<DojaangDto>>(dojaangs);
         MapCoachNames(dojaangs, dtos);
         return dtos;
     }
-
-
 
 
     private void MapCoachName(Dojaang dojaang, DojaangDto dto)
@@ -77,15 +115,11 @@ public class DojaangService : IDojaangService
         if (dojaang == null)
             throw new InvalidOperationException("Dojaang not found.");
 
-
-        // Map all fields except CoachId/Coach
         _mapper.Map(dto, dojaang);
-
 
         // Treat 0 as null for CoachId
         if (dto.CoachId == 0)
             dto.CoachId = null;
-
 
         if (dto.CoachId.HasValue)
         {
@@ -94,6 +128,22 @@ public class DojaangService : IDojaangService
             {
                 dojaang.Coach = coach;
                 dojaang.CoachId = coach.Id;
+
+                // Add UserDojaang relation if not present
+                var existingRelation = (await _userDojaangRepository
+                    .GetAllAsync())
+                    .FirstOrDefault(ud => ud.User.Id == coach.Id && ud.DojaangId == dojaang.Id && ud.Role == "Coach");
+
+                if (existingRelation == null)
+                {
+                    var userDojaang = new UserDojaang
+                    {
+                        User = coach,
+                        DojaangId = dojaang.Id,
+                        Role = "Coach"
+                    };
+                    await _userDojaangRepository.AddAsync(userDojaang);
+                }
             }
             else
             {
@@ -106,7 +156,6 @@ public class DojaangService : IDojaangService
             dojaang.Coach = null;
             dojaang.CoachId = null;
         }
-
 
         _dojaangRepository.Update(dojaang);
         await _unitOfWork.SaveChangesAsync();

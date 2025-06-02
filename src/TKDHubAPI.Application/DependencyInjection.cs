@@ -19,6 +19,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         // Register application services
+
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<ITournamentService, TournamentService>();
@@ -35,5 +37,3 @@ public static class DependencyInjection
         return services;
     }
 }
-
-

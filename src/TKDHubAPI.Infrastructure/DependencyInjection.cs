@@ -16,9 +16,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
-        // Register generic repositories for all relevant entities EXCEPT Dojaang
+        // Register generic repositories for all relevant entities
         services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
-        // services.AddScoped<IGenericRepository<Dojaang>, GenericRepository<Dojaang>>(); // <-- REMOVE THIS LINE
+        services.AddScoped<IGenericRepository<UserDojaang>, GenericRepository<UserDojaang>>();
         services.AddScoped<IGenericRepository<Rank>, GenericRepository<Rank>>();
         services.AddScoped<IGenericRepository<Tournament>, GenericRepository<Tournament>>();
         services.AddScoped<IGenericRepository<Event>, GenericRepository<Event>>();
@@ -30,7 +30,7 @@ public static class DependencyInjection
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IDojaangRepository, DojaangRepository>(); // <-- KEEP THIS LINE
+        services.AddScoped<IDojaangRepository, DojaangRepository>();
         services.AddScoped<IRankRepository, RankRepository>();
         services.AddScoped<ITournamentRepository, TournamentRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
@@ -60,3 +60,4 @@ public static class DependencyInjection
         return services;
     }
 }
+
