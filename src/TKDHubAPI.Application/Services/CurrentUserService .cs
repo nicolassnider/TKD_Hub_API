@@ -5,24 +5,26 @@ namespace TKDHubAPI.Application.Services;
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IGenericRepository<User> _userRepository;
+    private readonly IUserRepository _userRepository;
 
     public CurrentUserService(
         IHttpContextAccessor httpContextAccessor,
-        IGenericRepository<User> userRepository)
+        IUserRepository userRepository)
     {
         _httpContextAccessor = httpContextAccessor;
         _userRepository = userRepository;
     }
 
-    public User? GetCurrentUser()
+    public async Task<User?> GetCurrentUserAsync()
     {
         var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
             return null;
 
-        int userId = int.Parse(userIdClaim.Value);
-        // Synchronously for simplicity; consider making this async if needed
-        return _userRepository.GetByIdAsync(userId).GetAwaiter().GetResult();
+        if (!int.TryParse(userIdClaim.Value, out int userId))
+            return null;
+
+        // Use repository to ensure roles are loaded
+        return await _userRepository.GetByIdAsync(userId);
     }
 }

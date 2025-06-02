@@ -29,7 +29,10 @@ public class DojaangService : IDojaangService
     public async Task<IEnumerable<DojaangDto>> GetAllAsync()
     {
         IEnumerable<Dojaang> dojaangs;
-        var currentUser = _currentUserService.GetCurrentUser();
+        var currentUser = await _currentUserService.GetCurrentUserAsync();
+
+        if (currentUser == null)
+            return Enumerable.Empty<DojaangDto>();
 
         if (currentUser.HasRole("Admin"))
         {

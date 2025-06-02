@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Application.Interfaces;
 public interface ICurrentUserService
 {
-    User? GetCurrentUser();
+    Task<User?> GetCurrentUserAsync();
 }

@@ -82,4 +82,18 @@ public interface IUserService : ICrudService<User>
     /// Gets all students belonging to a specific dojaang.
     /// </summary>
     Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId);
+
+    /// <summary>
+    /// Removes the association between a coach and a managed dojaang.
+    /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <param name="dojaangId">The dojaang ID to remove from management.</param>
+    Task RemoveCoachFromDojaangAsync(int coachId, int dojaangId);
+
+    /// <summary>
+    /// Adds a managed dojaang relation for a coach if not already present.
+    /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <param name="dojaangId">The dojaang ID to add to management.</param>
+    Task AddCoachToDojaangRelationAsync(int coachId, int dojaangId);
 }

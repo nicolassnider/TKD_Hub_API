@@ -13,5 +13,9 @@ public class UserMappingProfile : Profile
                 opt => opt.MapFrom(src => src.UserDojaangs != null
                     ? src.UserDojaangs.Select(ud => ud.DojaangId).ToList()
                     : new List<int>()));
+
+        CreateMap<UpdateUserDto, User>()
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+            .ForMember(dest => dest.DojaangId, opt => opt.MapFrom(src => (src.DojaangId == null || src.DojaangId == 0) ? null : src.DojaangId));
     }
 }
