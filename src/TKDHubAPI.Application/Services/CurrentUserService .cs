@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace TKDHubAPI.Application.Services;
 public class CurrentUserService : ICurrentUserService
