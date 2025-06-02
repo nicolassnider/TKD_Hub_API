@@ -1,35 +1,25 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+export type UserRole = "Guest" | "Student" | "Coach" | "Admin";
 
 type RoleContextType = {
-  role: string | null;
-  setRole: (role: string | null) => void;
+  role: UserRole;
+  setRole: (role: UserRole) => void;
 };
 
 const RoleContext = createContext<RoleContextType>({
-  role: null,
+  role: "Guest",
   setRole: () => {},
 });
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [role, setRoleState] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole>("Guest");
 
-  // Keep role in sync with localStorage
   useEffect(() => {
-    const storedRole = typeof window !== "undefined" ? localStorage.getItem("role") : null;
-    setRoleState(storedRole);
-  }, []);
-
-  // Update both state and localStorage
-  const setRole = useCallback((newRole: string | null) => {
-    setRoleState(newRole);
-    if (typeof window !== "undefined") {
-      if (newRole) {
-        localStorage.setItem("role", newRole);
-      } else {
-        localStorage.removeItem("role");
-      }
-    }
+    // Example: get role from localStorage or API
+    const storedRole = localStorage.getItem("role") as UserRole | null;
+    if (storedRole) setRole(storedRole);
   }, []);
 
   return (

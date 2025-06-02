@@ -80,48 +80,50 @@ export default function DojaangAdmin() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-8 bg-white dark:bg-neutral-900 rounded shadow p-6 sm:p-8">
-      <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">Dojaang Administration</h2>
+    <div className="w-100 max-w-2xl mx-auto my-4 bg-white dark:bg-neutral-900 rounded shadow p-4 p-sm-5">
+      <h2 className="h4 h3-sm font-bold mb-4 text-center">Dojaang Administration</h2>
 
-      <div className="mb-4 text-sm text-gray-700 dark:text-gray-300 text-center">
-        Current role: <span className="font-semibold">{role ?? "None"}</span>
+      <div className="mb-3 text-sm text-secondary text-center">
+        Current role: <span className="fw-semibold">{role ?? "None"}</span>
       </div>
 
       {loading && <div className="text-center">Loading...</div>}
-      {error && <div className="text-red-600 text-center">{error}</div>}
+      {error && <div className="text-danger text-center">{error}</div>}
       {!loading && !error && (
-        <table className="w-full border-collapse">
+        <table className="table table-bordered align-middle">
           <thead>
             <tr>
-              <th className="border-b py-2 text-left">ID</th>
-              <th className="border-b py-2 text-left">Name</th>
-              <th className="border-b py-2 text-left">Location</th>
-              <th className="border-b py-2 text-left">Options</th>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Coach</th>
+              <th>Options</th>
             </tr>
           </thead>
           <tbody>
             {dojaangs.map((d) => (
               <tr key={d.id}>
-                <td className="py-2">{d.id}</td>
-                <td className="py-2">{d.name}</td>
-                <td className="py-2">{d.location}</td>
-                <td className="py-2">
-                  <button
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2 flex items-center"
-                    onClick={() => setEditId(d.id)}
-                    title="Details"
-                  >
-                    <i className="bi bi-info-circle mr-1"></i>
-                  </button>
-                  {role === "Admin" && (
+                <td>{d.id}</td>
+                <td>{d.name}</td>
+                <td>{d.coachName ?? <span className="text-muted">-</span>}</td>
+                <td>
+                  <div className="d-flex flex-row gap-2">
                     <button
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors flex items-center"
-                      onClick={() => setDeleteId(d.id)}
-                      title="Delete"
+                      className="btn btn-primary d-flex align-items-center justify-content-center"
+                      onClick={() => setEditId(d.id)}
+                      title="Details"
                     >
-                      <i className="bi bi-trash mr-1"></i>
+                      <i className="bi bi-info-circle"></i>
                     </button>
-                  )}
+                    {role === "Admin" && (
+                      <button
+                        className="btn btn-danger d-flex align-items-center justify-content-center"
+                        onClick={() => setDeleteId(d.id)}
+                        title="Delete"
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -134,25 +136,38 @@ export default function DojaangAdmin() {
 
       {/* Confirmation Modal */}
       {deleteId !== null && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-neutral-900 rounded shadow p-6 w-full max-w-sm relative">
-            <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>
-            <p className="mb-6">Are you sure you want to delete this dojaang?</p>
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600"
-                onClick={() => setDeleteId(null)}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
+        <div className="modal fade show d-block" tabIndex={-1} style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header border-0 pb-0">
+                <h3 className="modal-title fs-5">Confirm Delete</h3>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setDeleteId(null)}
+                  disabled={deleting}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>Are you sure you want to delete this dojaang?</p>
+                <div className="d-flex justify-content-end gap-2">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setDeleteId(null)}
+                    disabled={deleting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

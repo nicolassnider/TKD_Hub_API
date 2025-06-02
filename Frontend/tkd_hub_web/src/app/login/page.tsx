@@ -64,24 +64,26 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     }
   }
 
-  return (
+    return (
     <>
       <style>{errorAnimationStyle}</style>
       <div
-        className="w-full max-w-md mx-auto my-8 bg-white dark:bg-neutral-900 rounded shadow p-6 sm:p-8"
+        className="w-full max-w-md mx-auto my-16 bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-8 flex flex-col gap-6"
         style={{ boxSizing: "border-box" }}
       >
-        <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">TKD_Hub Login</h2>
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-gray-900 dark:text-white tracking-tight">
+          TKD_Hub Login
+        </h2>
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-5"
         >
           <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="font-medium">Email:</label>
+            <label htmlFor="email" className="font-medium text-gray-700 dark:text-gray-200">Email:</label>
             <input
               id="email"
               type="email"
-              className="border rounded px-3 py-2"
+              className="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
@@ -91,11 +93,11 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="font-medium">Password:</label>
+            <label htmlFor="password" className="font-medium text-gray-700 dark:text-gray-200">Password:</label>
             <input
               id="password"
               type="password"
-              className="border rounded px-3 py-2"
+              className="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
@@ -106,7 +108,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           </div>
           <button
             type="submit"
-            className="bg-black text-white rounded px-4 py-2 font-semibold hover:bg-neutral-800 transition-colors"
+            className="bg-blue-600 text-white rounded px-4 py-2 font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
