@@ -1,9 +1,16 @@
 ﻿namespace TKDHubAPI.Application.DTOs.User;
 /// <summary>
 /// DTO for creating a new Student user.
-/// Inherits all properties from CreateUserDto.
+/// Does not inherit from CreateUserDto and only includes allowed properties.
 /// </summary>
-public class CreateStudentDto : CreateUserDto
+public class CreateStudentDto
 {
-    // Add student-specific properties here if needed in the future
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Email { get; set; }
+    public string PhoneNumber { get; set; }
+    public Gender? Gender { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public int? DojaangId { get; set; }
+    public int? RankId { get; set; }
 }
