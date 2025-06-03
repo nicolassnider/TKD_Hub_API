@@ -1,3 +1,4 @@
+AuthContext.tsx
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -7,12 +8,14 @@ type AuthContextType = {
   isLoggedIn: boolean;
   setIsLoggedIn: (loggedIn: boolean) => void;
   logout: () => void;
+  getToken: () => string | null;
 };
 
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   setIsLoggedIn: () => {},
   logout: () => {},
+  getToken: () => null,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -36,8 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     router.push("/login");
   };
 
+  const getToken = () => localStorage.getItem("token");
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, logout, getToken }}>
       {children}
     </AuthContext.Provider>
   );

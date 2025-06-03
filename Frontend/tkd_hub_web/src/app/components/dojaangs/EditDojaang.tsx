@@ -1,40 +1,57 @@
 "use client";
 import CoachSelector from "@/app/components/coaches/CoachSelector";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 type EditDojaangProps = {
-  dojaangId: number;
+  dojaangId?: number; // Optional: if undefined, create mode
   onClose: () => void;
 };
 
 type Dojaang = {
-  id: number;
+  id?: number;
   name: string;
   address: string;
+  location: string;
   phoneNumber: string;
   email: string;
   koreanName: string;
   koreanNamePhonetic: string;
   coachId: number | null;
-  coachName: string | null;
+  coachName?: string | null;
 };
 
-const baseUrl = "https://localhost:7046/api";
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   const [dojaang, setDojaang] = useState<Dojaang | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!dojaangId);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const { getToken } = useAuth();
 
+  // Fetch existing dojaang if editing
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    if (!dojaangId) {
+      setDojaang({
+        name: "",
+        address: "",
+        location: "",
+        phoneNumber: "",
+        email: "",
+        koreanName: "",
+        koreanNamePhonetic: "",
+        coachId: null,
+      });
+      setLoading(false);
+      return;
+    }
+    const token = getToken();
     if (!token) {
       setError("Not authenticated.");
       setLoading(false);
       return;
     }
-
     fetch(`${baseUrl}/Dojaang/${dojaangId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -47,7 +64,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [dojaangId]);
+  }, [dojaangId, getToken]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!dojaang) return;
@@ -61,29 +78,42 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
     setSaving(true);
     setError(null);
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
     try {
       const payload = {
-        id: dojaang.id,
         name: dojaang.name,
         address: dojaang.address,
-        location: dojaang.address,
+        location: dojaang.location,
         phoneNumber: dojaang.phoneNumber,
         email: dojaang.email,
         koreanName: dojaang.koreanName,
         koreanNamePhonetic: dojaang.koreanNamePhonetic,
-        coachId: dojaang.coachId,
+        coachId: dojaang.coachId ? dojaang.coachId : null,
       };
 
-      const res = await fetch(`${baseUrl}/Dojaang/${dojaang.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to update dojaang");
+      let res;
+      if (dojaangId) {
+        // Edit mode (PUT)
+        res = await fetch(`${baseUrl}/Dojaang/${dojaangId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ id: dojaangId, ...payload }),
+        });
+      } else {
+        // Create mode (POST)
+        res = await fetch(`${baseUrl}/Dojaang`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+      if (!res.ok) throw new Error(dojaangId ? "Failed to update dojaang" : "Failed to create dojaang");
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -95,10 +125,6 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
       setSaving(false);
     }
   }
-
-  // Bootstrap modal show/hide logic
-  // Show modal always when this component is rendered
-  // onClose will hide the modal from parent
 
   return (
     <div className="modal fade show d-block" tabIndex={-1} role="dialog" style={{ background: "rgba(0,0,0,0.4)" }}>
@@ -112,7 +138,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
             style={{ zIndex: 2 }}
           ></button>
           <div className="modal-header border-0 pb-0">
-            <h2 className="modal-title fs-5">Edit Dojaang</h2>
+            <h2 className="modal-title fs-5">{dojaangId ? "Edit Dojaang" : "Create Dojaang"}</h2>
           </div>
           <div className="modal-body">
             {loading && <div className="text-center">Loading...</div>}
@@ -130,6 +156,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                     onChange={handleChange}
                     placeholder="Enter dojaang name"
                     title="Dojaang Name"
+                    required
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -143,6 +170,21 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                     onChange={handleChange}
                     placeholder="Enter address"
                     title="Address"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="font-medium" htmlFor="location">Location:</label>
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    className="form-control"
+                    value={dojaang.location}
+                    onChange={handleChange}
+                    placeholder="Enter location"
+                    title="Location"
+                    required
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -198,18 +240,17 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   />
                 </div>
                 <div className="flex flex-col gap-1 w-full">
-                  <label htmlFor="coachName" className="font-medium">Coach Name:</label>
+                  <label htmlFor="coachName" className="font-medium">Coach:</label>
                   <CoachSelector
                     baseUrl={baseUrl}
-                    token={typeof window !== "undefined" ? localStorage.getItem("token") || "" : ""}
-                    value={{ id: dojaang.coachId, name: dojaang.coachName }}
-                    onSelect={(coach) =>
+                    value={dojaang.coachId ? String(dojaang.coachId) : ""}
+                    onChange={e =>
                       setDojaang({
                         ...dojaang,
-                        coachId: coach.id,
-                        coachName: `${coach.firstName} ${coach.lastName}`,
+                        coachId: e.target.value ? Number(e.target.value) : null,
                       })
                     }
+                    disabled={saving}
                   />
                 </div>
                 <button
@@ -217,7 +258,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   className="btn btn-primary fw-semibold"
                   disabled={saving}
                 >
-                  {saving ? "Saving..." : "Save"}
+                  {saving ? (dojaangId ? "Saving..." : "Creating...") : (dojaangId ? "Save" : "Create")}
                 </button>
               </form>
             )}

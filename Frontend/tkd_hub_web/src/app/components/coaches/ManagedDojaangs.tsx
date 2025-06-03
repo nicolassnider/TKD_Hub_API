@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuth } from "../../context/AuthContext";
 
 type ManagedDojaangsProps = {
   managedDojaangIds: number[];
@@ -19,6 +20,8 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
   coachId,
   onRemoveSuccess,
 }) => {
+  const { getToken } = useAuth();
+
   // Filter out already managed dojaangs for the select
   const availableDojaangs = allDojaangs.filter(
     (d) => !managedDojaangIds.includes(d.id)
@@ -35,7 +38,7 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
       return;
     }
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token = getToken();
       const res = await fetch(
         `${baseUrl}/Coaches/${coachId}/dojaang/${dojaangId}`,
         {
