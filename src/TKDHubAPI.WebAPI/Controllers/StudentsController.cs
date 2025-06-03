@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
@@ -13,23 +12,23 @@ namespace TKDHubAPI.WebAPI.Controllers;
 [Authorize]
 public class StudentsController : BaseApiController
 {
-    private readonly IUserService _userService;
-    private readonly IMapper _mapper;
+    private readonly IStudentService _studentService;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StudentsController"/> class.
     /// </summary>
-    /// <param name="userService">The user service instance.</param>
+    /// <param name="studentService">The student service instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
     /// <param name="logger">The logger instance.</param>
     public StudentsController(
-        IUserService userService,
-        IMapper mapper,
+        IStudentService studentService,
+
         ILogger<StudentsController> logger
     ) : base(logger)
     {
-        _userService = userService;
-        _mapper = mapper;
+        _studentService = studentService;
+
     }
 
     /// <summary>
@@ -42,9 +41,8 @@ public class StudentsController : BaseApiController
     {
         try
         {
-            var user = await _userService.AddUserWithRolesAsync(createStudentDto);
-            var resultDto = _mapper.Map<UserDto>(user);
-            return SuccessResponse(resultDto);
+            var userDto = await _studentService.CreateStudentAsync(createStudentDto);
+            return SuccessResponse(userDto);
         }
         catch (Exception ex)
         {
@@ -61,11 +59,30 @@ public class StudentsController : BaseApiController
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var user = await _userService.GetByIdAsync(id);
-        if (user == null)
+        var userDto = await _studentService.GetStudentByIdAsync(id);
+        if (userDto == null)
             return ErrorResponse("Student not found", 404);
 
-        var resultDto = _mapper.Map<UserDto>(user);
-        return SuccessResponse(resultDto);
+        return SuccessResponse(userDto);
+    }
+
+    /// <summary>
+    /// Gets all students.
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var students = await _studentService.GetAllStudentsAsync();
+        return SuccessResponse(new { data = students });
+    }
+
+    /// <summary>
+    /// Gets all students for a specific dojaang.
+    /// </summary>
+    [HttpGet("Dojaang/{dojaangId}")]
+    public async Task<IActionResult> GetByDojaang(int dojaangId)
+    {
+        var students = await _studentService.GetStudentsByDojaangIdAsync(dojaangId);
+        return SuccessResponse(new { data = students });
     }
 }

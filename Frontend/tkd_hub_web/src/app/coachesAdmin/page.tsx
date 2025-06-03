@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRole } from "../context/RoleContext";
 import CoachesTableRows from "../components/coaches/CoachesTableRows";
 import EditCoach from "../components/coaches/EditCoach";
+import { useAuth } from "../context/AuthContext";
 
 type Coach = {
   id: number;
@@ -12,40 +13,42 @@ type Coach = {
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
-const fetchCoaches = async (): Promise<Coach[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const res = await fetch(`${baseUrl}/Coaches`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  if (!res.ok) throw new Error("Failed to fetch coaches");
-  const data = await res.json();
-  const coachesArray = Array.isArray(data)
-    ? data
-    : Array.isArray(data.data)
-      ? data.data
-      : [];
-  return coachesArray.map((c: any) => ({
-    id: c.id,
-    name: c.firstName && c.lastName ? `${c.firstName} ${c.lastName}` : c.firstName || c.lastName || "",
-    email: c.email,
-  }));
-};
-
 export default function CoachesAdmin() {
   const { role } = useRole();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
+  const { getToken } = useAuth();
+
+  const fetchCoaches = async (): Promise<Coach[]> => {
+    const token = getToken();
+    const res = await fetch(`${baseUrl}/Coaches`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) throw new Error("Failed to fetch coaches");
+    const data = await res.json();
+    const coachesArray = Array.isArray(data)
+      ? data
+      : Array.isArray(data.data)
+        ? data.data
+        : [];
+    return coachesArray.map((c: any) => ({
+      id: c.id,
+      name: c.firstName && c.lastName ? `${c.firstName} ${c.lastName}` : c.firstName || c.lastName || "",
+      email: c.email,
+    }));
+  };
 
   useEffect(() => {
     fetchCoaches()
       .then(setCoaches)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line
   }, []);
 
   return (

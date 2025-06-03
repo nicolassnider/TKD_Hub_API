@@ -1,9 +1,10 @@
+page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import EditDojaang from "../components/dojaangs/EditDojaang";
 import { useRole } from "../context/RoleContext";
 import DojaangTableRows from "../components/dojaangs/DojaangTableRows";
-
+import { useAuth } from "../context/AuthContext";
 
 type Dojaang = {
   id: number;
@@ -12,7 +13,7 @@ type Dojaang = {
   // Add other fields as needed
 };
 
-const baseUrl = "https://localhost:7046/api";
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7046/api";
 
 export default function DojaangAdmin() {
   const [dojaangs, setDojaangs] = useState<Dojaang[]>([]);
@@ -21,11 +22,13 @@ export default function DojaangAdmin() {
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
 
   const { role } = useRole();
+  const { getToken } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  function fetchDojaangs() {
+    const token = getToken();
 
     if (!token) {
       setError("Not authenticated.");
@@ -33,6 +36,7 @@ export default function DojaangAdmin() {
       return;
     }
 
+    setLoading(true);
     fetch(`${baseUrl}/Dojaang`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -52,13 +56,18 @@ export default function DojaangAdmin() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => {
+    fetchDojaangs();
+    // eslint-disable-next-line
+  }, [getToken]);
 
   async function handleDelete() {
     if (deleteId == null) return;
     setDeleting(true);
     setError(null);
-    const token = localStorage.getItem("token");
+    const token = getToken();
     try {
       const res = await fetch(`${baseUrl}/Dojaang/${deleteId}`, {
         method: "DELETE",
@@ -80,6 +89,16 @@ export default function DojaangAdmin() {
     }
   }
 
+  function handleCreateClose(refresh?: boolean) {
+    setShowCreate(false);
+    if (refresh) fetchDojaangs();
+  }
+
+  function handleEditClose(refresh?: boolean) {
+    setEditId(null);
+    if (refresh) fetchDojaangs();
+  }
+
   return (
     <div className="w-100 max-w-2xl mx-auto my-4 bg-white dark:bg-neutral-900 rounded shadow p-4 p-sm-5">
       <h2 className="h4 h3-sm font-bold mb-4 text-center">Dojaang Administration</h2>
@@ -87,6 +106,15 @@ export default function DojaangAdmin() {
       <div className="mb-3 text-sm text-secondary text-center">
         Current role: <span className="fw-semibold">{role ?? "None"}</span>
       </div>
+
+      {/* Only Admin can create */}
+      {role === "Admin" && (
+        <div className="mb-3 text-end">
+          <button className="btn btn-success" onClick={() => setShowCreate(true)}>
+            + Create Dojaang
+          </button>
+        </div>
+      )}
 
       {loading && <div className="text-center">Loading...</div>}
       {error && <div className="text-danger text-center">{error}</div>}
@@ -110,8 +138,15 @@ export default function DojaangAdmin() {
           </tbody>
         </table>
       )}
+
+      {/* Create Modal */}
+      {showCreate && (
+        <EditDojaang onClose={() => handleCreateClose(true)} />
+      )}
+
+      {/* Edit Modal */}
       {editId !== null && (
-        <EditDojaang dojaangId={editId} onClose={() => setEditId(null)} />
+        <EditDojaang dojaangId={editId} onClose={() => handleEditClose(true)} />
       )}
 
       {/* Confirmation Modal */}

@@ -17,5 +17,8 @@ public class UserMappingProfile : Profile
         CreateMap<UpdateUserDto, User>()
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
             .ForMember(dest => dest.DojaangId, opt => opt.MapFrom(src => (src.DojaangId == null || src.DojaangId == 0) ? null : src.DojaangId));
+
+        CreateMap<CreateStudentDto, User>()
+            .ForMember(dest => dest.CurrentRankId, opt => opt.MapFrom(src => src.RankId));
     }
 }
