@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="properties\servicedependencies\serviceDependencies.json" />
+    <Content Include="properties\servicedependencies\serviceDependencies.TKDHubAPIWebAPI20250604101851 - Zip Deploy.json" />
+    <Content Include="properties\servicedependencies\tkdhubapiwebapi20250604101851 - zip deploy\mssql1.arm.json" />
+    <Content Include="properties\servicedependencies\tkdhubapiwebapi20250604101851 - zip deploy\profile.arm.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.16">
       <PrivateAssets>all</PrivateAssets>
@@ -20,6 +27,10 @@
     <ProjectReference Include="..\TKDHubAPI.Application\TKDHubAPI.Application.csproj" />
     <ProjectReference Include="..\TKDHubAPI.Domain\TKDHubAPI.Domain.csproj" />
     <ProjectReference Include="..\TKDHubAPI.Infrastructure\TKDHubAPI.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\ServiceDependencies\TKDHubAPIWebAPI20250604101851 - Zip Deploy\" />
   </ItemGroup>
 
 </Project>

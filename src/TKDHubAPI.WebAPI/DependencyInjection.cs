@@ -17,11 +17,15 @@ public static class DependencyInjection
 
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowLocal3000", policy =>
+            options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins("http://localhost:3000")
-                      .AllowAnyHeader()
-                      .AllowAnyMethod();
+                policy.WithOrigins(
+                    "http://localhost:3000",
+                    "https://tkdhubweb-bvbqgpf0ead7c8e7.eastus-01.azurewebsites.net/",
+                    "https://tkdhubwenc-badpg5fbd6c8a7cf.canadacentral-01.azurewebsites.net"
+                    )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
             });
         });
 
@@ -80,5 +84,3 @@ public static class DependencyInjection
         return services;
     }
 }
-
-
