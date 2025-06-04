@@ -31,13 +31,31 @@ export default function StudentsAdmin() {
   const [dojaangs, setDojaangs] = useState<{ id: number; name: string }[]>([]);
 
   // Helper to always return an array
-  function extractStudents(data: any): Student[] {
+  function extractStudents(data: unknown): Student[] {
     if (Array.isArray(data)) {
-      return data;
-    } else if (Array.isArray(data?.data)) {
-      return data.data;
-    } else if (Array.isArray(data?.data?.data)) {
-      return data.data.data;
+      return data as Student[];
+    } else if (
+      typeof data === "object" &&
+      data !== null &&
+      "data" in data &&
+      Array.isArray((data as { data?: unknown }).data)
+    ) {
+      return (data as { data: Student[] }).data;
+    } else if (
+      typeof data === "object" &&
+      data !== null &&
+      "data" in data &&
+      typeof (data as { data?: unknown }).data === "object" &&
+      (data as { data?: unknown }).data !== null
+    ) {
+      const innerData = (data as { data?: { data?: unknown } }).data;
+      if (
+        innerData &&
+        "data" in innerData &&
+        Array.isArray((innerData as { data?: unknown }).data)
+      ) {
+        return (innerData as { data: Student[] }).data;
+      }
     }
     return [];
   }

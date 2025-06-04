@@ -52,8 +52,12 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
       if (!res.ok) throw new Error("Failed to remove managed dojaang");
       if (onRemove) onRemove(dojaangId);
       if (onRemoveSuccess) onRemoveSuccess(dojaangId);
-    } catch (err) {
-      alert("Failed to remove managed dojaang.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message || "Failed to remove managed dojaang.");
+      } else {
+        alert("Failed to remove managed dojaang.");
+      }
     }
   };
 

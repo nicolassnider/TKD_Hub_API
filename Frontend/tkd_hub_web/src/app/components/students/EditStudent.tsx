@@ -156,8 +156,9 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
       }
       if (!res.ok) throw new Error("Failed to save student");
       onClose(true);
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message || "An error occurred");
+      else setError("An error occurred");
     } finally {
       setSaving(false);
     }
