@@ -9,7 +9,7 @@ import servicesRoutes from "../routes/servicesRoutes";
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const { isLoggedIn, setIsLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
   const { role, setRole } = useRole();
   const router = useRouter();
 

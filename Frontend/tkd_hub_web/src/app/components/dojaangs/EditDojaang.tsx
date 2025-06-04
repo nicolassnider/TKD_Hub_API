@@ -21,7 +21,7 @@ type Dojaang = {
   coachName?: string | null;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL||'https://localhost:3000/api';
 
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   const [dojaang, setDojaang] = useState<Dojaang | null>(null);
@@ -268,3 +268,4 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
     </div>
   );
 }
+

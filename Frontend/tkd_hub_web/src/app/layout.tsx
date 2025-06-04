@@ -4,10 +4,8 @@ import "./globals.css";
 import { RoleProvider } from "./context/RoleContext";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import ClientBootstrap from "./components/ClientBootstrap";
 import { AuthProvider } from "./context/AuthContext";
 import Header from "./components/Header";
-//import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +31,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
           <RoleProvider>
-            <ClientBootstrap />
             <Header />
             {children}
           </RoleProvider>
@@ -44,4 +41,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

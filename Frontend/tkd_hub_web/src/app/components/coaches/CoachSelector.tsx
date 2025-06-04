@@ -23,14 +23,18 @@ export default function CoachSelector({ baseUrl, value, onChange, disabled }: Co
       },
     })
       .then((res) => res.json())
-      .then((data) => {
-        const arr = Array.isArray(data) ? data : data.data || [];
-        setCoaches(
-          arr.map((c: any) => ({
-            id: c.id,
-            name: `${c.firstName} ${c.lastName}`,
-          }))
-        );
+      .then((data: unknown) => {
+        let arr: { id: number; name: string }[] = [];
+        if (Array.isArray(data)) arr = data;
+        else if (
+          typeof data === "object" &&
+          data !== null &&
+          "data" in data &&
+          Array.isArray((data as { data?: unknown }).data)
+        ) {
+          arr = (data as { data: { id: number; name: string }[] }).data;
+        }
+        setCoaches(arr);
       })
       .catch(() => setCoaches([]))
       .finally(() => setLoading(false));

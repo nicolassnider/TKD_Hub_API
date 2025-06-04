@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ManagedDojaangs from "./ManagedDojaangs";
+import { useAuth } from "@/app/context/AuthContext";
 
 type EditCoachProps = {
   coachId: number;
@@ -24,49 +25,12 @@ type Coach = {
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 const EditCoach: React.FC<EditCoachProps> = ({ coachId, onClose }) => {
-  const [coach, setCoach] = useState<Coach | null>(null);
+  // Removed unused 'coach' state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [allDojaangs, setAllDojaangs] = useState<{ id: number; name: string }[]>([]);
   const [form, setForm] = useState<Omit<Coach, "id"> | null>(null);
-  const { getToken } = useAuth(); // <-- Use getToken
-
-  useEffect(() => {
-    const fetchCoach = async () => {
-      try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/Coaches/${coachId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch coach details");
-        const data = await res.json();
-        const coachData: Coach = data.data?.coach || {};
-        setCoach(coachData);
-        setForm({
-          firstName: coachData.firstName,
-          lastName: coachData.lastName,
-          email: coachData.email,
-          phoneNumber: coachData.phoneNumber ?? "",
-          gender: coachData.gender,
-          dateOfBirth: coachData.dateOfBirth ?? "",
-          dojaangId: coachData.dojaangId ?? null,
-          currentRankId: coachData.currentRankId,
-          joinDate: coachData.joinDate ?? "",
-          roles: coachData.roles ?? [],
-          managedDojaangIds: coachData.managedDojaangIds ?? [],
-        });
-        setAllDojaangs(data.data?.managedDojaangs || []);
-      } catch (err: any) {
-        setError(err.message || "Error loading coach");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCoach();
-  }, [coachId, getToken]);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     const fetchCoachAndDojaangs = async () => {
@@ -82,7 +46,6 @@ const EditCoach: React.FC<EditCoachProps> = ({ coachId, onClose }) => {
         if (!res.ok) throw new Error("Failed to fetch coach details");
         const data = await res.json();
         const coachData: Coach = data.data?.coach || {};
-        setCoach(coachData);
         setForm({
           firstName: coachData.firstName,
           lastName: coachData.lastName,
@@ -107,26 +70,15 @@ const EditCoach: React.FC<EditCoachProps> = ({ coachId, onClose }) => {
         if (!dojaangsRes.ok) throw new Error("Failed to fetch dojaangs");
         const dojaangsData = await dojaangsRes.json();
         setAllDojaangs(Array.isArray(dojaangsData) ? dojaangsData : dojaangsData.data || []);
-      } catch (err: any) {
-        setError(err.message || "Error loading coach");
+      } catch (err: unknown) {
+        if (err instanceof Error) setError(err.message || "Error loading coach");
+        else setError("Error loading coach");
       } finally {
         setLoading(false);
       }
     };
     fetchCoachAndDojaangs();
   }, [coachId, getToken]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) =>
-      prev
-        ? {
-          ...prev,
-          [name]: value,
-        }
-        : prev
-    );
-  };
 
   const handleAddManagedDojaang = async (dojaangId: number) => {
     if (!form) return;
@@ -149,8 +101,9 @@ const EditCoach: React.FC<EditCoachProps> = ({ coachId, onClose }) => {
         ...f!,
         managedDojaangIds: updatedIds,
       }));
-    } catch (err: any) {
-      alert(err.message || "Failed to update managed dojaangs");
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message || "Failed to update managed dojaangs");
+      else alert("Failed to update managed dojaangs");
     }
   };
 
@@ -184,8 +137,9 @@ const EditCoach: React.FC<EditCoachProps> = ({ coachId, onClose }) => {
       });
       if (!res.ok) throw new Error("Failed to update coach");
       onClose();
-    } catch (err: any) {
-      alert(err.message || "Failed to update coach");
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message || "Failed to update coach");
+      else alert("Failed to update coach");
     }
   };
 
@@ -213,13 +167,13 @@ const EditCoach: React.FC<EditCoachProps> = ({ coachId, onClose }) => {
               managedDojaangIds={form.managedDojaangIds ?? []}
               allDojaangs={allDojaangs}
               onAdd={handleAddManagedDojaang}
-              onRemove={(id) => {
+              onRemove={(removeId) => {
                 setForm((f) => ({
                   ...f!,
-                  managedDojaangIds: (f?.managedDojaangIds ?? []).filter((did) => did !== id),
+                  managedDojaangIds: (f?.managedDojaangIds ?? []).filter((did) => did !== removeId),
                 }));
               }}
-              onRemoveSuccess={(id) => {
+              onRemoveSuccess={() => {
                 // Optionally re-fetch or update state if needed
               }}
             />

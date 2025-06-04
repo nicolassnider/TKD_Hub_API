@@ -11,7 +11,6 @@ public static class DependencyInjection
         services.AddDbContext<TkdHubDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -60,4 +59,3 @@ public static class DependencyInjection
         return services;
     }
 }
-

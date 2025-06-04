@@ -1,16 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using TKDHubAPI.Application;
 using TKDHubAPI.Infrastructure;
+using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
 using TKDHubAPI.WebAPI.Middlewares;
 
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container using DI extension methods
-
-
-
-
-
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
@@ -20,6 +17,15 @@ builder.Services.AddWebAPIServices(builder.Configuration);
 
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TkdHubDbContext>();
+    if (dbContext.Database.IsRelational())
+    {
+        dbContext.Database.Migrate();
+    }
+}
 
 
 // Configure the HTTP request pipeline.
@@ -38,7 +44,7 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection();
 
 
-app.UseCors("AllowLocal3000");
+app.UseCors("AllowFrontend");
 
 
 app.UseAuthentication();

@@ -31,12 +31,13 @@ export default function CoachesAdmin() {
     });
     if (!res.ok) throw new Error("Failed to fetch coaches");
     const data = await res.json();
-    const coachesArray = Array.isArray(data)
-      ? data
-      : Array.isArray(data.data)
-        ? data.data
-        : [];
-    return coachesArray.map((c: any) => ({
+    const coachesArray =
+      Array.isArray(data)
+        ? data
+        : Array.isArray(data.data)
+          ? data.data
+          : [];
+    return coachesArray.map((c: { id: number; firstName?: string; lastName?: string; email: string }) => ({
       id: c.id,
       name: c.firstName && c.lastName ? `${c.firstName} ${c.lastName}` : c.firstName || c.lastName || "",
       email: c.email,

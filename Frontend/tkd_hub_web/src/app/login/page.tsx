@@ -1,12 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useRole } from "../context/RoleContext"; // <-- Import RoleContext
+import { useRole } from "../context/RoleContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-
-type LoginPageProps = {
-  onLogin?: () => void;
-};
 
 const errorAnimationStyle = `
 @keyframes fadeInError {
@@ -18,22 +14,23 @@ const errorAnimationStyle = `
 }
 `;
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage() {
   const { setIsLoggedIn } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { setRole } = useRole(); // <-- Use RoleContext
+  const { setRole } = useRole();
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7046/api";
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch("https://localhost:7046/api/Auth/login", {
+      const res = await fetch(`${apiBaseUrl}/Auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -54,10 +51,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         roleValue = data.user.role;
       }
       localStorage.setItem("role", roleValue);
-      setRole(roleValue); // <-- Update RoleContext
+      setRole(roleValue as "Admin" | "Coach" | "Student");
       setIsLoggedIn(true);
 
-      if (onLogin) onLogin();
       // Route to home after successful login
       router.push("/");
     } catch (err: unknown) {
@@ -71,7 +67,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     }
   }
 
-    return (
+  return (
     <>
       <style>{errorAnimationStyle}</style>
       <div

@@ -1,4 +1,3 @@
-page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import EditDojaang from "../components/dojaangs/EditDojaang";
