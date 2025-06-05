@@ -2,10 +2,11 @@
 import CoachSelector from "@/app/components/coaches/CoachSelector";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { apiRequest } from "@/app/utils/api";
 
 type EditDojaangProps = {
   dojaangId?: number; // Optional: if undefined, create mode
-  onClose: () => void;
+  onClose: (refresh?: boolean) => void;
 };
 
 type Dojaang = {
@@ -21,7 +22,7 @@ type Dojaang = {
   coachName?: string | null;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL||'https://localhost:3000/api';
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:3000/api";
 
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   const [dojaang, setDojaang] = useState<Dojaang | null>(null);
@@ -46,24 +47,28 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
       setLoading(false);
       return;
     }
-    const token = getToken();
-    if (!token) {
-      setError("Not authenticated.");
-      setLoading(false);
-      return;
-    }
-    fetch(`${baseUrl}/Dojaang/${dojaangId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Failed to fetch dojaang");
-        const response = await res.json();
+    const fetchDojaang = async () => {
+      const token = getToken();
+      if (!token) {
+        setError("Not authenticated.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await apiRequest<any>(
+          `${baseUrl}/Dojaang/${dojaangId}`,
+          { method: "GET" },
+          getToken
+        );
         setDojaang(response.data);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch dojaang");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDojaang();
+    // eslint-disable-next-line
   }, [dojaangId, getToken]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -78,7 +83,6 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
     setSaving(true);
     setError(null);
 
-    const token = getToken();
     try {
       const payload = {
         name: dojaang.name,
@@ -91,181 +95,192 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
         coachId: dojaang.coachId ? dojaang.coachId : null,
       };
 
-      let res;
       if (dojaangId) {
         // Edit mode (PUT)
-        res = await fetch(`${baseUrl}/Dojaang/${dojaangId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        await apiRequest(
+          `${baseUrl}/Dojaang/${dojaangId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: dojaangId, ...payload }),
           },
-          body: JSON.stringify({ id: dojaangId, ...payload }),
-        });
+          getToken
+        );
       } else {
         // Create mode (POST)
-        res = await fetch(`${baseUrl}/Dojaang`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        await apiRequest(
+          `${baseUrl}/Dojaang`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
           },
-          body: JSON.stringify(payload),
-        });
+          getToken
+        );
       }
-      if (!res.ok) throw new Error(dojaangId ? "Failed to update dojaang" : "Failed to create dojaang");
-      onClose();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || "An error occurred");
-      } else {
-        setError("An error occurred");
-      }
+      onClose(true); // pass true to trigger refresh in parent
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="modal fade show d-block" tabIndex={-1} role="dialog" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="modal-dialog modal-dialog-centered" role="document">
-        <div className="modal-content">
-          <button
-            type="button"
-            className="btn-close position-absolute end-0 m-3"
-            aria-label="Close"
-            onClick={onClose}
-            style={{ zIndex: 2 }}
-          ></button>
-          <div className="modal-header border-0 pb-0">
-            <h2 className="modal-title fs-5">{dojaangId ? "Edit Dojaang" : "Create Dojaang"}</h2>
-          </div>
-          <div className="modal-body">
-            {loading && <div className="text-center">Loading...</div>}
-            {error && <div className="text-red-600 text-center">{error}</div>}
-            {!loading && !error && dojaang && (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="name">Name:</label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    className="form-control"
-                    value={dojaang.name}
-                    onChange={handleChange}
-                    placeholder="Enter dojaang name"
-                    title="Dojaang Name"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="address">Address:</label>
-                  <input
-                    id="address"
-                    name="address"
-                    type="text"
-                    className="form-control"
-                    value={dojaang.address}
-                    onChange={handleChange}
-                    placeholder="Enter address"
-                    title="Address"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="location">Location:</label>
-                  <input
-                    id="location"
-                    name="location"
-                    type="text"
-                    className="form-control"
-                    value={dojaang.location}
-                    onChange={handleChange}
-                    placeholder="Enter location"
-                    title="Location"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="phoneNumber">Phone Number:</label>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="text"
-                    className="form-control"
-                    value={dojaang.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter phone number"
-                    title="Phone Number"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="email">Email:</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    className="form-control"
-                    value={dojaang.email}
-                    onChange={handleChange}
-                    placeholder="Enter email"
-                    title="Email"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="koreanName">Korean Name:</label>
-                  <input
-                    id="koreanName"
-                    name="koreanName"
-                    type="text"
-                    className="form-control"
-                    value={dojaang.koreanName}
-                    onChange={handleChange}
-                    placeholder="Enter Korean name"
-                    title="Korean Name"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="koreanNamePhonetic">Korean Name Phonetic:</label>
-                  <input
-                    id="koreanNamePhonetic"
-                    name="koreanNamePhonetic"
-                    type="text"
-                    className="form-control"
-                    value={dojaang.koreanNamePhonetic}
-                    onChange={handleChange}
-                    placeholder="Enter Korean name phonetic"
-                    title="Korean Name Phonetic"
-                  />
-                </div>
-                <div className="flex flex-col gap-1 w-full">
-                  <label htmlFor="coachName" className="font-medium">Coach:</label>
-                  <CoachSelector
-                    baseUrl={baseUrl}
-                    value={dojaang.coachId ? String(dojaang.coachId) : ""}
-                    onChange={e =>
-                      setDojaang({
-                        ...dojaang,
-                        coachId: e.target.value ? Number(e.target.value) : null,
-                      })
-                    }
-                    disabled={saving}
-                  />
-                </div>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-lg mx-auto relative max-h-[90vh] flex flex-col">
+        <button
+          type="button"
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
+          aria-label="Close"
+          onClick={() => onClose(false)}
+          disabled={saving}
+        >
+          &times;
+        </button>
+        <div className="px-8 pt-8 pb-2 flex-1 overflow-y-auto">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            {dojaangId ? "Edit Dojaang" : "Create Dojaang"}
+          </h2>
+          {loading && <div className="text-center text-gray-600">Loading...</div>}
+          {error && <div className="text-red-600 text-center">{error}</div>}
+          {!loading && !error && dojaang && (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="name">Name:</label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.name}
+                  onChange={handleChange}
+                  placeholder="Enter dojaang name"
+                  title="Dojaang Name"
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="address">Address:</label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.address}
+                  onChange={handleChange}
+                  placeholder="Enter address"
+                  title="Address"
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="location">Location:</label>
+                <input
+                  id="location"
+                  name="location"
+                  type="text"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.location}
+                  onChange={handleChange}
+                  placeholder="Enter location"
+                  title="Location"
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="phoneNumber">Phone Number:</label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="text"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
+                  title="Phone Number"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="email">Email:</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.email}
+                  onChange={handleChange}
+                  placeholder="Enter email"
+                  title="Email"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="koreanName">Korean Name:</label>
+                <input
+                  id="koreanName"
+                  name="koreanName"
+                  type="text"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.koreanName}
+                  onChange={handleChange}
+                  placeholder="Enter Korean name"
+                  title="Korean Name"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-medium" htmlFor="koreanNamePhonetic">Korean Name Phonetic:</label>
+                <input
+                  id="koreanNamePhonetic"
+                  name="koreanNamePhonetic"
+                  type="text"
+                  className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={dojaang.koreanNamePhonetic}
+                  onChange={handleChange}
+                  placeholder="Enter Korean name phonetic"
+                  title="Korean Name Phonetic"
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-full">
+                <label htmlFor="coachName" className="font-medium">Coach:</label>
+                <CoachSelector
+                  baseUrl={baseUrl}
+                  value={dojaang.coachId ? String(dojaang.coachId) : ""}
+                  onChange={e =>
+                    setDojaang({
+                      ...dojaang,
+                      coachId: e.target.value ? Number(e.target.value) : null,
+                    })
+                  }
+                  disabled={saving}
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
                 <button
-                  type="submit"
-                  className="btn btn-primary fw-semibold"
+                  type="button"
+                  className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+                  onClick={() => onClose(false)}
                   disabled={saving}
                 >
-                  {saving ? (dojaangId ? "Saving..." : "Creating...") : (dojaangId ? "Save" : "Create")}
+                  Cancel
                 </button>
-              </form>
-            )}
-          </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={saving}
+                >
+                  {saving
+                    ? dojaangId
+                      ? "Saving..."
+                      : "Creating..."
+                    : dojaangId
+                      ? "Save"
+                      : "Create"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>
   );
 }
-

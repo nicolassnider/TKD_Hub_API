@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { useRole } from "../context/RoleContext";
@@ -9,9 +9,61 @@ import servicesRoutes from "../routes/servicesRoutes";
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const { isLoggedIn, logout } = useAuth();
-  const { role, setRole } = useRole();
-  const router = useRouter();
+  const servicesRef = useRef<HTMLDivElement>(null);
+  const { role, setRole } = useRole(); // <-- Add this line
+  const { isLoggedIn, logout } = useAuth(); // <-- Make sure you have this
+  const router = useRouter()
+  // Close Services dropdown when clicking outside
+  useEffect(() => {
+    if (!isServicesOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        servicesRef.current &&
+        !servicesRef.current.contains(event.target as Node)
+      ) {
+        setIsServicesOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isServicesOpen]);
+
+  const renderMenuItems = (isMobile = false) => (
+    <>
+      <Link href="/" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>Home</Link>
+      <Link href="/blog" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>Blog</Link>
+      <Link href="/about" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>About</Link>
+      {(role === "Coach" || role === "Admin") && (
+        <div className="relative" ref={servicesRef}>
+          <button
+            onClick={() => setIsServicesOpen(!isServicesOpen)}
+            className={`block ${isMobile ? 'w-full text-left' : 'hover:text-gray-300'} focus:outline-none`}
+          >
+            Services
+          </button>
+          {isServicesOpen && (
+            <div className="absolute left-0 mt-2 min-w-[160px] bg-gray-700 rounded-md shadow-lg z-10">
+              {servicesRoutes.map(route => (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  className={`block ${isMobile ? 'px-4 py-2' : 'hover:bg-gray-600 px-4 py-2'}`}
+                >
+                  <i className={`${route.icon} mr-2`}></i> {route.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {role === "Student" && (
+        <Link href="/students" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>
+          <i className="bi bi-person-lines-fill mr-2"></i> Students
+        </Link>
+      )}
+      <Link href="/contact" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>Contact</Link>
+    </>
+  );
 
   return (
     <nav className="bg-gray-800 text-white">
@@ -21,46 +73,17 @@ export const Header = () => {
           <div className="flex-shrink-0">
             <Link href="/" className="text-xl font-bold">MyLogo</Link>
           </div>
+
           {/* Show actual role on the right side of the header */}
-          <div className="flex items-center space-x-2">
-            <span className="hidden md:inline text-sm text-gray-300">
+          <div className="hidden md:flex items-center space-x-2">
+            <span className="text-sm text-gray-300">
               Role: <span className="font-semibold">{role}</span>
             </span>
           </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4">
-            <Link href="/" className="hover:text-gray-300">Home</Link>
-            <Link href="/about" className="hover:text-gray-300">About</Link>
-            {(role === "Coach" || role === "Admin") && (
-              <div className="relative">
-                <button
-                  onClick={() => setIsServicesOpen(!isServicesOpen)}
-                  className="hover:text-gray-300 focus:outline-none"
-                >
-                  Services
-                </button>
-                {isServicesOpen && (
-                  <div className="absolute left-0 mt-2 w-full bg-gray-700 rounded-md shadow-lg z-10">
-                    {servicesRoutes.map(route => (
-                      <Link
-                        key={route.href}
-                        href={route.href}
-                        className="block px-4 py-2 hover:bg-gray-600"
-                      >
-                        <i className={`${route.icon} mr-2`}></i> {route.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {role === "Student" && (
-              <Link href="/students" className="hover:text-gray-300">
-                <i className="bi bi-person-lines-fill mr-2"></i> Students
-              </Link>
-            )}
-            <Link href="/contact" className="hover:text-gray-300">Contact</Link>
+            {renderMenuItems()}
             {/* Login/Logout Button */}
             {!isLoggedIn ? (
               <button
@@ -88,6 +111,7 @@ export const Header = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-300 hover:text-white focus:outline-none"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
             >
               <svg
                 className="h-6 w-6"
@@ -120,37 +144,7 @@ export const Header = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-gray-700">
-          <Link href="/" className="block px-4 py-2 hover:bg-gray-600">Home</Link>
-          <Link href="/about" className="block px-4 py-2 hover:bg-gray-600">About</Link>
-          {(role === "Coach" || role === "Admin") && (
-            <div className="relative">
-              <button
-                onClick={() => setIsServicesOpen(!isServicesOpen)}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-600"
-              >
-                Services
-              </button>
-              {isServicesOpen && (
-                <div className="absolute left-0 mt-2 w-full bg-gray-700 rounded-md shadow-lg z-10">
-                  {servicesRoutes.map(route => (
-                    <Link
-                      key={route.href}
-                      href={route.href}
-                      className="block px-4 py-2 hover:bg-gray-600"
-                    >
-                      <i className={`${route.icon} mr-2`}></i> {route.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          {role === "Student" && (
-            <Link href="/students" className="block px-4 py-2 hover:bg-gray-600">
-              <i className="bi bi-person-lines-fill mr-2"></i> Students
-            </Link>
-          )}
-          <Link href="/contact" className="block px-4 py-2 hover:bg-gray-600">Contact</Link>
+          {renderMenuItems(true)}
           {/* Login/Logout Button */}
           {!isLoggedIn ? (
             <button
