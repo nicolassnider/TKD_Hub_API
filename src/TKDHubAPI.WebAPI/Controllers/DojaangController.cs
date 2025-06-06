@@ -10,8 +10,7 @@ namespace TKDHubAPI.WebAPI.Controllers;
 /// API controller for managing dojaangs (martial arts schools).
 /// Provides endpoints to create, retrieve, update, and delete dojaangs.
 /// </summary>
-[ApiController]
-[Route("api/[controller]")]
+
 public class DojaangController : BaseApiController
 {
     private readonly IDojaangService _dojaangService;

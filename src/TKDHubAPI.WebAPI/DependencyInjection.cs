@@ -15,21 +15,19 @@ public static class DependencyInjection
         services.AddEndpointsApiExplorer();
 
 
+        // Bind CorsSettings from configuration
+        services.Configure<CorsSettings>(configuration.GetSection("Cors"));
+        var corsSettings = configuration.GetSection("Cors").Get<CorsSettings>() ?? new CorsSettings();
+
         services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins(
-                    "http://localhost:3000",
-                    "https://tkdhubweb-bvbqgpf0ead7c8e7.eastus-01.azurewebsites.net/",
-                    "https://tkdhubwenc-badpg5fbd6c8a7cf.canadacentral-01.azurewebsites.net"
-                    )
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+                policy.WithOrigins(corsSettings.AllowedOrigins)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
             });
         });
-
-
 
 
         // Add Swagger/OpenAPI

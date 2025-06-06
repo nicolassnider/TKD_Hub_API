@@ -7,6 +7,10 @@ using TKDHubAPI.Application.Interfaces;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
+/// <summary>
+/// API controller for managing coach users and their associated dojaangs.
+/// Provides endpoints for creating, retrieving, updating, and removing coaches and their managed dojaangs.
+/// </summary>
 [Authorize]
 public class CoachesController : BaseApiController
 {
@@ -14,6 +18,13 @@ public class CoachesController : BaseApiController
     private readonly ICoachService _coachService;
     private readonly IMapper _mapper;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CoachesController"/> class.
+    /// </summary>
+    /// <param name="userService">The user service instance.</param>
+    /// <param name="coachService">The coach service instance.</param>
+    /// <param name="mapper">The AutoMapper instance.</param>
+    /// <param name="logger">The logger instance.</param>
     public CoachesController(
         IUserService userService,
         ICoachService coachService,
@@ -29,6 +40,8 @@ public class CoachesController : BaseApiController
     /// <summary>
     /// Creates a new coach user. Only admins or coaches of the dojaang can add a coach to a dojaang.
     /// </summary>
+    /// <param name="createCoachDto">The DTO containing coach creation data.</param>
+    /// <returns>A standardized success response with the created coach, or an error response if unauthorized or on failure.</returns>
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateUserDto createCoachDto)
     {
@@ -59,6 +72,8 @@ public class CoachesController : BaseApiController
     /// <summary>
     /// Gets a coach by ID, including managed dojaangs.
     /// </summary>
+    /// <param name="id">The unique identifier of the coach.</param>
+    /// <returns>A standardized success response with the coach and managed dojaangs, or an error response if not found.</returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -81,6 +96,7 @@ public class CoachesController : BaseApiController
     /// <summary>
     /// Gets all coaches.
     /// </summary>
+    /// <returns>A standardized success response with a collection of all coaches.</returns>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -92,6 +108,9 @@ public class CoachesController : BaseApiController
     /// <summary>
     /// Removes a managed dojaang from a coach.
     /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <param name="dojaangId">The dojaang ID to remove from management.</param>
+    /// <returns>A standardized success response if removed, or an error response if not found or unauthorized.</returns>
     [HttpDelete("{coachId}/dojaangs/{dojaangId}")]
     public async Task<IActionResult> RemoveManagedDojaang(int coachId, int dojaangId)
     {
@@ -118,6 +137,9 @@ public class CoachesController : BaseApiController
     /// <summary>
     /// Updates the list of managed dojaangs for a coach.
     /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <param name="dto">The DTO containing the updated list of managed dojaang IDs.</param>
+    /// <returns>A standardized success response with the updated managed dojaangs, or an error response if IDs do not match or on failure.</returns>
     [HttpPut("{coachId}/managed-dojaangs")]
     public async Task<IActionResult> UpdateManagedDojaangs(int coachId, [FromBody] UpdateCoachManagedDojaangsDto dto)
     {
@@ -152,6 +174,11 @@ public class CoachesController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Creates or updates a coach user (upsert operation).
+    /// </summary>
+    /// <param name="upsertCoachDto">The DTO containing coach data for upsert.</param>
+    /// <returns>A standardized success response with the upserted coach, or an error response if unauthorized or on failure.</returns>
     [HttpPost("upsert")]
     public async Task<IActionResult> Upsert([FromBody] UpsertCoachDto upsertCoachDto)
     {
