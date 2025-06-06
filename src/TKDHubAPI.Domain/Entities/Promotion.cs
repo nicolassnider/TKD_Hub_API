@@ -23,4 +23,6 @@ public class Promotion
 
     public int DojaangId { get; set; } // FK to Dojaang
     public Dojaang Dojaang { get; set; } = null;
+
 }
+
