@@ -87,7 +87,11 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
       </ul>
       {onAdd && availableDojaangs.length > 0 && (
         <div className="flex items-center gap-2">
+          <label htmlFor="add-dojaang-select" className="sr-only">
+            Add Dojaang
+          </label>
           <select
+            id="add-dojaang-select"
             className="border rounded px-2 py-1"
             defaultValue=""
             onChange={(e) => {
@@ -112,3 +116,4 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
 };
 
 export default ManagedDojaangs;
+

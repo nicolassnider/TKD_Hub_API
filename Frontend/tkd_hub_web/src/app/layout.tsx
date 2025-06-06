@@ -28,15 +28,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-white min-h-screen`}>
         <AuthProvider>
           <RoleProvider>
-            <Header />
-            {children}
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-1 flex flex-col">{children}</main>
+            </div>
           </RoleProvider>
-
         </AuthProvider>
-
       </body>
     </html>
   );

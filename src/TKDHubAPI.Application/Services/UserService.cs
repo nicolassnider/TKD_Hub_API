@@ -550,4 +550,39 @@ public class UserService : IUserService
     {
         return (dojaangId == null || dojaangId == 0) ? null : dojaangId;
     }
+
+    public async Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto)
+    {
+        if (dto.Id.HasValue && dto.Id.Value > 0)
+        {
+            // Update existing coach
+            var user = await _userRepository.GetByIdAsync(dto.Id.Value);
+            if (user == null) throw new KeyNotFoundException("Coach not found.");
+
+            _mapper.Map(dto, user); // Use AutoMapper for property mapping
+
+            _userRepository.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+            return user;
+        }
+        else
+        {
+            // Create new coach with default password
+            var createDto = new CreateUserDto
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                Password = "coachPassword123!", // Set default password
+                PhoneNumber = dto.PhoneNumber,
+                Gender = dto.Gender,
+                DateOfBirth = dto.DateOfBirth,
+                DojaangId = dto.DojaangId,
+                RankId = dto.RankId,
+                JoinDate = dto.JoinDate,
+                RoleIds = dto.RoleIds
+            };
+            return await AddCoachToDojaangAsync(requestingUserId, createDto);
+        }
+    }
 }

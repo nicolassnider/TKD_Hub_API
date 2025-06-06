@@ -36,6 +36,8 @@ public class User
 
     public DateTime? JoinDate { get; set; } = DateTime.UtcNow;
 
+    public bool IsActive { get; set; } = true;
+
     // Many-to-many: User <-> UserRole
     public ICollection<UserUserRole> UserUserRoles { get; set; } = new List<UserUserRole>();
 

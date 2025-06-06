@@ -10,5 +10,33 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity>
     public virtual async Task<TEntity?> GetByIdAsync(int id) => await _context.Set<TEntity>().FindAsync(id);
     public async Task AddAsync(TEntity entity) => await _context.Set<TEntity>().AddAsync(entity);
     public void Update(TEntity entity) => _context.Set<TEntity>().Update(entity);
-    public void Remove(TEntity entity) => _context.Set<TEntity>().Remove(entity);
+    public void Remove(TEntity entity)
+    {
+        var isActiveProp = entity.GetType().GetProperty("IsActive");
+        if (isActiveProp != null && isActiveProp.PropertyType == typeof(bool))
+        {
+            // Soft delete: set IsActive to false
+            isActiveProp.SetValue(entity, false);
+            Update(entity);
+        }
+        else
+        {
+            // Hard delete if IsActive is not present
+            _context.Set<TEntity>().Remove(entity);
+        }
+    }
+
+    public void Reactivate(TEntity entity)
+    {
+        var isActiveProp = entity.GetType().GetProperty("IsActive");
+        if (isActiveProp != null && isActiveProp.PropertyType == typeof(bool))
+        {
+            isActiveProp.SetValue(entity, true);
+            Update(entity);
+        }
+        else
+        {
+            throw new InvalidOperationException("Entity does not support reactivation (missing IsActive property).");
+        }
+    }
 }

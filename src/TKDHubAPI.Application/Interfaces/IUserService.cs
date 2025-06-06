@@ -96,4 +96,6 @@ public interface IUserService : ICrudService<User>
     /// <param name="coachId">The coach's user ID.</param>
     /// <param name="dojaangId">The dojaang ID to add to management.</param>
     Task AddCoachToDojaangRelationAsync(int coachId, int dojaangId);
+
+    Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto);
 }

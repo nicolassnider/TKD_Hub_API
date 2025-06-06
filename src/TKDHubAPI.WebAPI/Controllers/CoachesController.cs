@@ -151,4 +151,29 @@ public class CoachesController : BaseApiController
             return ErrorResponse("An error occurred while updating managed dojaangs.", 500);
         }
     }
+
+    [HttpPost("upsert")]
+    public async Task<IActionResult> Upsert([FromBody] UpsertCoachDto upsertCoachDto)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
+                return ErrorResponse("Invalid user context.", 401);
+
+            var user = await _userService.UpsertCoachAsync(requestingUserId, upsertCoachDto);
+            var resultDto = _mapper.Map<UserDto>(user);
+            return SuccessResponse(resultDto);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.LogWarning(ex, "Unauthorized attempt to upsert coach.");
+            return ErrorResponse(ex.Message, 403);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error upserting coach");
+            return ErrorResponse(ex.Message, 500);
+        }
+    }
 }

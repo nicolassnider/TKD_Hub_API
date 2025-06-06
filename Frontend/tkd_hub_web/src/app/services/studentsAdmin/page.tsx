@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import StudentTableRows from "../components/students/StudentTableRows";
-import EditStudent from "../components/students/EditStudent";
-import DojaangSelector from "../components/dojaangs/DojaangSelector";
+import { useAuth } from "../../context/AuthContext";
+import StudentTableRows from "../../components/students/StudentTableRows";
+import EditStudent from "../../components/students/EditStudent";
+import DojaangSelector from "../../components/dojaangs/DojaangSelector";
 
 type Student = {
   id: number;
