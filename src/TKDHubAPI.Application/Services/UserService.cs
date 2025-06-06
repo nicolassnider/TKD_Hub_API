@@ -292,9 +292,6 @@ public class UserService : IUserService
         return role?.Name;
     }
 
-    /// <summary>
-    /// Only an Admin can assign Admin or Coach roles.
-    /// </summary>
     public bool CanAssignRoles(IEnumerable<string> currentUserRoles, IEnumerable<string> newUserRoleNames)
     {
         var sensitiveRoles = new[] { "Admin", "Coach" };
@@ -324,9 +321,6 @@ public class UserService : IUserService
         return roles.Select(r => r.Name).ToList();
     }
 
-    /// <summary>
-    /// Checks if a user (coach) manages a specific dojaang.
-    /// </summary>
     public async Task<bool> CoachManagesDojaangAsync(int coachId, int dojaangId)
     {
         var coach = await _userRepository.GetByIdAsync(coachId);
@@ -335,9 +329,6 @@ public class UserService : IUserService
         return coach.HasRole("Coach") && coach.ManagesDojaang(dojaangId);
     }
 
-    /// <summary>
-    /// Checks if the given role IDs include the Student role.
-    /// </summary>
     private async Task<bool> IsStudentRoleAsync(IEnumerable<int> roleIds)
     {
         var roles = await _userRoleRepository.GetRolesByIdsAsync(roleIds);
@@ -413,9 +404,6 @@ public class UserService : IUserService
         return user;
     }
 
-    /// <summary>
-    /// Business rule: Handles user creation with all role and dojaang assignment logic.
-    /// </summary>
     public async Task<UserDto> CreateUserAsync(int requestingUserId, IEnumerable<string> currentUserRoles, CreateUserDto createUserDto)
     {
         var newUserRoleNames = new List<string>();

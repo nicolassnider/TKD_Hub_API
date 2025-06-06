@@ -1,4 +1,5 @@
-﻿/// <summary>
+﻿namespace TKDHubAPI.Application.DTOs.Event;
+/// <summary>
 /// DTO for reading event details.
 /// </summary>
 public class EventDto

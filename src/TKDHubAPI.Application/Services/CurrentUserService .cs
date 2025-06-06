@@ -28,3 +28,4 @@ public class CurrentUserService : ICurrentUserService
         return await _userRepository.GetByIdAsync(userId);
     }
 }
+
