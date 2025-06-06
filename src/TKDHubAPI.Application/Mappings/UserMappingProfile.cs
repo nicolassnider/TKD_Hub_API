@@ -20,5 +20,11 @@ public class UserMappingProfile : Profile
 
         CreateMap<CreateStudentDto, User>()
             .ForMember(dest => dest.CurrentRankId, opt => opt.MapFrom(src => src.RankId));
+
+        CreateMap<UpsertCoachDto, User>()
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+            .ForMember(dest => dest.DojaangId, opt => opt.MapFrom(src => (src.DojaangId == null || src.DojaangId == 0) ? null : src.DojaangId))
+            .ForMember(dest => dest.CurrentRankId, opt => opt.MapFrom(src => src.RankId));
     }
 }
+
