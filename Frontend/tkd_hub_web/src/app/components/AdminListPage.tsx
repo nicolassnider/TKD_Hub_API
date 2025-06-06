@@ -1,54 +1,55 @@
-import { ReactNode } from "react";
-import { Toaster } from "react-hot-toast";
+import React from "react";
+import { useRole } from "../context/RoleContext"; // Import the role context
 
-interface AdminListPageProps {
+type AdminListPageProps = {
   title: string;
-  role?: string;
-  canCreate?: boolean;
-  onCreateClick?: () => void;
-  loading?: boolean;
-  error?: string | null;
-  children?: ReactNode;
-  createModal?: ReactNode;
-  editModal?: ReactNode;
-  deleteModal?: ReactNode;
-}
+  loading: boolean;
+  error: string | null;
+  filters?: React.ReactNode;
+  onCreate?: () => void;
+  createLabel?: string;
+  tableHead: React.ReactNode;
+  tableBody: React.ReactNode;
+  modals?: React.ReactNode;
+};
 
-export function AdminListPage({
+export const AdminListPage: React.FC<AdminListPageProps> = ({
   title,
-  role,
-  canCreate,
-  onCreateClick,
   loading,
   error,
-  children, // table
-  createModal,
-  editModal,
-  deleteModal,
-}: AdminListPageProps) {
+  filters,
+  onCreate,
+  createLabel,
+  tableHead,
+  tableBody,
+  modals,
+}) => {
+  const { role } = useRole(); // Get the role from context
+
   return (
-    <div className="w-full max-w-4xl mx-auto my-8 bg-white rounded-lg shadow-lg p-4 sm:p-8">
-      <Toaster position="top-right" />
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-900">{title}</h2>
-      <div className="mb-4 text-sm text-gray-600 text-center">
-        Current role: <span className="font-semibold">{role ?? "None"}</span>
-      </div>
-      {canCreate && (
-        <div className="mb-6 flex justify-center">
-          <button
-            className="px-5 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-            onClick={onCreateClick}
-          >
-            Add New
+    <div className="container py-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2>{title}</h2>
+        {onCreate && role === "Admin" && (
+          <button className="btn btn-success" onClick={onCreate}>
+            {createLabel || "Create"}
           </button>
+        )}
+      </div>
+      {filters && <div className="mb-3">{filters}</div>}
+      {error && <div className="alert alert-danger">{error}</div>}
+      <div className="table-responsive">
+        <table className="table table-striped align-middle">
+          <thead>{tableHead}</thead>
+          <tbody>{tableBody}</tbody>
+        </table>
+      </div>
+      {modals}
+      {loading && (
+        <div className="text-center py-3">
+          <span className="spinner-border" role="status" aria-hidden="true"></span>
         </div>
       )}
-      {loading && <div className="text-center text-gray-600">Loading...</div>}
-      {error && <div className="text-center text-red-600">{error}</div>}
-      {children}
-      {createModal}
-      {editModal}
-      {deleteModal}
     </div>
   );
-}
+};

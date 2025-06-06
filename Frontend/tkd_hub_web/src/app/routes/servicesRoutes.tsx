@@ -18,6 +18,11 @@ const servicesRoutes = [
     href: "/services/users",
     icon: "bi bi-people-fill",
     label: "Users",
+  },
+  {
+    href: "/services/promotionsAdmin",
+    icon: "bi bi-award-fill",
+    label: "Promotions",
   }
   
 ];

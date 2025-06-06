@@ -165,7 +165,7 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
   }
 
   return (
-    <div className="modal fade show d-block" tabIndex={-1} style={{ background: "rgba(0,0,0,0.4)" }}>
+    <div className="modal fade show d-block modal-bg-blur" tabIndex={-1}>
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header border-0 pb-0">
@@ -183,48 +183,57 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
             {!loading && (
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <div>
-                  <label>First Name:</label>
+                  <label htmlFor="firstName">First Name:</label>
                   <input
+                    id="firstName"
                     name="firstName"
                     value={student.firstName}
                     onChange={handleChange}
                     className="form-control"
                     required
+                    placeholder="First Name"
                   />
                 </div>
                 <div>
-                  <label>Last Name:</label>
+                  <label htmlFor="lastName">Last Name:</label>
                   <input
+                    id="lastName"
                     name="lastName"
                     value={student.lastName}
                     onChange={handleChange}
                     className="form-control"
                     required
+                    placeholder="Last Name"
                   />
                 </div>
                 <div>
-                  <label>Email:</label>
+                  <label htmlFor="email">Email:</label>
                   <input
+                    id="email"
                     name="email"
                     type="email"
                     value={student.email}
                     onChange={handleChange}
                     className="form-control"
                     required
+                    placeholder="Email"
                   />
                 </div>
                 <div>
-                  <label>Phone Number:</label>
+                  <label htmlFor="phoneNumber">Phone Number:</label>
                   <input
+                    id="phoneNumber"
                     name="phoneNumber"
                     value={student.phoneNumber || ""}
                     onChange={handleChange}
                     className="form-control"
+                    placeholder="Phone Number"
                   />
                 </div>
                 <div>
-                  <label>Gender:</label>
+                  <label htmlFor="gender">Gender:</label>
                   <select
+                    id="gender"
                     name="gender"
                     value={student.gender ?? ""}
                     onChange={handleChange}
@@ -237,17 +246,19 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
                   </select>
                 </div>
                 <div>
-                  <label>Date of Birth:</label>
+                  <label htmlFor="dateOfBirth">Date of Birth:</label>
                   <input
+                    id="dateOfBirth"
                     name="dateOfBirth"
                     type="date"
                     value={student.dateOfBirth ? student.dateOfBirth.substring(0, 10) : ""}
                     onChange={handleChange}
                     className="form-control"
+                    placeholder="YYYY-MM-DD"
                   />
                 </div>
                 <div>
-                  <label>Dojaang:</label>
+                  <label htmlFor="dojaang">Dojaang:</label>
                   <DojaangSelector
                     value={student.dojaangId ?? null}
                     onChange={handleDojaangChange}
@@ -256,7 +267,7 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
                   />
                 </div>
                 <div>
-                  <label>Rank:</label>
+                  <label htmlFor="rank">Rank:</label>
                   <RanksSelector
                     value={student.currentRankId ?? ""}
                     onChange={handleRankChange}

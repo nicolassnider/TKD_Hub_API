@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useRole } from "../context/RoleContext";
 import { useRouter } from "next/navigation";
 import servicesRoutes from "../routes/servicesRoutes";
+import { usePathname } from "next/navigation";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,9 @@ export const Header = () => {
   const { role, setRole } = useRole(); // <-- Add this line
   const { isLoggedIn, logout } = useAuth(); // <-- Make sure you have this
   const router = useRouter()
+
+  const pathname = usePathname(); // Get the current pathname
+
   // Close Services dropdown when clicking outside
   useEffect(() => {
     if (!isServicesOpen) return;
@@ -30,9 +34,10 @@ export const Header = () => {
 
   const renderMenuItems = (isMobile = false) => (
     <>
-      <Link href="/" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>Home</Link>
-      <Link href="/blog" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>Blog</Link>
-      <Link href="/about" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>About</Link>
+      <Link href="/" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/' ? 'text-gray-300' : ''}`}>Home</Link>
+      <Link href="/blog" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/blog' ? 'text-gray-300' : ''}`}>Blog</Link>
+      <Link href="/about" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/about' ? 'text-gray-300' : ''}`}>About</Link>
+      <Link href="/contact" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/contact' ? 'text-gray-300' : ''}`}>Contact</Link>
       {(role === "Coach" || role === "Admin") && (
         <div className="relative" ref={servicesRef}>
           <button
@@ -47,7 +52,7 @@ export const Header = () => {
                 <Link
                   key={route.href}
                   href={route.href}
-                  className={`block ${isMobile ? 'px-4 py-2' : 'hover:bg-gray-600 px-4 py-2'}`}
+                  className={`block ${isMobile ? 'px-4 py-2' : 'hover:bg-gray-600 px-4 py-2'} ${pathname === route.href ? 'text-gray-300' : ''}`}
                 >
                   <i className={`${route.icon} mr-2`}></i> {route.label}
                 </Link>
@@ -57,13 +62,14 @@ export const Header = () => {
         </div>
       )}
       {role === "Student" && (
-        <Link href="/students" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>
+        <Link href="/students" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/students' ? 'text-gray-300' : ''}`}>
           <i className="bi bi-person-lines-fill mr-2"></i> Students
         </Link>
       )}
-      <Link href="/contact" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'}`}>Contact</Link>
+      
     </>
   );
+
 
   return (
     <nav className="bg-gray-800 text-white">
