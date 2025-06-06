@@ -31,8 +31,8 @@ export default function CoachesAdmin() {
       Array.isArray(data)
         ? data
         : Array.isArray(data.data)
-        ? data.data
-        : [];
+          ? data.data
+          : [];
     return coachesArray.map(
       (c: { id: number; firstName?: string; lastName?: string; email: string }) => ({
         id: c.id,
@@ -73,41 +73,36 @@ export default function CoachesAdmin() {
   return (
     <AdminListPage
       title="Coaches Administration"
-      role={role}
-      canCreate={role === "Admin"}
-      onCreateClick={() => setShowAdd(true)}
+      onCreate={() => setShowAdd(true)}
       loading={loading}
       error={error}
-      createModal={showAdd && (
-        <EditCoach
-          coachId={0}
-          onClose={handleAddClose}
-        />
-      )}
-      editModal={editId !== null && (
-        <EditCoach
-          coachId={editId}
-          onClose={handleEditClose}
-        />
-      )}
-    >
-      {!loading && !error && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border border-gray-200 rounded text-sm sm:text-base">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">ID</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Email</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Options</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              <CoachesTableRows coaches={coaches} onEdit={setEditId} />
-            </tbody>
-          </table>
-        </div>
-      )}
-    </AdminListPage>
+      modals={
+        <>
+          {showAdd && (
+            <EditCoach
+              coachId={0}
+              onClose={handleAddClose}
+            />
+          )}
+          {editId !== null && (
+            <EditCoach
+              coachId={editId}
+              onClose={handleEditClose}
+            />
+          )}
+        </>
+      }
+      tableHead={
+        <tr className="bg-gray-100">
+          <th className="px-4 py-2 text-left font-semibold text-gray-700">ID</th>
+          <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
+          <th className="px-4 py-2 text-left font-semibold text-gray-700">Email</th>
+          <th className="px-4 py-2 text-left font-semibold text-gray-700">Options</th>
+        </tr>
+      }
+      tableBody={
+        <CoachesTableRows coaches={coaches} onEdit={setEditId} />
+      }
+    />
   );
 }

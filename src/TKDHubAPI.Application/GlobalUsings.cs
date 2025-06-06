@@ -1,6 +1,10 @@
 ﻿global using AutoMapper;
 global using FluentValidation;
+global using Microsoft.AspNetCore.Identity;
 global using System.ComponentModel.DataAnnotations;
+global using System.Security.Claims;
+global using TKDHubAPI.Application.DTOs.Dojaang;
+global using TKDHubAPI.Application.DTOs.User;
 global using TKDHubAPI.Application.Interfaces;
 global using TKDHubAPI.Domain.Entities;
 global using TKDHubAPI.Domain.Enums;

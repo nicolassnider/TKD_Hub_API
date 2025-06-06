@@ -1,4 +1,5 @@
-﻿/// <summary>
+﻿namespace TKDHubAPI.Application.Interfaces;
+/// <summary>
 /// Service interface for managing events, including creation, retrieval, and filtering by various criteria.
 /// </summary>
 public interface IEventService : ICrudService<Event>

@@ -1,8 +1,5 @@
 ﻿namespace TKDHubAPI.Infrastructure.Repositories;
 
-/// <summary>
-/// Repository implementation for User entity.
-/// </summary>
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
     private readonly TkdHubDbContext _context;

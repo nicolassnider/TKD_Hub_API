@@ -14,9 +14,7 @@ namespace TKDHubAPI.WebAPI.Controllers;
 /// Provides endpoints for user management with role-based authorization.
 /// </summary>
 [Authorize]
-[ApiController]
-[Route("api/[controller]")]
-public partial class UsersController : ControllerBase
+public partial class UsersController : BaseApiController
 {
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
@@ -26,7 +24,9 @@ public partial class UsersController : ControllerBase
     /// </summary>
     /// <param name="userService">The user service instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
-    public UsersController(IUserService userService, IMapper mapper)
+    /// <param name="logger">The logger instance.</param>
+    public UsersController(IUserService userService, IMapper mapper, ILogger<UsersController> logger)
+        : base(logger)
     {
         _userService = userService;
         _mapper = mapper;

@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import StudentTableRows from "../../components/students/StudentTableRows";
 import EditStudent from "../../components/students/EditStudent";
 import DojaangSelector from "../../components/dojaangs/DojaangSelector";
+import { AdminListPage } from "@/app/components/AdminListPage";
 
 type Student = {
   id: number;
@@ -30,7 +31,6 @@ export default function StudentsAdmin() {
   const [filterDojaangId, setFilterDojaangId] = useState<number | null>(null);
   const [dojaangs, setDojaangs] = useState<{ id: number; name: string }[]>([]);
 
-  // Helper to always return an array
   function extractStudents(data: unknown): Student[] {
     if (Array.isArray(data)) {
       return data as Student[];
@@ -116,10 +116,6 @@ export default function StudentsAdmin() {
       .catch(() => setSelectedStudent(null));
   }
 
-  function handleCloseDetails() {
-    setSelectedStudent(null);
-  }
-
   function handleEdit(id: number) {
     setEditId(id);
   }
@@ -170,88 +166,79 @@ export default function StudentsAdmin() {
     }
   }
 
+  // Use AdminListPage for rendering
   return (
-    <div className="w-100 max-w-3xl mx-auto my-4 bg-white dark:bg-neutral-900 rounded shadow p-4 p-sm-5">
-      <h2 className="h4 h3-sm font-bold mb-4 text-center">Students Administration</h2>
-      <div className="mb-3 d-flex justify-content-between align-items-center">
+    <AdminListPage
+      title="Students Administration"
+      loading={loading}
+      error={error}
+      filters={
         <DojaangSelector
           value={filterDojaangId}
           onChange={id => setFilterDojaangId(id)}
           allDojaangs={dojaangs}
           disabled={loading}
         />
-        <button className="btn btn-success" onClick={handleCreate}>
-          + Create Student
-        </button>
-      </div>
-      {loading && <div className="text-center">Loading...</div>}
-      {error && <div className="text-danger text-center">{error}</div>}
-      {!loading && !error && (
-        <table className="table table-bordered align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Options</th>
-            </tr>
-          </thead>
-          <tbody>
-            <StudentTableRows
-              students={students}
-              onDetails={handleDetails}
-              loading={loading}
-              renderOptions={(student) => (
-                <button
-                  className="btn btn-sm btn-primary ms-2"
-                  onClick={() => handleEdit(student.id)}
-                >
-                  Edit
-                </button>
-              )}
-            />
-          </tbody>
-        </table>
-      )}
-
-      {/* Create Modal */}
-      {showCreate && (
-        <EditStudent onClose={handleCreateClose} />
-      )}
-
-      {/* Edit Modal */}
-      {editId !== null && (
-        <EditStudent studentId={editId} onClose={handleEditClose} />
-      )}
-
-      {/* Details Modal */}
-      {selectedStudent && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ background: "rgba(0,0,0,0.4)" }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
-                <h3 className="modal-title fs-5">Student Details</h3>
-                <button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={handleCloseDetails}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div><strong>ID:</strong> {selectedStudent.id}</div>
-                <div><strong>Name:</strong> {selectedStudent.firstName} {selectedStudent.lastName}</div>
-                <div><strong>Email:</strong> {selectedStudent.email}</div>
-                {selectedStudent.phoneNumber && <div><strong>Phone:</strong> {selectedStudent.phoneNumber}</div>}
-                {selectedStudent.gender !== undefined && <div><strong>Gender:</strong> {selectedStudent.gender}</div>}
-                <div><strong>Dojaang ID:</strong> {selectedStudent.dojaangId ?? "None"}</div>
-                <div><strong>Current Rank ID:</strong> {selectedStudent.currentRankId ?? "None"}</div>
-                {selectedStudent.joinDate && <div><strong>Join Date:</strong> {selectedStudent.joinDate}</div>}
+      }
+      onCreate={handleCreate}
+      createLabel="+ Create Student"
+      tableHead={
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Options</th>
+        </tr>
+      }
+      tableBody={
+        <StudentTableRows
+          students={students}
+          onDetails={handleDetails}
+          loading={loading}
+          renderOptions={(student) => (
+            <button
+              className="btn btn-sm btn-primary ms-2"
+              onClick={() => handleEdit(student.id)}
+            >
+              Edit
+            </button>
+          )}
+        />
+      }
+      modals={
+        <>
+          {showCreate && <EditStudent onClose={handleCreateClose} />}
+          {editId !== null && <EditStudent studentId={editId} onClose={handleEditClose} />}
+          {selectedStudent && (
+            <div className="modal fade show d-block modal-bg-blur" tabIndex={-1}>
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                  <div className="modal-header border-0 pb-0">
+                    <h3 className="modal-title fs-5">Student Details</h3>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setSelectedStudent(null)}
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <div><strong>ID:</strong> {selectedStudent.id}</div>
+                    <div><strong>Name:</strong> {selectedStudent.firstName} {selectedStudent.lastName}</div>
+                    <div><strong>Email:</strong> {selectedStudent.email}</div>
+                    {selectedStudent.phoneNumber && <div><strong>Phone:</strong> {selectedStudent.phoneNumber}</div>}
+                    {selectedStudent.gender !== undefined && <div><strong>Gender:</strong> {selectedStudent.gender}</div>}
+                    <div><strong>Dojaang ID:</strong> {selectedStudent.dojaangId ?? "None"}</div>
+                    <div><strong>Current Rank ID:</strong> {selectedStudent.currentRankId ?? "None"}</div>
+                    {selectedStudent.joinDate && <div><strong>Join Date:</strong> {selectedStudent.joinDate}</div>}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+          )}
+        </>
+      }
+    />
   );
 }
+

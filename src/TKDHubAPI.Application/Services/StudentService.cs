@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using TKDHubAPI.Application.DTOs.User;
 
+namespace TKDHubAPI.Application.Services;
 public class StudentService : IStudentService
 {
     private readonly IUserRepository _userRepository;

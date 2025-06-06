@@ -5,13 +5,21 @@ using TKDHubAPI.Application.Interfaces;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
+/// <summary>
+/// API controller for managing Tuls (patterns/forms).
+/// Provides endpoints to retrieve, update, and delete Tuls, as well as filter Tuls by rank.
+/// </summary>
 public class TulsController : BaseApiController
 {
     private readonly ITulService _tulService;
     private readonly IMapper _mapper;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TulsController"/> class.
+    /// </summary>
+    /// <param name="tulService">The Tul service instance.</param>
+    /// <param name="mapper">The AutoMapper instance.</param>
+    /// <param name="logger">The logger instance.</param>
     public TulsController(
         ITulService tulService,
         IMapper mapper,
@@ -22,6 +30,10 @@ public class TulsController : BaseApiController
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Retrieves all Tuls.
+    /// </summary>
+    /// <returns>A standardized success response with a list of all Tuls.</returns>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -30,6 +42,11 @@ public class TulsController : BaseApiController
         return SuccessResponse(result);
     }
 
+    /// <summary>
+    /// Retrieves a specific Tul by its unique identifier.
+    /// </summary>
+    /// <param name="id">The Tul ID.</param>
+    /// <returns>A standardized success response with the Tul if found; otherwise, an error response.</returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -40,35 +57,11 @@ public class TulsController : BaseApiController
         return SuccessResponse(result);
     }
 
-    // No POST: Tuls cannot be created via API
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] TulDto tulDto)
-    {
-        if (id != tulDto.Id)
-            return ErrorResponse("ID mismatch.", 400);
-
-        var existing = await _tulService.GetByIdAsync(id);
-        if (existing == null)
-            return ErrorResponse("Tul not found", 404);
-
-        _mapper.Map(tulDto, existing);
-        await _tulService.UpdateAsync(existing);
-        var result = _mapper.Map<TulDto>(existing);
-        return SuccessResponse(result);
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var existing = await _tulService.GetByIdAsync(id);
-        if (existing == null)
-            return ErrorResponse("Tul not found", 404);
-
-        await _tulService.DeleteAsync(id);
-        return NoContent();
-    }
-
+    /// <summary>
+    /// Retrieves all Tuls recommended for a specific rank.
+    /// </summary>
+    /// <param name="rankId">The rank ID to filter Tuls by.</param>
+    /// <returns>A standardized success response with a list of Tuls for the specified rank.</returns>
     [HttpGet("by-rank/{rankId}")]
     public async Task<IActionResult> GetByRank(int rankId)
     {

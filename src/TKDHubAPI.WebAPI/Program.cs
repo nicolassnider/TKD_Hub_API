@@ -23,10 +23,13 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<TkdHubDbContext>();
     if (dbContext.Database.IsRelational())
     {
-        dbContext.Database.Migrate();
+        var pendingMigrations = dbContext.Database.GetPendingMigrations();
+        if (pendingMigrations.Any())
+        {
+            dbContext.Database.Migrate();
+        }
     }
 }
-
 
 // Configure the HTTP request pipeline.
 

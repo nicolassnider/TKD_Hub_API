@@ -27,4 +27,3 @@ public class UserMappingProfile : Profile
             .ForMember(dest => dest.CurrentRankId, opt => opt.MapFrom(src => src.RankId));
     }
 }
-
