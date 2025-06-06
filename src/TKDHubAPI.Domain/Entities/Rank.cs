@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TKDHubAPI.Domain.Entities;
+﻿namespace TKDHubAPI.Domain.Entities;
 public partial class Rank
 {
 
