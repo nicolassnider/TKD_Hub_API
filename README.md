@@ -113,6 +113,9 @@ Example error response:
 
 Interactive API docs are available at `/swagger` when the API is running.
 
+## Postman Collection
+https://.postman.co/workspace/herramientas~45fc8431-f748-496d-8a4c-412bf74cffb6/collection/148107-2bc03adf-7c18-4829-b77f-e90824db5f37?action=share&creator=148107
+
 ---
 
 ## Contributing
