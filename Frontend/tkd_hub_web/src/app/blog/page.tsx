@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 export default function BlogPage() {
   return (
@@ -8,7 +9,7 @@ export default function BlogPage() {
           TKD Hub Blog
         </h1>
         <p className="text-base sm:text-lg text-gray-700 mb-6 text-center">
-          Welcome to the TKD Hub Blog! Here you'll find news, tips, and stories from the world of Taekwondo and martial arts management.
+          Welcome to the TKD Hub Blog! Here you&apos;ll find news, tips, and stories from the world of Taekwondo and martial arts management.
         </p>
         <div className="space-y-8">
           {/* Example blog post preview */}
@@ -27,7 +28,7 @@ export default function BlogPage() {
           <article className="border-b pb-6">
             <h2 className="text-xl font-semibold text-blue-700 mb-2">Digital Tools for Dojang Management</h2>
             <p className="text-gray-700 mb-2">
-              Explore the benefits of using digital platforms like TKD Hub to streamline your school’s operations.
+              Explore the benefits of using digital platforms like TKD Hub to streamline your school&rsquo;s operations.
             </p>
             <a
               href="#"
@@ -39,18 +40,18 @@ export default function BlogPage() {
           {/* Add more blog post previews as needed */}
         </div>
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <a
+          <Link
             href="/"
             className="w-full sm:w-auto px-6 py-2 rounded bg-gray-800 hover:bg-gray-700 text-white font-semibold shadow transition text-center"
           >
             Home
-          </a>
-          <a
+          </Link>
+          <Link
             href="/about"
             className="w-full sm:w-auto px-6 py-2 rounded bg-green-700 hover:bg-green-800 text-white font-semibold shadow transition text-center"
           >
             About
-          </a>
+          </Link>
           <a
             href="/contact"
             className="w-full sm:w-auto px-6 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition text-center"

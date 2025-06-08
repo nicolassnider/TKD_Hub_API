@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isTokenExpired } from "../utils/auth";
+import toast from "react-hot-toast";
 
 type AuthContextType = {
   isLoggedIn: boolean;
@@ -35,6 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
+    toast.success("Logout successful!");
     router.push("/login");
   };
 

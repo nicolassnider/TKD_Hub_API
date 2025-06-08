@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useApiConfig } from "@/app/context/ApiConfigContext";
 
 type ManagedDojaangsProps = {
   managedDojaangIds: number[];
@@ -10,8 +11,6 @@ type ManagedDojaangsProps = {
   onRemoveSuccess?: (id: number) => void;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-
 const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
   managedDojaangIds,
   allDojaangs = [],
@@ -21,6 +20,7 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
   onRemoveSuccess,
 }) => {
   const { getToken } = useAuth();
+  const { baseUrl } = useApiConfig();
 
   // Filter out already managed dojaangs for the select
   const availableDojaangs = allDojaangs.filter(
@@ -116,4 +116,3 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
 };
 
 export default ManagedDojaangs;
-

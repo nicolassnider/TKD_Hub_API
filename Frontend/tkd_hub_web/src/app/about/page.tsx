@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -32,12 +33,12 @@ export default function AboutPage() {
           >
             Contact Us
           </a>
-          <a
+          <Link
             href="/"
             className="w-full sm:w-auto px-6 py-2 rounded bg-gray-800 hover:bg-gray-700 text-white font-semibold shadow transition text-center"
           >
             Home
-          </a>
+          </Link>
         </div>
       </div>
     </main>

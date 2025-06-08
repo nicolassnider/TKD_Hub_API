@@ -1,61 +1,49 @@
+import { Student } from "@/app/types/Student";
 import React from "react";
-
-type Student = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  gender?: number;
-  dojaangId?: number | null;
-  currentRankId?: number | null;
-  joinDate?: string;
-};
 
 type StudentTableRowsProps = {
   students: Student[];
-  onDetails: (id: number) => void;
-  loading?: boolean;
-  renderOptions?: (student: Student) => React.ReactNode;
+  onEdit: (studentId: number) => void;
+  onRequestDelete: (studentId: number) => void;
 };
 
 const StudentTableRows: React.FC<StudentTableRowsProps> = ({
   students,
-  onDetails,
-  loading,
-  renderOptions,
+  onEdit,
+  onRequestDelete,
 }) => (
   <>
-    {loading ? (
-      <tr>
-        <td colSpan={4} className="text-center text-muted">
-          Loading...
+    {students.map((student) => (
+      <tr key={student.id ?? Math.random()}>
+        <td className="px-4 py-2">{student.id}</td>
+        <td className="px-4 py-2">
+          {student.firstName && student.lastName
+            ? `${student.firstName} ${student.lastName}`
+            : student.firstName || student.lastName || "-"}
         </td>
-      </tr>
-    ) : students.length === 0 ? (
-      <tr>
-        <td colSpan={4} className="text-center text-muted">
-          No students found.
-        </td>
-      </tr>
-    ) : (
-      students.map(student => (
-        <tr key={student.id}>
-          <td>{student.id}</td>
-          <td>{student.firstName} {student.lastName}</td>
-          <td>{student.email}</td>
-          <td>
+        <td className="px-4 py-2">{student.email}</td>
+        <td className="px-4 py-2 align-middle">
+          <div className="flex gap-2 items-center">
             <button
-              className="btn btn-sm btn-info"
-              onClick={() => onDetails(student.id)}
+              className="flex items-center justify-center px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+              title="Edit"
+              onClick={() => typeof student.id === "number" && onEdit(student.id)}
+              disabled={typeof student.id !== "number"}
             >
-              Details
+              <i className="bi bi-pencil-square"></i>
             </button>
-            {renderOptions && renderOptions(student)}
-          </td>
-        </tr>
-      ))
-    )}
+            <button
+              className="flex items-center justify-center px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition"
+              title="Delete"
+              onClick={() => typeof student.id === "number" && onRequestDelete(student.id)}
+              disabled={typeof student.id !== "number"}
+            >
+              <i className="bi bi-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))}
   </>
 );
 

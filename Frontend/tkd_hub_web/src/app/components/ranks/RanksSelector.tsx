@@ -89,7 +89,8 @@ export default function RanksSelector({
         </div>
       )}
       <label htmlFor="currentRankId" className="font-medium">
-        Rank
+        Rank {filter !== "all" ? `(${filter.charAt(0).toUpperCase() + filter.slice(1)})` : ""}
+        {filter === "black" && " (Dan Level)"}
       </label>
       <select
         id="currentRankId"
@@ -115,3 +116,4 @@ export default function RanksSelector({
     </div>
   );
 }
+
