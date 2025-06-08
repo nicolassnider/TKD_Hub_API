@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
-using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Settings;
 
 namespace TKDHubAPI.Application.Services;
@@ -551,6 +548,33 @@ public class UserService : IUserService
 
             _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
+
+            // Update managed dojaangs if provided
+            if (dto.ManagedDojaangIds != null)
+            {
+                // Remove existing coach relations not in the new list
+                var toRemove = user.UserDojaangs
+                    .Where(ud => ud.Role == "Coach" && !dto.ManagedDojaangIds.Contains(ud.DojaangId))
+                    .ToList();
+                foreach (var rel in toRemove)
+                    user.UserDojaangs.Remove(rel);
+
+                // Add new relations
+                foreach (var dojaangId in dto.ManagedDojaangIds)
+                {
+                    if (!user.UserDojaangs.Any(ud => ud.DojaangId == dojaangId && ud.Role == "Coach"))
+                    {
+                        user.UserDojaangs.Add(new UserDojaang
+                        {
+                            UserId = user.Id,
+                            DojaangId = dojaangId,
+                            Role = "Coach"
+                        });
+                    }
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+
             return user;
         }
         else
@@ -570,7 +594,35 @@ public class UserService : IUserService
                 JoinDate = dto.JoinDate,
                 RoleIds = dto.RoleIds
             };
-            return await AddCoachToDojaangAsync(requestingUserId, createDto);
+            var user = await AddCoachToDojaangAsync(requestingUserId, createDto);
+
+            // Add managed dojaangs if provided
+            if (dto.ManagedDojaangIds != null)
+            {
+                foreach (var dojaangId in dto.ManagedDojaangIds)
+                {
+                    user.UserDojaangs.Add(new UserDojaang
+                    {
+                        UserId = user.Id,
+                        DojaangId = dojaangId,
+                        Role = "Coach"
+                    });
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            return user;
         }
+    }
+
+    public async Task ReactivateAsync(int userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new Exception("User not found.");
+
+        user.IsActive = true;
+        _userRepository.Update(user);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

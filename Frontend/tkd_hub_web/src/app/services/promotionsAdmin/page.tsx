@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { AdminListPage } from "../../components/AdminListPage";
 import { useAuth } from "../../context/AuthContext";
-import EditPromotion from "../../components/promotions/EditPromotion";
 import { toast } from "react-hot-toast";
-import PromotionTableRows from "@/app/components/promotions/PromotionTableRows";
+import PromotionTableRows from "@/app/components/promotions/PromotionsTableRows";
+import EditPromotion from "@/app/components/promotions/EditPromotions";
+import { useApiConfig } from "@/app/context/ApiConfigContext";
 
 type Promotion = {
   id: number;
@@ -13,7 +14,6 @@ type Promotion = {
   date: string;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 export default function PromotionsAdmin() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -23,6 +23,7 @@ export default function PromotionsAdmin() {
   const [showCreate, setShowCreate] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const { getToken } = useAuth();
+  const { baseUrl } = useApiConfig();
 
   const fetchPromotions = async () => {
     setLoading(true);
@@ -33,7 +34,7 @@ export default function PromotionsAdmin() {
       });
       const data = await res.json();
       setPromotions(Array.isArray(data) ? data : data.data || []);
-    } catch (e: any) {
+    } catch {
       setError("Failed to load promotions");
     } finally {
       setLoading(false);

@@ -30,5 +30,16 @@ body {
   background: rgba(0, 0, 0, 0.4);
 }
 
+/* Add this utility if not already present */
+.keep-all {
+  word-break: keep-all;
+}
 
+.tkd-login-box {
+  box-sizing: border-box;
+}
 
+.tkd-switch-dot {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}

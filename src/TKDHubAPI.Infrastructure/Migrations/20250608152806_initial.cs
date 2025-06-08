@@ -111,7 +111,8 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 {
                     TulId = table.Column<int>(type: "int", nullable: false),
                     TechniqueId = table.Column<int>(type: "int", nullable: false),
-                    Order = table.Column<int>(type: "int", nullable: false)
+                    Order = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -376,7 +377,8 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
                     DojaangId = table.Column<int>(type: "int", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
+                    Role = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -400,7 +402,8 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    UserRoleId = table.Column<int>(type: "int", nullable: false)
+                    UserRoleId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -458,25 +461,25 @@ namespace TKDHubAPI.Infrastructure.Migrations
                 columns: new[] { "Id", "Color", "CreatedDate", "DanLevel", "Description", "Name", "Order", "StripeColor" },
                 values: new object[,]
                 {
-                    { 1, 0, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4267), null, "Beginner", "White Belt", 1, null },
-                    { 2, 0, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4273), null, "Beginner with yellow stripe", "White Belt with Yellow Stripe", 1, 1 },
-                    { 3, 1, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4276), null, "Basic fundamentals", "Yellow Belt", 2, null },
-                    { 4, 1, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4278), null, "Basic fundamentals with green stripe", "Yellow Belt with Green Stripe", 2, 2 },
-                    { 5, 2, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4279), null, "Intermediate", "Green Belt", 3, null },
-                    { 6, 2, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4282), null, "Intermediate with blue stripe", "Green Belt with Blue Stripe", 3, 3 },
-                    { 7, 3, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4283), null, "Advanced intermediate", "Blue Belt", 4, null },
-                    { 8, 3, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4285), null, "Advanced intermediate with red stripe", "Blue Belt with Red Stripe", 4, 4 },
-                    { 9, 4, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4286), null, "Advanced", "Red Belt", 5, null },
-                    { 10, 4, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4288), null, "Advanced with black stripe", "Red Belt with Black Stripe", 5, 5 },
-                    { 11, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4289), 1, "Il Dan (1st Degree Black Belt)", "Black Belt 1st Dan", 6, null },
-                    { 12, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4291), 2, "Ee Dan (2nd Degree) - Boo Sabeom Nim (Assistant Instructor)", "Black Belt 2nd Dan", 7, null },
-                    { 13, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4292), 3, "Sam Dan (3rd Degree) - Boo Sabeom Nim (Assistant Instructor)", "Black Belt 3rd Dan", 7, null },
-                    { 14, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4313), 4, "Sa Dan (4th Degree) - Sabeom Nim (Instructor)", "Black Belt 4th Dan", 8, null },
-                    { 15, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4315), 5, "Oh Dan (5th Degree) - Sabeom Nim (Instructor)", "Black Belt 5th Dan", 8, null },
-                    { 16, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4316), 6, "Yuk Dan (6th Degree) - Sabeom Nim (Instructor)", "Black Belt 6th Dan", 8, null },
-                    { 17, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4317), 7, "Chil Dan (7th Degree) - Sahyeon Nim (Master Instructor)", "Black Belt 7th Dan", 9, null },
-                    { 18, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4319), 8, "Pal Dan (8th Degree) - Sahyeon Nim (Master Instructor)", "Black Belt 8th Dan", 9, null },
-                    { 19, 5, new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4321), 9, "Gu Dan (9th Degree) - Saseong Nim (Grandmaster)", "Black Belt 9th Dan", 10, null }
+                    { 1, 0, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1526), null, "Beginner", "White Belt", 1, null },
+                    { 2, 0, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1533), null, "Beginner with yellow stripe", "White Belt with Yellow Stripe", 1, 1 },
+                    { 3, 1, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1536), null, "Basic fundamentals", "Yellow Belt", 2, null },
+                    { 4, 1, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1538), null, "Basic fundamentals with green stripe", "Yellow Belt with Green Stripe", 2, 2 },
+                    { 5, 2, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1540), null, "Intermediate", "Green Belt", 3, null },
+                    { 6, 2, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1542), null, "Intermediate with blue stripe", "Green Belt with Blue Stripe", 3, 3 },
+                    { 7, 3, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1544), null, "Advanced intermediate", "Blue Belt", 4, null },
+                    { 8, 3, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1545), null, "Advanced intermediate with red stripe", "Blue Belt with Red Stripe", 4, 4 },
+                    { 9, 4, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1547), null, "Advanced", "Red Belt", 5, null },
+                    { 10, 4, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1549), null, "Advanced with black stripe", "Red Belt with Black Stripe", 5, 5 },
+                    { 11, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1550), 1, "Il Dan (1st Degree Black Belt)", "Black Belt 1st Dan", 6, null },
+                    { 12, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1552), 2, "Ee Dan (2nd Degree) - Boo Sabeom Nim (Assistant Instructor)", "Black Belt 2nd Dan", 7, null },
+                    { 13, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1553), 3, "Sam Dan (3rd Degree) - Boo Sabeom Nim (Assistant Instructor)", "Black Belt 3rd Dan", 7, null },
+                    { 14, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1555), 4, "Sa Dan (4th Degree) - Sabeom Nim (Instructor)", "Black Belt 4th Dan", 8, null },
+                    { 15, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1556), 5, "Oh Dan (5th Degree) - Sabeom Nim (Instructor)", "Black Belt 5th Dan", 8, null },
+                    { 16, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1558), 6, "Yuk Dan (6th Degree) - Sabeom Nim (Instructor)", "Black Belt 6th Dan", 8, null },
+                    { 17, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1559), 7, "Chil Dan (7th Degree) - Sahyeon Nim (Master Instructor)", "Black Belt 7th Dan", 9, null },
+                    { 18, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1561), 8, "Pal Dan (8th Degree) - Sahyeon Nim (Master Instructor)", "Black Belt 8th Dan", 9, null },
+                    { 19, 5, new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1563), 9, "Gu Dan (9th Degree) - Saseong Nim (Grandmaster)", "Black Belt 9th Dan", 10, null }
                 });
 
             migrationBuilder.InsertData(
@@ -492,7 +495,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CurrentRankId", "DateOfBirth", "DojaangId", "Email", "FirstName", "Gender", "IsActive", "JoinDate", "LastName", "PasswordHash", "PhoneNumber" },
-                values: new object[] { 1, null, null, null, "admin@tkdhub.com", "System", "OTHER", true, new DateTime(2025, 6, 6, 2, 26, 47, 412, DateTimeKind.Utc).AddTicks(6926), "Administrator", "AQAAAAIAAYagAAAAEPIEqy3W5xdPFGzQocqRotOWjT7N9sWoIfuMAAfCC69T89TLFZaVseJfNUUBTZtK8g==", "0000000000" });
+                values: new object[] { 1, null, null, null, "admin@tkdhub.com", "System", "OTHER", true, new DateTime(2025, 6, 8, 15, 28, 6, 547, DateTimeKind.Utc).AddTicks(1048), "Administrator", "AQAAAAIAAYagAAAAEPqGDj2cUH3K2x9WniI02cZsobVtXkdfu7oTdN40/OHjwfQ70vG6bzmroFyUjrBDig==", "0000000000" });
 
             migrationBuilder.InsertData(
                 table: "Tuls",
@@ -510,43 +513,43 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     { 9, "37 movements", "https://example.com/", "Toi-Gye", 8, "https://example.com/" },
                     { 10, "29 movements", "https://example.com/", "Hwa-Rang", 9, "https://example.com/" },
                     { 11, "30 movements", "https://example.com/", "Choong-Moo", 10, "https://example.com/" },
-                    { 13, "Kwang-Gae (39 movements)", "https://example.com/", "Kwang-Gae", 11, "https://example.com/" },
-                    { 14, "Po-Eun (36 movements)", "https://example.com/", "Po-Eun", 11, "https://example.com/" },
-                    { 15, "Ge-Baek (44 movements)", "https://example.com/", "Ge-Baek", 11, "https://example.com/" },
-                    { 16, "Eui-Am (45 movements)", "https://example.com/", "Eui-Am", 12, "https://example.com/" },
-                    { 17, "Choong-Jang (52 movements)", "https://example.com/", "Choong-Jang", 12, "https://example.com/" },
-                    { 18, "Juche (45 movements)", "https://example.com/", "Juche", 12, "https://example.com/" },
-                    { 19, "Ko-Dang* (39 movements)", "https://example.com/", "Ko-Dang", 12, "https://example.com/" },
-                    { 20, "Sam-Il (33 movements)", "https://example.com/", "Sam-Il", 13, "https://example.com/" },
-                    { 21, "Yoo-Sin (68 movements)", "https://example.com/", "Yoo-Sin", 13, "https://example.com/" },
-                    { 22, "Choi-Yong (46 movements)", "https://example.com/", "Choi-Yong", 13, "https://example.com/" },
-                    { 23, "Yon-Gae (49 movements)", "https://example.com/", "Yon-Gae", 14, "https://example.com/" },
-                    { 24, "Ul-Ji (42 movements)", "https://example.com/", "Ul-Ji", 14, "https://example.com/" },
-                    { 25, "Moon-Moo (61 movements)", "https://example.com/", "Moon-Moo", 14, "https://example.com/" },
-                    { 26, "So-San (72 movements)", "https://example.com/", "So-San", 15, "https://example.com/" },
-                    { 27, "Se-Jong (24 movements)", "https://example.com/", "Se-Jong", 15, "https://example.com/" },
-                    { 28, "Tong-Il (56 movements)", "https://example.com/", "Tong-Il", 16, "https://example.com/" }
+                    { 12, "Kwang-Gae (39 movements)", "https://example.com/", "Kwang-Gae", 11, "https://example.com/" },
+                    { 13, "Po-Eun (36 movements)", "https://example.com/", "Po-Eun", 11, "https://example.com/" },
+                    { 14, "Ge-Baek (44 movements)", "https://example.com/", "Ge-Baek", 11, "https://example.com/" },
+                    { 15, "Eui-Am (45 movements)", "https://example.com/", "Eui-Am", 12, "https://example.com/" },
+                    { 16, "Choong-Jang (52 movements)", "https://example.com/", "Choong-Jang", 12, "https://example.com/" },
+                    { 17, "Juche (45 movements)", "https://example.com/", "Juche", 12, "https://example.com/" },
+                    { 18, "Ko-Dang* (39 movements)", "https://example.com/", "Ko-Dang", 12, "https://example.com/" },
+                    { 19, "Sam-Il (33 movements)", "https://example.com/", "Sam-Il", 13, "https://example.com/" },
+                    { 20, "Yoo-Sin (68 movements)", "https://example.com/", "Yoo-Sin", 13, "https://example.com/" },
+                    { 21, "Choi-Yong (46 movements)", "https://example.com/", "Choi-Yong", 13, "https://example.com/" },
+                    { 22, "Yon-Gae (49 movements)", "https://example.com/", "Yon-Gae", 14, "https://example.com/" },
+                    { 23, "Ul-Ji (42 movements)", "https://example.com/", "Ul-Ji", 14, "https://example.com/" },
+                    { 24, "Moon-Moo (61 movements)", "https://example.com/", "Moon-Moo", 14, "https://example.com/" },
+                    { 25, "So-San (72 movements)", "https://example.com/", "So-San", 15, "https://example.com/" },
+                    { 26, "Se-Jong (24 movements)", "https://example.com/", "Se-Jong", 15, "https://example.com/" },
+                    { 27, "Tong-Il (56 movements)", "https://example.com/", "Tong-Il", 16, "https://example.com/" }
                 });
 
             migrationBuilder.InsertData(
                 table: "UserUserRoles",
-                columns: new[] { "UserId", "UserRoleId" },
-                values: new object[] { 1, 1 });
+                columns: new[] { "UserId", "UserRoleId", "Id" },
+                values: new object[] { 1, 1, 1 });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CurrentRankId", "DateOfBirth", "DojaangId", "Email", "FirstName", "Gender", "IsActive", "JoinDate", "LastName", "PasswordHash", "PhoneNumber" },
-                values: new object[] { 2, 11, new DateTime(1960, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "grandmaster@tkdhub.com", "Grand", "OTHER", true, new DateTime(2025, 6, 6, 2, 26, 47, 449, DateTimeKind.Utc).AddTicks(8061), "Master", "AQAAAAIAAYagAAAAEIvGMoC3LAkiPK8txhVzWo90b5HVRZxV6CYBvOwnaRXPDTAX0DTDj85NOtxACB3Mbw==", "1112223333" });
+                values: new object[] { 2, 11, new DateTime(1960, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "grandmaster@tkdhub.com", "Grand", "OTHER", true, new DateTime(2025, 6, 8, 15, 28, 6, 590, DateTimeKind.Utc).AddTicks(819), "Master", "AQAAAAIAAYagAAAAEC9jA5U4RS3mzqpvPdvrjhovINaqDDzMEuDEo+gCHwGiOmP4/ck8Ud9bYK16J3MECQ==", "1112223333" });
 
             migrationBuilder.InsertData(
                 table: "UserDojaangs",
-                columns: new[] { "DojaangId", "UserId", "Role" },
-                values: new object[] { 1, 2, "Coach" });
+                columns: new[] { "DojaangId", "UserId", "Id", "Role" },
+                values: new object[] { 1, 2, 1, "Coach" });
 
             migrationBuilder.InsertData(
                 table: "UserUserRoles",
-                columns: new[] { "UserId", "UserRoleId" },
-                values: new object[] { 2, 2 });
+                columns: new[] { "UserId", "UserRoleId", "Id" },
+                values: new object[] { 2, 2, 2 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Dojaangs_CoachId",

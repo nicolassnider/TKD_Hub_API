@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRole } from "../context/RoleContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const errorAnimationStyle = `
 @keyframes fadeInError {
@@ -54,13 +55,18 @@ export default function LoginPage() {
       setRole(roleValue as "Admin" | "Coach" | "Student");
       setIsLoggedIn(true);
 
+      // Show success toast
+      toast.success("Login successful!");
+
       // Route to home after successful login
       router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Login failed");
+        toast.error(err.message || "Login failed"); // Show error toast
       } else {
         setError("Login failed");
+        toast.error("Login failed"); // Show error toast
       }
     } finally {
       setLoading(false);
@@ -71,8 +77,7 @@ export default function LoginPage() {
     <>
       <style>{errorAnimationStyle}</style>
       <div
-        className="w-full max-w-md mx-auto my-16 bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-8 flex flex-col gap-6"
-        style={{ boxSizing: "border-box" }}
+        className="w-full max-w-md mx-auto my-16 bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-8 flex flex-col gap-6 tkd-login-box"
       >
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-gray-900 dark:text-white tracking-tight">
           TKD_Hub Login

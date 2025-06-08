@@ -13,4 +13,5 @@ public class UpsertCoachDto
     public int? RankId { get; set; }
     public DateTime? JoinDate { get; set; }
     public List<int> RoleIds { get; set; }
+    public List<int> ManagedDojaangIds { get; set; } // List of Dojaang IDs managed by the coach
 }

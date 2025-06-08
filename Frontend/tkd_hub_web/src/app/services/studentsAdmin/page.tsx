@@ -5,20 +5,12 @@ import StudentTableRows from "../../components/students/StudentTableRows";
 import EditStudent from "../../components/students/EditStudent";
 import DojaangSelector from "../../components/dojaangs/DojaangSelector";
 import { AdminListPage } from "@/app/components/AdminListPage";
+import { useApiConfig } from "@/app/context/ApiConfigContext";
+import { apiRequest } from "@/app/utils/api";
+import { useDojaangs } from "@/app/context/DojaangContext"; // <-- Add this import
+import { Student } from "@/app/types/Student";
 
-type Student = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  gender?: number;
-  dojaangId?: number | null;
-  currentRankId?: number | null;
-  joinDate?: string;
-};
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7046/api";
 
 export default function StudentsAdmin() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -29,7 +21,15 @@ export default function StudentsAdmin() {
   const [showCreate, setShowCreate] = useState(false);
   const { getToken } = useAuth();
   const [filterDojaangId, setFilterDojaangId] = useState<number | null>(null);
-  const [dojaangs, setDojaangs] = useState<{ id: number; name: string }[]>([]);
+  const { baseUrl } = useApiConfig();
+  const { dojaangs, loading: dojaangsLoading } = useDojaangs(); // <-- Use context
+
+
+  function getDojaangName(dojaangId: number | null | undefined) {
+    if (!dojaangId) return "None";
+    const found = dojaangs.find(d => d.id === dojaangId);
+    return found ? found.name : `ID ${dojaangId}`;
+  }
 
   function extractStudents(data: unknown): Student[] {
     if (Array.isArray(data)) {
@@ -60,24 +60,10 @@ export default function StudentsAdmin() {
     return [];
   }
 
-  // Fetch dojaangs for filter
   useEffect(() => {
-    const token = getToken();
-    fetch(`${baseUrl}/Dojaang`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        let arr: { id: number; name: string }[] = [];
-        if (Array.isArray(data)) arr = data;
-        else if (Array.isArray(data?.data)) arr = data.data;
-        else if (Array.isArray(data?.data?.data)) arr = data.data.data;
-        setDojaangs(arr);
-      })
-      .catch(() => setDojaangs([]));
-  }, [getToken]);
+    console.log("[StudentsAdmin] Dojaangs from context:", dojaangs);
+  }, [dojaangs]);
+
 
   // Fetch students (all or by dojaang)
   useEffect(() => {
@@ -96,7 +82,7 @@ export default function StudentsAdmin() {
       .then(data => setStudents(extractStudents(data)))
       .catch(() => setError("Failed to load students"))
       .finally(() => setLoading(false));
-  }, [getToken, filterDojaangId]);
+  }, [getToken, filterDojaangId, baseUrl]);
 
   function handleDetails(id: number) {
     setSelectedStudent(null);
@@ -145,6 +131,18 @@ export default function StudentsAdmin() {
     setShowCreate(true);
   }
 
+  function handleDelete(id: number) {
+    setLoading(true);
+    
+    apiRequest(`${baseUrl}/students/${id}`, { method: "DELETE" }, getToken)
+      .then(() => {
+        // Remove the deleted student from the list
+        setStudents(prev => prev.filter(s => s.id !== id));
+      })
+      .catch(() => setError("Failed to delete student"))
+      .finally(() => setLoading(false));
+  }
+
   function handleCreateClose(refresh?: boolean) {
     setShowCreate(false);
     if (refresh) {
@@ -177,7 +175,7 @@ export default function StudentsAdmin() {
           value={filterDojaangId}
           onChange={id => setFilterDojaangId(id)}
           allDojaangs={dojaangs}
-          disabled={loading}
+          disabled={loading || dojaangsLoading}
         />
       }
       onCreate={handleCreate}
@@ -192,17 +190,13 @@ export default function StudentsAdmin() {
       }
       tableBody={
         <StudentTableRows
-          students={students}
+          students={students.map(s => ({
+            ...s,
+            dojaangId: s.dojaangId === null ? undefined : s.dojaangId,
+          }))}
           onDetails={handleDetails}
-          loading={loading}
-          renderOptions={(student) => (
-            <button
-              className="btn btn-sm btn-primary ms-2"
-              onClick={() => handleEdit(student.id)}
-            >
-              Edit
-            </button>
-          )}
+          onEdit={handleEdit}
+          onRequestDelete={handleDelete}
         />
       }
       modals={
@@ -228,7 +222,9 @@ export default function StudentsAdmin() {
                     <div><strong>Email:</strong> {selectedStudent.email}</div>
                     {selectedStudent.phoneNumber && <div><strong>Phone:</strong> {selectedStudent.phoneNumber}</div>}
                     {selectedStudent.gender !== undefined && <div><strong>Gender:</strong> {selectedStudent.gender}</div>}
-                    <div><strong>Dojaang ID:</strong> {selectedStudent.dojaangId ?? "None"}</div>
+                    <div>
+                      <strong>Dojaang:</strong> {getDojaangName(selectedStudent.dojaangId)}
+                    </div>
                     <div><strong>Current Rank ID:</strong> {selectedStudent.currentRankId ?? "None"}</div>
                     {selectedStudent.joinDate && <div><strong>Join Date:</strong> {selectedStudent.joinDate}</div>}
                   </div>
@@ -241,4 +237,3 @@ export default function StudentsAdmin() {
     />
   );
 }
-

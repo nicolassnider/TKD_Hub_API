@@ -2,289 +2,229 @@
 import { useEffect, useState } from "react";
 import DojaangSelector from "../dojaangs/DojaangSelector";
 import RanksSelector from "../ranks/RanksSelector";
-
-type Student = {
-  id?: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  gender?: number;
-  dateOfBirth?: string;
-  dojaangId?: number;
-  currentRankId?: number | null;
-};
+import { useApiConfig } from "@/app/context/ApiConfigContext";
+import { useAuth } from "@/app/context/AuthContext";
+import GenderSelector from "../common/GenderSelector";
+import { apiRequest } from "@/app/utils/api";
+import toast from "react-hot-toast";
+import { useDojaangs } from "@/app/context/DojaangContext";
+import { Student } from "@/app/types/Student";
 
 type EditStudentProps = {
   studentId?: number;
   onClose: (refresh?: boolean) => void;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7046/api";
-
 const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
-  const [student, setStudent] = useState<Student>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    gender: 0,
-    dateOfBirth: "",
-    dojaangId: undefined,
-    currentRankId: null,
-  });
-  const [loading, setLoading] = useState(!!studentId);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [dojaangs, setDojaangs] = useState<{ id: number; name: string }[]>([]);
+  const [form, setForm] = useState<Omit<Student, "id"> | null>(null);
+  const { baseUrl } = useApiConfig();
+  const { getToken } = useAuth();
+  const { dojaangs, loading: dojaangsLoading } = useDojaangs();
 
   useEffect(() => {
-    // ...existing student fetch...
-    // Fetch dojaangs for selector
-    const token = localStorage.getItem("token");
-    fetch(`${baseUrl}/Dojaang`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        let arr: { id: number; name: string }[] = [];
-        if (Array.isArray(data)) arr = data;
-        else if (Array.isArray(data?.data)) arr = data.data;
-        else if (Array.isArray(data?.data?.data)) arr = data.data.data;
-        setDojaangs(arr);
-      })
-      .catch(() => setDojaangs([]));
-  }, [studentId]);
+    const fetchStudent = async () => {
+      try {
+        if (studentId) {
+          const studentData = await apiRequest<Student>(`${baseUrl}/students/${studentId}`, {}, getToken);
+          setForm(studentData);
+        } else {
+          setForm({
+            firstName: "",
+            lastName: "",
+            email: "",
+            phoneNumber: "",
+            gender: 0,
+            dateOfBirth: "",
+            dojaangId: undefined,
+            currentRankId: null,
+          });
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) setError(err.message || "Error loading student");
+        else setError("Error loading student");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudent();
+  }, [studentId, getToken, baseUrl]);
 
-  useEffect(() => {
-    if (!studentId) {
-      setStudent({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        gender: 0,
-        dateOfBirth: "",
-        dojaangId: undefined,
-        currentRankId: null,
-      });
-      setLoading(false);
-      return;
-    }
-    const token = localStorage.getItem("token");
-    fetch(`${baseUrl}/students/${studentId}`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        let s = data;
-        if (data?.data?.data) s = data.data.data[0];
-        else if (data?.data) s = data.data;
-        setStudent(s);
-      })
-      .catch(() => setError("Failed to load student"))
-      .finally(() => setLoading(false));
-  }, [studentId]);
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setStudent(prev => ({
-      ...prev,
-      [name]: name === "gender"
-        ? value === "" ? null : Number(value)
-        : value,
+    setForm(prev => ({
+      ...prev!,
+      [name]: name === "gender" ? Number(value) : value,
     }));
-  }
+  };
 
-  function handleDojaangChange(id: number | null) {
-    setStudent(prev => ({
-      ...prev,
+  const handleDojaangChange = (id: number | null) => {
+    setForm(prev => ({
+      ...prev!,
       dojaangId: id ?? undefined,
     }));
-  }
+  };
 
-  function handleRankChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setStudent(prev => ({
-      ...prev,
+  const handleRankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm(prev => ({
+      ...prev!,
       currentRankId: e.target.value === "" ? null : Number(e.target.value),
     }));
-  }
+  };
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    const token = localStorage.getItem("token");
-    const payload = {
-      firstName: student.firstName,
-      lastName: student.lastName,
-      email: student.email,
-      phoneNumber: student.phoneNumber,
-      gender: student.gender,
-      dateOfBirth: student.dateOfBirth
-        ? new Date(student.dateOfBirth).toISOString()
-        : null,
-      dojaangId: student.dojaangId,
-      rankId: student.currentRankId ?? null,
-    };
+    if (!form) return;
 
     try {
-      let res;
-      if (studentId) {
-        res = await fetch(`${baseUrl}/students/${studentId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          body: JSON.stringify({ id: studentId, ...payload }),
-        });
-      } else {
-        res = await fetch(`${baseUrl}/students`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
+      const payload = {
+        ...form,
+        dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth).toISOString() : null,
+      };
+
+      const method = studentId ? "PUT" : "POST";
+      const url = studentId ? `${baseUrl}/students/${studentId}` : `${baseUrl}/students`;
+
+      await apiRequest(
+        url,
+        {
+          method,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        });
-      }
-      if (!res.ok) throw new Error("Failed to save student");
+        },
+        getToken // <-- pass the token here!
+      );
+
       onClose(true);
+      toast.success("Student saved successfully!");
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message || "An error occurred");
-      else setError("An error occurred");
-    } finally {
-      setSaving(false);
+      if (err instanceof Error) toast.error(err.message || "Failed to save student");
+      else toast.error("Failed to save student");
     }
-  }
+  };
+
+  if (loading) return <div className="text-center">Loading student...</div>;
+  if (error) return <div className="text-danger text-center">{error}</div>;
+  if (!form) return null;
 
   return (
-    <div className="modal fade show d-block modal-bg-blur" tabIndex={-1}>
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-header border-0 pb-0">
-            <h3 className="modal-title fs-5">{studentId ? "Edit Student" : "Create Student"}</h3>
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col">
+        <button
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+          onClick={() => onClose(false)}
+          aria-label="Close"
+        >
+          &times;
+        </button>
+        <h3 className="text-lg font-bold mb-4 text-center">{studentId ? "Edit Student" : "Create Student"}</h3>
+        <form className="flex-1 overflow-y-auto pr-2 space-y-3" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium mb-1" htmlFor="firstName">First Name</label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.firstName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="block font-medium mb-1" htmlFor="lastName">Last Name</label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium mb-1" htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="block font-medium mb-1" htmlFor="phoneNumber">Phone Number</label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="text"
+                className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.phoneNumber || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium mb-1" htmlFor="gender">Gender</label>
+              <GenderSelector
+                value={form.gender}
+                onChange={e => setForm(prev => ({ ...prev!, gender: Number(e.target.value) }))}
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block font-medium mb-1" htmlFor="dateOfBirth">Date of Birth</label>
+              <input
+                id="dateOfBirth"
+                name="dateOfBirth"
+                type="date"
+                className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.dateOfBirth ? form.dateOfBirth.substring(0, 10) : ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block font-medium mb-1" htmlFor="dojaang">Dojaang</label>
+            <DojaangSelector
+              value={form.dojaangId ?? null}
+              onChange={handleDojaangChange}
+              disabled={loading || dojaangsLoading}
+              allDojaangs={dojaangs}
+            />
+          </div>
+          <div>
+            <RanksSelector
+              value={form.currentRankId ?? ""}
+              onChange={handleRankChange}
+              disabled={loading}
+              filter="color"
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
-              className="btn-close"
-              aria-label="Close"
+              className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
               onClick={() => onClose(false)}
-            ></button>
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {studentId ? "Update" : "Create"}
+            </button>
           </div>
-          <div className="modal-body">
-            {loading && <div className="text-center">Loading...</div>}
-            {error && <div className="text-danger text-center">{error}</div>}
-            {!loading && (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                <div>
-                  <label htmlFor="firstName">First Name:</label>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    value={student.firstName}
-                    onChange={handleChange}
-                    className="form-control"
-                    required
-                    placeholder="First Name"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="lastName">Last Name:</label>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    value={student.lastName}
-                    onChange={handleChange}
-                    className="form-control"
-                    required
-                    placeholder="Last Name"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email">Email:</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={student.email}
-                    onChange={handleChange}
-                    className="form-control"
-                    required
-                    placeholder="Email"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="phoneNumber">Phone Number:</label>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={student.phoneNumber || ""}
-                    onChange={handleChange}
-                    className="form-control"
-                    placeholder="Phone Number"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="gender">Gender:</label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={student.gender ?? ""}
-                    onChange={handleChange}
-                    className="form-control"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value={0}>Female</option>
-                    <option value={1}>Male</option>
-                    <option value={2}>Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="dateOfBirth">Date of Birth:</label>
-                  <input
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="date"
-                    value={student.dateOfBirth ? student.dateOfBirth.substring(0, 10) : ""}
-                    onChange={handleChange}
-                    className="form-control"
-                    placeholder="YYYY-MM-DD"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="dojaang">Dojaang:</label>
-                  <DojaangSelector
-                    value={student.dojaangId ?? null}
-                    onChange={handleDojaangChange}
-                    disabled={saving}
-                    allDojaangs={dojaangs}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="rank">Rank:</label>
-                  <RanksSelector
-                    value={student.currentRankId ?? ""}
-                    onChange={handleRankChange}
-                    disabled={saving}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={saving}
-                >
-                  {saving ? "Saving..." : studentId ? "Save" : "Create"}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
+        </form>
       </div>
     </div>
   );

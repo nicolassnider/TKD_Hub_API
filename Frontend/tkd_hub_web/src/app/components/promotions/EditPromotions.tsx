@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import StudentSelector from '../students/StudentSelector';
+import { useApiConfig } from '@/app/context/ApiConfigContext';
 
 type EditPromotionProps = {
 	promotionId?: number | null;
@@ -17,8 +18,6 @@ type Promotion = {
 	notes?: string;
 	dojaangId: number | null;
 };
-
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 const defaultPromotion: Promotion = {
 	studentId: null,
@@ -37,6 +36,7 @@ export default function EditPromotion({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const { getToken } = useAuth();
+	const {baseUrl} = useApiConfig();
 
 	// Student list state
 	const [students, setStudents] = useState<

@@ -1,8 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using TKDHubAPI.Application.DTOs.Dojaang;
-using TKDHubAPI.Application.Interfaces;
+﻿using TKDHubAPI.Application.DTOs.Dojaang;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
@@ -10,7 +6,7 @@ namespace TKDHubAPI.WebAPI.Controllers;
 /// API controller for managing dojaangs (martial arts schools).
 /// Provides endpoints to create, retrieve, update, and delete dojaangs.
 /// </summary>
-
+[Authorize]
 public class DojaangController : BaseApiController
 {
     private readonly IDojaangService _dojaangService;

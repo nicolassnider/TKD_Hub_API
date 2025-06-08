@@ -1,8 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public partial class Match
+public partial class Match : BaseEntity
 {
-
-    public int Id { get; set; }
 
     // Foreign key to Tournament
     public int TournamentId { get; set; }

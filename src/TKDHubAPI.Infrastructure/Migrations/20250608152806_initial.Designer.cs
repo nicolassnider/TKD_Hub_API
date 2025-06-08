@@ -12,7 +12,7 @@ using TKDHubAPI.Infrastructure.Data;
 namespace TKDHubAPI.Infrastructure.Migrations
 {
     [DbContext(typeof(TkdHubDbContext))]
-    [Migration("20250606022647_initial")]
+    [Migration("20250608152806_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -378,7 +378,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 1,
                             Color = 0,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4267),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1526),
                             Description = "Beginner",
                             Name = "White Belt",
                             Order = 1
@@ -387,7 +387,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 2,
                             Color = 0,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4273),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1533),
                             Description = "Beginner with yellow stripe",
                             Name = "White Belt with Yellow Stripe",
                             Order = 1,
@@ -397,7 +397,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 3,
                             Color = 1,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4276),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1536),
                             Description = "Basic fundamentals",
                             Name = "Yellow Belt",
                             Order = 2
@@ -406,7 +406,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 4,
                             Color = 1,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4278),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1538),
                             Description = "Basic fundamentals with green stripe",
                             Name = "Yellow Belt with Green Stripe",
                             Order = 2,
@@ -416,7 +416,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 5,
                             Color = 2,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4279),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1540),
                             Description = "Intermediate",
                             Name = "Green Belt",
                             Order = 3
@@ -425,7 +425,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 6,
                             Color = 2,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4282),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1542),
                             Description = "Intermediate with blue stripe",
                             Name = "Green Belt with Blue Stripe",
                             Order = 3,
@@ -435,7 +435,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 7,
                             Color = 3,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4283),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1544),
                             Description = "Advanced intermediate",
                             Name = "Blue Belt",
                             Order = 4
@@ -444,7 +444,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 8,
                             Color = 3,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4285),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1545),
                             Description = "Advanced intermediate with red stripe",
                             Name = "Blue Belt with Red Stripe",
                             Order = 4,
@@ -454,7 +454,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 9,
                             Color = 4,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4286),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1547),
                             Description = "Advanced",
                             Name = "Red Belt",
                             Order = 5
@@ -463,7 +463,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 10,
                             Color = 4,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4288),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1549),
                             Description = "Advanced with black stripe",
                             Name = "Red Belt with Black Stripe",
                             Order = 5,
@@ -473,7 +473,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 11,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4289),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1550),
                             DanLevel = 1,
                             Description = "Il Dan (1st Degree Black Belt)",
                             Name = "Black Belt 1st Dan",
@@ -483,7 +483,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 12,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4291),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1552),
                             DanLevel = 2,
                             Description = "Ee Dan (2nd Degree) - Boo Sabeom Nim (Assistant Instructor)",
                             Name = "Black Belt 2nd Dan",
@@ -493,7 +493,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 13,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4292),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1553),
                             DanLevel = 3,
                             Description = "Sam Dan (3rd Degree) - Boo Sabeom Nim (Assistant Instructor)",
                             Name = "Black Belt 3rd Dan",
@@ -503,7 +503,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 14,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4313),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1555),
                             DanLevel = 4,
                             Description = "Sa Dan (4th Degree) - Sabeom Nim (Instructor)",
                             Name = "Black Belt 4th Dan",
@@ -513,7 +513,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 15,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4315),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1556),
                             DanLevel = 5,
                             Description = "Oh Dan (5th Degree) - Sabeom Nim (Instructor)",
                             Name = "Black Belt 5th Dan",
@@ -523,7 +523,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 16,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4316),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1558),
                             DanLevel = 6,
                             Description = "Yuk Dan (6th Degree) - Sabeom Nim (Instructor)",
                             Name = "Black Belt 6th Dan",
@@ -533,7 +533,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 17,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4317),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1559),
                             DanLevel = 7,
                             Description = "Chil Dan (7th Degree) - Sahyeon Nim (Master Instructor)",
                             Name = "Black Belt 7th Dan",
@@ -543,7 +543,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 18,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4319),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1561),
                             DanLevel = 8,
                             Description = "Pal Dan (8th Degree) - Sahyeon Nim (Master Instructor)",
                             Name = "Black Belt 8th Dan",
@@ -553,7 +553,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             Id = 19,
                             Color = 5,
-                            CreatedDate = new DateTime(2025, 6, 6, 2, 26, 47, 376, DateTimeKind.Utc).AddTicks(4321),
+                            CreatedDate = new DateTime(2025, 6, 8, 15, 28, 6, 505, DateTimeKind.Utc).AddTicks(1563),
                             DanLevel = 9,
                             Description = "Gu Dan (9th Degree) - Saseong Nim (Grandmaster)",
                             Name = "Black Belt 9th Dan",
@@ -824,7 +824,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 13,
+                            Id = 12,
                             Description = "Kwang-Gae (39 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Kwang-Gae",
@@ -833,7 +833,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 14,
+                            Id = 13,
                             Description = "Po-Eun (36 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Po-Eun",
@@ -842,7 +842,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 15,
+                            Id = 14,
                             Description = "Ge-Baek (44 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Ge-Baek",
@@ -851,7 +851,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 16,
+                            Id = 15,
                             Description = "Eui-Am (45 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Eui-Am",
@@ -860,7 +860,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 17,
+                            Id = 16,
                             Description = "Choong-Jang (52 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Choong-Jang",
@@ -869,7 +869,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 17,
                             Description = "Juche (45 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Juche",
@@ -878,7 +878,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 18,
                             Description = "Ko-Dang* (39 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Ko-Dang",
@@ -887,7 +887,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 20,
+                            Id = 19,
                             Description = "Sam-Il (33 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Sam-Il",
@@ -896,7 +896,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 21,
+                            Id = 20,
                             Description = "Yoo-Sin (68 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Yoo-Sin",
@@ -905,7 +905,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 22,
+                            Id = 21,
                             Description = "Choi-Yong (46 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Choi-Yong",
@@ -914,7 +914,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 23,
+                            Id = 22,
                             Description = "Yon-Gae (49 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Yon-Gae",
@@ -923,7 +923,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 24,
+                            Id = 23,
                             Description = "Ul-Ji (42 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Ul-Ji",
@@ -932,7 +932,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 25,
+                            Id = 24,
                             Description = "Moon-Moo (61 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Moon-Moo",
@@ -941,7 +941,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 26,
+                            Id = 25,
                             Description = "So-San (72 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "So-San",
@@ -950,7 +950,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 27,
+                            Id = 26,
                             Description = "Se-Jong (24 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Se-Jong",
@@ -959,7 +959,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = 28,
+                            Id = 27,
                             Description = "Tong-Il (56 movements)",
                             ImageUrl = "https://example.com/",
                             Name = "Tong-Il",
@@ -974,6 +974,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("TechniqueId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<int>("Order")
@@ -1066,9 +1069,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                             FirstName = "System",
                             Gender = "OTHER",
                             IsActive = true,
-                            JoinDate = new DateTime(2025, 6, 6, 2, 26, 47, 412, DateTimeKind.Utc).AddTicks(6926),
+                            JoinDate = new DateTime(2025, 6, 8, 15, 28, 6, 547, DateTimeKind.Utc).AddTicks(1048),
                             LastName = "Administrator",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPIEqy3W5xdPFGzQocqRotOWjT7N9sWoIfuMAAfCC69T89TLFZaVseJfNUUBTZtK8g==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPqGDj2cUH3K2x9WniI02cZsobVtXkdfu7oTdN40/OHjwfQ70vG6bzmroFyUjrBDig==",
                             PhoneNumber = "0000000000"
                         },
                         new
@@ -1080,9 +1083,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                             FirstName = "Grand",
                             Gender = "OTHER",
                             IsActive = true,
-                            JoinDate = new DateTime(2025, 6, 6, 2, 26, 47, 449, DateTimeKind.Utc).AddTicks(8061),
+                            JoinDate = new DateTime(2025, 6, 8, 15, 28, 6, 590, DateTimeKind.Utc).AddTicks(819),
                             LastName = "Master",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIvGMoC3LAkiPK8txhVzWo90b5HVRZxV6CYBvOwnaRXPDTAX0DTDj85NOtxACB3Mbw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEC9jA5U4RS3mzqpvPdvrjhovINaqDDzMEuDEo+gCHwGiOmP4/ck8Ud9bYK16J3MECQ==",
                             PhoneNumber = "1112223333"
                         });
                 });
@@ -1093,6 +1096,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("DojaangId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Role")
@@ -1111,6 +1117,7 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         {
                             UserId = 2,
                             DojaangId = 1,
+                            Id = 1,
                             Role = "Coach"
                         });
                 });
@@ -1158,6 +1165,9 @@ namespace TKDHubAPI.Infrastructure.Migrations
                     b.Property<int>("UserRoleId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
                     b.HasKey("UserId", "UserRoleId");
 
                     b.HasIndex("UserRoleId");
@@ -1168,12 +1178,14 @@ namespace TKDHubAPI.Infrastructure.Migrations
                         new
                         {
                             UserId = 1,
-                            UserRoleId = 1
+                            UserRoleId = 1,
+                            Id = 1
                         },
                         new
                         {
                             UserId = 2,
-                            UserRoleId = 2
+                            UserRoleId = 2,
+                            Id = 2
                         });
                 });
 

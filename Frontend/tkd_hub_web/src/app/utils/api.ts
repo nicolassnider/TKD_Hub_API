@@ -20,8 +20,21 @@ export async function apiRequest<T>(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'API request failed');
+      // Try to parse error, but handle empty body
+      let errorMessage = 'API request failed';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch {
+        // Ignore JSON parse error for empty body
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Handle 204 No Content (e.g. DELETE)
+    if (response.status === 204) {
+      // @ts-expect-error: T may be void for 204
+      return undefined;
     }
 
     return response.json();

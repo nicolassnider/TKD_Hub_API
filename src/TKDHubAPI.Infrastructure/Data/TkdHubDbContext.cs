@@ -28,6 +28,7 @@ public class TkdHubDbContext : DbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<UserUserRole> UserUserRoles { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<UserDojaang> UserDojaangs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -141,3 +142,4 @@ public class TkdHubDbContext : DbContext
         return result;
     }
 }
+

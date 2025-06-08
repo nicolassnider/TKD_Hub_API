@@ -2,7 +2,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { apiRequest } from "@/app/utils/api";
 
-type Coach = { id: number; name: string };
+type Coach = { id: number; name: string; firstName?: string; lastName?: string };
+
+type ApiCoach = {
+  id: number;
+  firstName?: string;
+  lastName?: string;
+};
+
+type ApiResponse =
+  | ApiCoach[]
+  | { data: ApiCoach[] };
 
 type CoachSelectorProps = {
   baseUrl: string;
@@ -17,11 +27,11 @@ export default function CoachSelector({ baseUrl, value, onChange, disabled }: Co
   const { getToken } = useAuth();
 
   useEffect(() => {
-    apiRequest<any>(`${baseUrl}/Coaches`, {}, getToken)
+    apiRequest<ApiResponse>(`${baseUrl}/Coaches`, {}, getToken)
       .then((data) => {
-        let arr: { id: number; name: string }[] = [];
+        let arr: Coach[] = [];
         if (Array.isArray(data)) {
-          arr = data.map((c: any) => ({
+          arr = data.map((c: ApiCoach) => ({
             id: c.id,
             name: [c.firstName, c.lastName].filter(Boolean).join(" "),
           }));
@@ -29,9 +39,9 @@ export default function CoachSelector({ baseUrl, value, onChange, disabled }: Co
           typeof data === "object" &&
           data !== null &&
           "data" in data &&
-          Array.isArray((data as { data?: unknown }).data)
+          Array.isArray(data.data)
         ) {
-          arr = (data as { data: any[] }).data.map((c) => ({
+          arr = data.data.map((c: ApiCoach) => ({
             id: c.id,
             name: [c.firstName, c.lastName].filter(Boolean).join(" "),
           }));

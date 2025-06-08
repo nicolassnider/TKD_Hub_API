@@ -1,8 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public partial class Rank
+public partial class Rank : BaseEntity
 {
-
-    public int Id { get; set; }
 
     [Required]
     [MaxLength(50)]
@@ -27,3 +25,4 @@ public partial class Rank
     // Navigation Property for Tuls
     public ICollection<Tul> Tuls { get; set; } = new List<Tul>();
 }
+

@@ -6,6 +6,9 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from "./context/AuthContext";
 import Header from "./components/Header";
+import { Toaster } from "react-hot-toast";
+import { ApiConfigProvider } from "./context/ApiConfigContext";
+import { DojaangProvider } from "./context/DojaangContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +32,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-white min-h-screen`}>
-        <AuthProvider>
-          <RoleProvider>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-1 flex flex-col">{children}</main>
-            </div>
-          </RoleProvider>
-        </AuthProvider>
+        <Toaster />
+        <ApiConfigProvider>
+          <AuthProvider>
+            <RoleProvider>
+              <DojaangProvider>
+                <div className="flex flex-col min-h-screen">
+                  <Header />
+                  <main className="flex-1 flex flex-col">{children}</main>
+                </div>
+              </DojaangProvider>
+            </RoleProvider>
+          </AuthProvider>
+        </ApiConfigProvider>
       </body>
     </html>
   );
