@@ -5,6 +5,7 @@ type StudentTableRowsProps = {
   students: Student[];
   onEdit: (studentId: number) => void;
   onRequestDelete: (studentId: number) => void;
+  onDetails?: (studentId: number) => void; // <-- Add this line
 };
 
 const StudentTableRows: React.FC<StudentTableRowsProps> = ({

@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { AdminListPage } from "../../components/AdminListPage";
 import DojaangTableRows from "@/app/components/dojaangs/DojaangTableRows";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
+import { Dojaang } from "@/app/types/Dojaang";
 
 type ApiDojaangResponse = Dojaang[] | { data: Dojaang[] };
 
@@ -62,7 +63,7 @@ export default function DojaangsAdmin() {
           ? data.data
           : [];
     return dojaangsArray.map(
-      (d: any) => ({
+      (d: Dojaang) => ({
         id: d.id,
         name: d.name,
         email: d.email || "",

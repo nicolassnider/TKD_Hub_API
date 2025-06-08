@@ -3,7 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { useApiConfig } from "./ApiConfigContext";
 import { apiRequest } from "../utils/api";
-import { Dojaang } from "../types/Dojaang"; // <-- Import the type
+import { Dojaang } from "../types/Dojaang";
+
 
 type DojaangContextType = {
     dojaangs: Dojaang[];

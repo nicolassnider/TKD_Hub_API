@@ -1,4 +1,4 @@
-type Dojaang = {
+export type Dojaang = {
   id: number;
   name: string;
   email: string;
