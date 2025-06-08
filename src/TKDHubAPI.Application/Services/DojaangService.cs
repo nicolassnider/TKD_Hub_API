@@ -1,14 +1,13 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class DojaangService : IDojaangService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGenericRepository<User> _userRepository;
     private readonly IMapper _mapper;
-    private readonly IGenericRepository<UserDojaang> _userDojaangRepository;
+    private readonly IUserDojaangRepository _userDojaangRepository;
     private readonly IDojaangRepository _dojaangRepository;
     private readonly ICurrentUserService _currentUserService;
+
 
 
     public DojaangService(
@@ -16,8 +15,8 @@ public class DojaangService : IDojaangService
         IDojaangRepository dojaangRepository,
         IMapper mapper,
         IGenericRepository<User> userRepository,
-        IGenericRepository<UserDojaang> userDojaangRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IUserDojaangRepository userDojaangRepository)
     {
         _unitOfWork = unitOfWork;
         _dojaangRepository = dojaangRepository;
@@ -98,8 +97,22 @@ public class DojaangService : IDojaangService
     {
         var dojaang = await _dojaangRepository.GetByIdAsync(id);
         if (dojaang == null) return null;
+
         var dto = _mapper.Map<DojaangDto>(dojaang);
-        MapCoachName(dojaang, dto);
+
+        // Get the coach relation from UserDojaangRepository
+        var coachRelation = await _userDojaangRepository.GetCoachRelationForDojaangAsync(id);
+        if (coachRelation != null && coachRelation.User != null)
+        {
+            dto.CoachId = coachRelation.UserId;
+            dto.CoachName = $"{coachRelation.User.FirstName} {coachRelation.User.LastName}";
+        }
+        else
+        {
+            dto.CoachId = 0;
+            dto.CoachName = string.Empty;
+        }
+
         return dto;
     }
 
@@ -223,3 +236,4 @@ public class DojaangService : IDojaangService
         throw new NotImplementedException();
     }
 }
+

@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Interfaces;
+﻿namespace TKDHubAPI.Application.Interfaces;
 
 /// <summary>
 /// Interface for user-related operations, including user creation, retrieval, and management.
@@ -159,4 +157,11 @@ public interface IUserService : ICrudService<User>
     /// <param name="dto">The DTO containing the coach information.</param>
     /// <returns>A task that represents the asynchronous operation, containing the upserted User.</returns>
     Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto);
+
+    /// <summary>
+    /// Reactivates a coach user by their user ID, typically by setting their account status to active.
+    /// </summary>
+    /// <param name="coachId">The ID of the coach to reactivate.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ReactivateAsync(int coachId);
 }

@@ -13,4 +13,5 @@ public class UserDto
     public DateTime? JoinDate { get; set; }
     public List<string> Roles { get; set; }
     public List<int> ManagedDojaangIds { get; set; }
+    public bool IsActive { get; set; } = true;
 }
