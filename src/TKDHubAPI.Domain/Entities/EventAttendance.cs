@@ -1,8 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public partial class EventAttendance
+public partial class EventAttendance : BaseEntity
 {
-
-    public int Id { get; set; }
     public int EventId { get; set; }
     public int StudentId { get; set; }
     public DateTime AttendanceDate { get; set; }

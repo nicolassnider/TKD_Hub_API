@@ -1,10 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public partial class TournamentRegistration
+public partial class TournamentRegistration : BaseEntity
 {
-
-    [Key]
-    public int Id { get; set; }
-
     [ForeignKey("Tournament")]
     public int TournamentId { get; set; }
 

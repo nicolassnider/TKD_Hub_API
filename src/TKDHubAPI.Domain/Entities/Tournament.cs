@@ -1,8 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Tournament
+public class Tournament : BaseEntity
 {
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(200)]
     public string Name { get; set; } = string.Empty;

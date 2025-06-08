@@ -1,8 +1,7 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
 
-public class User
+public class User : BaseEntity
 {
-    public int Id { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -66,3 +65,4 @@ public class User
         return UserDojaangs.Any(ud => ud.DojaangId == dojaangId && ud.Role == "Coach");
     }
 }
+

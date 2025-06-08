@@ -1,7 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Dojaang
+public class Dojaang : BaseEntity
 {
-    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
@@ -22,3 +21,4 @@ public class Dojaang
     // Many-to-many: Dojaang <-> User (coaches)
     public ICollection<UserDojaang> UserDojaangs { get; set; } = new List<UserDojaang>();
 }
+

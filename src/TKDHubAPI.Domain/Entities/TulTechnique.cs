@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class TulTechnique
+public class TulTechnique : BaseEntity
 {
     public int TulId { get; set; }
     public Tul Tul { get; set; } = null!;
@@ -9,3 +9,4 @@ public class TulTechnique
 
     public int Order { get; set; }
 }
+

@@ -1,8 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Promotion
+public class Promotion : BaseEntity
 {
-    public int Id { get; set; }
-
     // Foreign key to the promoted student (User)
     public int StudentId { get; set; }
 

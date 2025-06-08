@@ -1,9 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public partial class Event
+public partial class Event : BaseEntity
 {
-
-
-    public int Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; } = string.Empty;
     public EventType Type { get; set; }
@@ -18,4 +15,5 @@ public partial class Event
 
     public ICollection<EventAttendance> EventAttendances { get; set; } = new List<EventAttendance>();
 }
+
 
