@@ -53,8 +53,8 @@ public static class SeedData
     {
         return new List<UserUserRole>
         {
-            new UserUserRole { UserId = 1, UserRoleId = 1 }, // Admin
-            new UserUserRole { UserId = 2, UserRoleId = 2 }  // Grand Master as Coach
+            new UserUserRole { Id = 1, UserId = 1, UserRoleId = 1 }, // Admin
+            new UserUserRole { Id = 2, UserId = 2, UserRoleId = 2 }  // Grand Master as Coach
         };
     }
 
@@ -64,6 +64,7 @@ public static class SeedData
         {
             new UserDojaang
             {
+                Id = 1,
                 UserId = 2,        // Grand Master
                 DojaangId = 1,     // Sede Central
                 Role = "Coach"
@@ -133,34 +134,32 @@ public static class SeedData
 
             // Black Belt (Dan) Patterns
             // 1st Dan
-            new Tul { Id = 13, Name = "Kwang-Gae", Description = "Kwang-Gae (39 movements)", RecommendedRankId = 11, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 14, Name = "Po-Eun", Description = "Po-Eun (36 movements)", RecommendedRankId = 11, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 15, Name = "Ge-Baek", Description = "Ge-Baek (44 movements)", RecommendedRankId = 11, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 12, Name = "Kwang-Gae", Description = "Kwang-Gae (39 movements)", RecommendedRankId = 11, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 13, Name = "Po-Eun", Description = "Po-Eun (36 movements)", RecommendedRankId = 11, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 14, Name = "Ge-Baek", Description = "Ge-Baek (44 movements)", RecommendedRankId = 11, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
 
             // 2nd Dan
-            new Tul { Id = 16, Name = "Eui-Am", Description = "Eui-Am (45 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 17, Name = "Choong-Jang", Description = "Choong-Jang (52 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 18, Name = "Juche", Description = "Juche (45 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 19, Name = "Ko-Dang", Description = "Ko-Dang* (39 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 15, Name = "Eui-Am", Description = "Eui-Am (45 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 16, Name = "Choong-Jang", Description = "Choong-Jang (52 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 17, Name = "Juche", Description = "Juche (45 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 18, Name = "Ko-Dang", Description = "Ko-Dang* (39 movements)", RecommendedRankId = 12, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
 
             // 3rd Dan
-            new Tul { Id = 20, Name = "Sam-Il", Description = "Sam-Il (33 movements)", RecommendedRankId = 13, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 21, Name = "Yoo-Sin", Description = "Yoo-Sin (68 movements)", RecommendedRankId = 13, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 22, Name = "Choi-Yong", Description = "Choi-Yong (46 movements)", RecommendedRankId = 13, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 19, Name = "Sam-Il", Description = "Sam-Il (33 movements)", RecommendedRankId = 13, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 20, Name = "Yoo-Sin", Description = "Yoo-Sin (68 movements)", RecommendedRankId = 13, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 21, Name = "Choi-Yong", Description = "Choi-Yong (46 movements)", RecommendedRankId = 13, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
 
             // 4th Dan
-            new Tul { Id = 23, Name = "Yon-Gae", Description = "Yon-Gae (49 movements)", RecommendedRankId = 14, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 24, Name = "Ul-Ji", Description = "Ul-Ji (42 movements)", RecommendedRankId = 14, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 25, Name = "Moon-Moo", Description = "Moon-Moo (61 movements)", RecommendedRankId = 14, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 22, Name = "Yon-Gae", Description = "Yon-Gae (49 movements)", RecommendedRankId = 14, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 23, Name = "Ul-Ji", Description = "Ul-Ji (42 movements)", RecommendedRankId = 14, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 24, Name = "Moon-Moo", Description = "Moon-Moo (61 movements)", RecommendedRankId = 14, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
 
             // 5th Dan
-            new Tul { Id = 26, Name = "So-San", Description = "So-San (72 movements)", RecommendedRankId = 15, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
-            new Tul { Id = 27, Name = "Se-Jong", Description = "Se-Jong (24 movements)", RecommendedRankId = 15, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 25, Name = "So-San", Description = "So-San (72 movements)", RecommendedRankId = 15, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
+            new Tul { Id = 26, Name = "Se-Jong", Description = "Se-Jong (24 movements)", RecommendedRankId = 15, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") },
 
             // 6th Dan
-            new Tul { Id = 28, Name = "Tong-Il", Description = "Tong-Il (56 movements)", RecommendedRankId = 16, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") }
+            new Tul { Id = 27, Name = "Tong-Il", Description = "Tong-Il (56 movements)", RecommendedRankId = 16, VideoUrl = new Uri("https://example.com"), ImageUrl = new Uri("https://example.com") }
         };
     }
 }
-
-

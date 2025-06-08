@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IEventAttendanceRepository, EventAttendanceRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IPromotionRepository, PromotionRepository>();
+        services.AddScoped<IUserDojaangRepository, UserDojaangRepository>();
 
 
         // 4. Add Logging (Optional, but highly recommended) - Already handled by default, but configure if needed
