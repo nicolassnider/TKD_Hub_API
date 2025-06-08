@@ -1,15 +1,18 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.Application.Interfaces;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
 /// <summary>
 /// API controller for managing coach users and their associated dojaangs.
-/// Provides endpoints for creating, retrieving, updating, and removing coaches and their managed dojaangs.
+/// 
+/// This controller provides endpoints for:
+/// - Creating, retrieving, updating, and deleting coach users
+/// - Assigning and removing managed dojaangs for coaches
+/// - Upserting (create or update) coach users
+/// - Reactivating deactivated coach users
+/// 
+/// Only authorized users (admins or coaches with appropriate permissions) can perform these operations.
 /// </summary>
 [Authorize]
 public class CoachesController : BaseApiController
@@ -201,6 +204,69 @@ public class CoachesController : BaseApiController
         {
             Logger.LogError(ex, "Error upserting coach");
             return ErrorResponse(ex.Message, 500);
+        }
+    }
+
+    /// <summary>
+    /// Deletes a coach by their unique identifier.
+    /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <returns>No content if successful, or an error response if not found or unauthorized.</returns>
+    [HttpDelete("{coachId}")]
+    public async Task<IActionResult> Delete(int coachId)
+    {
+        try
+        {
+            var coach = await _coachService.GetCoachByIdAsync(coachId);
+            if (coach == null)
+                return ErrorResponse("Coach not found.", 404);
+
+            await _userService.DeleteAsync(coachId);
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.LogWarning(ex, "Unauthorized attempt to delete coach.");
+            return ErrorResponse(ex.Message, 403);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting coach");
+            return ErrorResponse("An error occurred while deleting the coach.", 500);
+        }
+    }
+
+    /// <summary>
+    /// Reactivates a coach by setting their IsActive status to true.
+    /// This endpoint allows authorized users to restore a previously deactivated coach account.
+    /// </summary>
+    /// <param name="coachId">The unique identifier of the coach to reactivate.</param>
+    /// <returns>
+    /// A standardized success response if the coach is reactivated,
+    /// or an error response if the coach is not found or the operation is unauthorized.
+    /// </returns>
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{coachId}/reactivate")]
+    public async Task<IActionResult> Reactivate(int coachId)
+    {
+        try
+        {
+            var coach = await _coachService.GetCoachByIdAsync(coachId);
+            if (coach == null)
+                return ErrorResponse("Coach not found.", 404);
+
+            await _userService.ReactivateAsync(coachId);
+            return SuccessResponse(new { Message = "Coach reactivated." });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.LogWarning(ex, "Unauthorized attempt to reactivate coach.");
+            return ErrorResponse(ex.Message, 403);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error reactivating coach");
+            return ErrorResponse("An error occurred while reactivating the coach.", 500);
         }
     }
 }
