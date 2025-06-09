@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IPromotionService, PromotionService>();
         services.AddScoped<ICoachService, CoachService>();
         services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<ITulService, TulService>();
 
         // Register AutoMapper profiles in this assembly
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
