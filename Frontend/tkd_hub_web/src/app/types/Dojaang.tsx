@@ -9,4 +9,5 @@ export type Dojaang = {
   coachId?: number | null;
   coachName?: string;
   isActive?: boolean;
+  location?: string;
 };

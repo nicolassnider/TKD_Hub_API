@@ -1,12 +1,14 @@
-import { Coach } from "@/app/types/Coach";
 import React from "react";
+import TableActionButton from "../common/actionButtons/TableActionButton";
+import { Coach } from "@/app/types/Coach";
+ // <-- Import the common button
 
 type CoachesTableRowsProps = {
   coaches: Coach[];
   onEdit: (coachId: number) => void;
   onRequestDelete: (coachId: number) => void;
-  onReactivate?: (coachId: number) => void; // Added prop
-  isActiveFilter?: boolean | null; // null or undefined = show all
+  onReactivate?: (coachId: number) => void;
+  isActiveFilter?: boolean | null;
 };
 
 const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
@@ -35,37 +37,34 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
           <td className="px-4 py-2">{coach.email}</td>
           <td className="px-4 py-2 align-middle">
             <div className="flex gap-2 items-center">
-              <button
-                className={`flex items-center justify-center px-2 py-1 rounded transition
-    ${typeof coach.id !== "number" || !coach.isActive
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"}
-  `}
-                title="Edit"
+              <TableActionButton
                 onClick={() => typeof coach.id === "number" && onEdit(coach.id)}
+                title="Edit"
+                iconClass="bi bi-pencil-square"
                 disabled={typeof coach.id !== "number" || !coach.isActive}
-              >
-                <i className="bi bi-pencil-square"></i>
-              </button>
+                colorClass={
+                  typeof coach.id !== "number" || !coach.isActive
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }
+              />
               {coach.isActive && (
-                <button
-                  className="flex items-center justify-center px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition"
-                  title="Delete"
+                <TableActionButton
                   onClick={() => typeof coach.id === "number" && onRequestDelete(coach.id)}
+                  title="Delete"
+                  iconClass="bi bi-trash"
                   disabled={typeof coach.id !== "number"}
-                >
-                  <i className="bi bi-trash"></i>
-                </button>
+                  colorClass="bg-red-600 text-white hover:bg-red-700"
+                />
               )}
               {!coach.isActive && onReactivate && (
-                <button
-                  className="flex items-center justify-center px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700 transition"
-                  title="Reactivate"
+                <TableActionButton
                   onClick={() => typeof coach.id === "number" && onReactivate(coach.id)}
+                  title="Reactivate"
+                  iconClass="bi bi-arrow-repeat"
                   disabled={typeof coach.id !== "number"}
-                >
-                  <i className="bi bi-arrow-repeat"></i>
-                </button>
+                  colorClass="bg-green-600 text-white hover:bg-green-700"
+                />
               )}
             </div>
           </td>

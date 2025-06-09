@@ -10,8 +10,8 @@ import toast from "react-hot-toast";
 import { useDojaangs } from "@/app/context/DojaangContext";
 import { Student } from "@/app/types/Student";
 import equal from "fast-deep-equal";
-import FormActionButtons from "../common/FormActionButtons";
-import ModalCloseButton from "../common/ModalCloseButton";
+import FormActionButtons from "../common/actionButtons/FormActionButtons";
+import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 import LabeledInput from "../common/inputs/LabeledInput";
 
 

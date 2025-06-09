@@ -1,13 +1,14 @@
-export type Student = {
-  id?: number|null;
+export type User = {
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber?: string;
   gender?: number;
-  dojaangId?: number | null; // <-- allow null
+  dateOfBirth?: string | null;
+  dojaangId?: number | null;
   currentRankId?: number | null;
   joinDate?: string;
-  dateOfBirth?: string;
+  roles?: string[];
   isActive?: boolean;
 };

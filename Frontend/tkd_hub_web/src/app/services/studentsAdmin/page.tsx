@@ -21,12 +21,7 @@ export default function StudentsAdmin() {
   const [filterDojaangId, setFilterDojaangId] = useState<number | null>(null);
   const { baseUrl } = useApiConfig();
   const { dojaangs, loading: dojaangsLoading } = useDojaangs();
-
-  function getDojaangName(dojaangId: number | null | undefined) {
-    if (!dojaangId) return "None";
-    const found = dojaangs.find(d => d.id === dojaangId);
-    return found ? found.name : `ID ${dojaangId}`;
-  }
+  const [showAll, setShowAll] = useState(false);
 
   function extractStudents(data: unknown): Student[] {
     if (Array.isArray(data)) {
@@ -83,7 +78,7 @@ export default function StudentsAdmin() {
             setStudents(students);
             setError(null);
           }
-        } catch (err) {
+        } catch {
           setError("Failed to process students");
           setStudents([]);
         }
@@ -119,6 +114,21 @@ export default function StudentsAdmin() {
 
   function handleEdit(id: number) {
     setEditId(id);
+  }
+
+  function handleReactivate(id: number) {
+    setLoading(true);
+    apiRequest(`${baseUrl}/students/reactivate/${id}`, { method: "POST" }, getToken)
+      .then(() => {
+        setStudents(prev =>
+          prev.map(s =>
+            s.id === id ? { ...s, isActive: true } : s
+          )
+        );
+        setError(null);
+      })
+      .catch(() => setError("Failed to reactivate student"))
+      .finally(() => setLoading(false));
   }
 
   function handleEditClose(refresh?: boolean) {
@@ -194,74 +204,84 @@ export default function StudentsAdmin() {
   }
 
   return (
-    <AdminListPage
-      title="Students Administration"
-      loading={loading}
-      error={error}
-      filters={
-        <DojaangSelector
-          value={filterDojaangId}
-          onChange={id => setFilterDojaangId(id)}
-          allDojaangs={dojaangs}
-          disabled={loading || dojaangsLoading}
-        />
-      }
-      onCreate={handleCreate}
-      createLabel="Create"
-      tableHead={
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Options</th>
-        </tr>
-      }
-      tableBody={
-        <StudentTableRows
-          students={students.map(s => ({
-            ...s,
-            dojaangId: s.dojaangId === null ? undefined : s.dojaangId,
-          }))}
-          onDetails={handleDetails}
-          onEdit={handleEdit}
-          onRequestDelete={handleDelete}
-        />
-      }
-      modals={
-        <>
-          {showCreate && <EditStudent onClose={handleCreateClose} />}
-          {editId !== null && <EditStudent studentId={editId} onClose={handleEditClose} />}
-          {selectedStudent && (
-            <div className="modal fade show d-block modal-bg-blur" tabIndex={-1}>
-              <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                  <div className="modal-header border-0 pb-0">
-                    <h3 className="modal-title fs-5">Student Details</h3>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      aria-label="Close"
-                      onClick={() => setSelectedStudent(null)}
-                    ></button>
-                  </div>
-                  <div className="modal-body">
-                    <div><strong>ID:</strong> {selectedStudent.id}</div>
-                    <div><strong>Name:</strong> {selectedStudent.firstName} {selectedStudent.lastName}</div>
-                    <div><strong>Email:</strong> {selectedStudent.email}</div>
-                    {selectedStudent.phoneNumber && <div><strong>Phone:</strong> {selectedStudent.phoneNumber}</div>}
-                    {selectedStudent.gender !== undefined && <div><strong>Gender:</strong> {selectedStudent.gender}</div>}
-                    <div>
-                      <strong>Dojaang:</strong> {getDojaangName(selectedStudent.dojaangId)}
-                    </div>
-                    <div><strong>Current Rank ID:</strong> {selectedStudent.currentRankId ?? "None"}</div>
-                    {selectedStudent.joinDate && <div><strong>Join Date:</strong> {selectedStudent.joinDate}</div>}
-                  </div>
-                </div>
+    <>
+      <div className="flex items-center gap-4 mb-0 pl-4">
+        <label
+          htmlFor="showAllSwitch"
+          className="font-medium text-gray-700 flex items-center gap-4 cursor-pointer"
+        >
+          <span className="mr-4">
+            Show inactive students
+          </span>
+          {/* ON/OFF Switch */}
+          <span className="relative inline-block w-12 align-middle select-none transition duration-200 ease-in mr-2">
+            <input
+              id="showAllSwitch"
+              type="checkbox"
+              checked={showAll}
+              onChange={() => setShowAll((v) => !v)}
+              className="sr-only peer"
+            />
+            <span className="block w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-blue-600 transition"></span>
+            <span
+              className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-6 tkd-switch-dot"
+            ></span>
+          </span>
+          <span className="ml-2 text-sm text-gray-500">
+            {showAll ? "All" : "Active"}
+          </span>
+        </label>
+      </div>
+      <AdminListPage
+        title="Students Administration"
+        loading={loading}
+        error={error}
+        filters={
+          <div className="flex items-center gap-4">
+            <DojaangSelector
+              value={filterDojaangId}
+              onChange={id => setFilterDojaangId(id)}
+              allDojaangs={dojaangs}
+              disabled={loading || dojaangsLoading}
+            />
+          </div>
+        }
+        onCreate={handleCreate}
+        createLabel="Create"
+        tableHead={
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Options</th>
+          </tr>
+        }
+        tableBody={
+          <StudentTableRows
+            students={students.map(s => ({
+              ...s,
+              dojaangId: s.dojaangId === null ? undefined : s.dojaangId,
+            }))}
+            onDetails={handleDetails}
+            onEdit={handleEdit}
+            onRequestDelete={handleDelete}
+            onReactivate={handleReactivate} // <-- Add this line
+            isActiveFilter={showAll ? null : true}
+          />
+        }
+        modals={
+          <>
+            {showCreate && <EditStudent onClose={handleCreateClose} />}
+            {editId !== null && <EditStudent studentId={editId} onClose={handleEditClose} />}
+            {selectedStudent && (
+              <div className="modal fade show d-block modal-bg-blur" tabIndex={-1}>
+                {/* ...existing modal code... */}
               </div>
-            </div>
-          )}
-        </>
-      }
-    />
+            )}
+          </>
+        }
+      />
+    </>
+
   );
 }
