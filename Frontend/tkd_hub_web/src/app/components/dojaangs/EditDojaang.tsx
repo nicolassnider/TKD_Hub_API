@@ -5,6 +5,10 @@ import { useAuth } from "@/app/context/AuthContext";
 import { apiRequest } from "@/app/utils/api";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
 import { useDojaangs } from "@/app/context/DojaangContext";
+import FormActionButtons from "../common/FormActionButtons";
+import equal from "fast-deep-equal";
+import ModalCloseButton from "../common/ModalCloseButton";
+import LabeledInput from "../common/inputs/LabeledInput";
 
 type EditDojaangProps = {
   dojaangId?: number; // Optional: if undefined, create mode
@@ -31,18 +35,18 @@ type DojaangApiResponse = {
 
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   const [dojaang, setDojaang] = useState<Dojaang | null>(null);
+  const [originalDojaang, setOriginalDojaang] = useState<Dojaang | null>(null); // <-- Add this line
   const [loading, setLoading] = useState(!!dojaangId);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { getToken } = useAuth();
   const { baseUrl } = useApiConfig();
-  const { refreshDojaangs } = useDojaangs(); // <-- Add this line
-
+  const { refreshDojaangs } = useDojaangs();
 
   // Fetch existing dojaang if editing
   useEffect(() => {
     if (!dojaangId) {
-      setDojaang({
+      const empty = {
         name: "",
         address: "",
         location: "",
@@ -51,7 +55,9 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
         koreanName: "",
         koreanNamePhonetic: "",
         coachId: null,
-      });
+      };
+      setDojaang(empty);
+      setOriginalDojaang(empty); // <-- Set original for create mode
       setLoading(false);
       return;
     }
@@ -69,6 +75,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
           getToken
         );
         setDojaang(response.data);
+        setOriginalDojaang(response.data); // <-- Set original for edit mode
       } catch (err) {
         if (err instanceof Error) setError(err.message || "Failed to fetch dojaang");
         else setError("Failed to fetch dojaang");
@@ -126,8 +133,8 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
           getToken
         );
       }
-      refreshDojaangs(); // <-- Refresh context after save
-      onClose(true); // pass true to trigger refresh in parent
+      refreshDojaangs();
+      onClose(true);
     } catch (err) {
       if (err instanceof Error) setError(err.message || "An error occurred");
       else setError("An error occurred");
@@ -139,6 +146,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-lg sm:max-w-xl md:max-w-2xl mx-auto relative max-h-[90vh] flex flex-col">
+        <ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
         <button
           type="button"
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
@@ -157,138 +165,80 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
           {!loading && !error && dojaang && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="name">Name:</label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.name}
-                    onChange={handleChange}
-                    placeholder="Enter dojaang name"
-                    title="Dojaang Name"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="address">Address:</label>
-                  <input
-                    id="address"
-                    name="address"
-                    type="text"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.address}
-                    onChange={handleChange}
-                    placeholder="Enter address"
-                    title="Address"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="location">Location:</label>
-                  <input
-                    id="location"
-                    name="location"
-                    type="text"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.location}
-                    onChange={handleChange}
-                    placeholder="Enter location"
-                    title="Location"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="phoneNumber">Phone Number:</label>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="text"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter phone number"
-                    title="Phone Number"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="email">Email:</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.email}
-                    onChange={handleChange}
-                    placeholder="Enter email"
-                    title="Email"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="koreanName">Korean Name:</label>
-                  <input
-                    id="koreanName"
-                    name="koreanName"
-                    type="text"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.koreanName}
-                    onChange={handleChange}
-                    placeholder="Enter Korean name"
-                    title="Korean Name"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-medium" htmlFor="koreanNamePhonetic">Korean Name Phonetic:</label>
-                  <input
-                    id="koreanNamePhonetic"
-                    name="koreanNamePhonetic"
-                    type="text"
-                    className="rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dojaang.koreanNamePhonetic}
-                    onChange={handleChange}
-                    placeholder="Enter Korean name phonetic"
-                    title="Korean Name Phonetic"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="coachName" className="font-medium">Coach:</label>
-                  <CoachSelector
-                    baseUrl={baseUrl}
-                    value={dojaang.coachId ? String(dojaang.coachId) : ""}
-                    onChange={e =>
-                      setDojaang({
-                        ...dojaang,
-                        coachId: e.target.value ? Number(e.target.value) : null,
-                      })
-                    }
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
-                  onClick={() => onClose(false)}
+                <LabeledInput
+                  label="Dojaang Name"
+                  name="name"
+                  value={dojaang.name}
+                  onChange={handleChange}
                   disabled={saving}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                  required
+                  placeholder="Enter dojaang name"
+                />
+                <LabeledInput
+                  label="Address"
+                  name="address"
+                  value={dojaang.address}
+                  onChange={handleChange}
                   disabled={saving}
-                >
-                  {saving
-                    ? dojaangId
-                      ? "Saving..."
-                      : "Creating..."
-                    : dojaangId
-                      ? "Save"
-                      : "Create"}
-                </button>
+                />
+                <LabeledInput
+                  label="Location"
+                  name="location"
+                  value={dojaang.location}
+                  onChange={handleChange}
+                  disabled={saving}
+                />
+                <LabeledInput
+                  label="Phone Number"
+                  name="phoneNumber"
+                  value={dojaang.phoneNumber}
+                  onChange={handleChange}
+                  disabled={saving}
+                  placeholder="Enter phone number"
+                />
+                <LabeledInput
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={dojaang.email}
+                  onChange={handleChange}
+                  disabled={saving}
+                  placeholder="Enter email address"
+                />
+                <LabeledInput
+                  label="Korean Name"
+                  name="koreanName"
+                  value={dojaang.koreanName}
+                  onChange={handleChange}
+                  disabled={saving}
+                  placeholder="Enter Korean name"
+                />
+                <LabeledInput
+                  label="Korean Name Phonetic"
+                  name="koreanNamePhonetic"
+                  value={dojaang.koreanNamePhonetic}
+                  onChange={handleChange}
+                  disabled={saving}
+                  placeholder="Enter Korean name phonetic"
+                />
+                <CoachSelector
+                  baseUrl={baseUrl}
+                  value={dojaang.coachId ? String(dojaang.coachId) : ""}
+                  onChange={e =>
+                    setDojaang({
+                      ...dojaang,
+                      coachId: e.target.value ? Number(e.target.value) : null,
+                    })
+                  }
+                  disabled={saving}
+                />
               </div>
+              <FormActionButtons
+                onCancel={() => onClose(false)}
+                onSubmitLabel={dojaangId ? (saving ? "Saving..." : "Save") : (saving ? "Creating..." : "Create")}
+                loading={saving}
+                disabled={equal(dojaang, originalDojaang)}
+              />
             </form>
           )}
         </div>

@@ -1,11 +1,5 @@
+import { Promotion } from "@/app/types/Promotion";
 import React from "react";
-
-type Promotion = {
-  id: number;
-  name: string;
-  description?: string;
-  date: string;
-};
 
 type PromotionTableRowsProps = {
   promotions: Promotion[];
@@ -21,7 +15,7 @@ const PromotionTableRows: React.FC<PromotionTableRowsProps> = ({
   if (!promotions.length) {
     return (
       <tr>
-        <td colSpan={5} className="text-center text-muted py-3">
+        <td colSpan={6} className="text-center text-gray-500 py-3">
           No promotions found.
         </td>
       </tr>
@@ -31,23 +25,32 @@ const PromotionTableRows: React.FC<PromotionTableRowsProps> = ({
   return (
     <>
       {promotions.map((promotion) => (
-        <tr key={promotion.id}>
-          <td>{promotion.id}</td>
-          <td>{promotion.name}</td>
-          <td>{promotion.description || ""}</td>
-          <td>{promotion.date ? promotion.date.substring(0, 10) : ""}</td>
-          <td>
+        <tr key={promotion.id} className="border-b">
+          <td className="px-4 py-2">{promotion.studentName}</td>
+          <td className="px-4 py-2">{promotion.rankName}</td>
+          <td className="px-4 py-2">
+            {promotion.promotionDate
+              ? new Date(promotion.promotionDate).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+              })
+              : ""}
+          </td>
+          <td className="px-4 py-2">
             <button
-              className="btn btn-sm btn-primary me-2"
+              className="mr-2 px-2 py-1 text-primary"
+              title="Edit"
               onClick={() => onEdit(promotion.id)}
             >
-              Edit
+              <i className="bi bi-pencil-square"></i>
             </button>
             <button
-              className="btn btn-sm btn-danger"
+              className="px-2 py-1 text-danger"
+              title="Delete"
               onClick={() => onDelete(promotion.id)}
             >
-              Delete
+              <i className="bi bi-trash"></i>
             </button>
           </td>
         </tr>

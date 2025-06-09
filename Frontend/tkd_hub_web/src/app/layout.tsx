@@ -9,6 +9,8 @@ import Header from "./components/Header";
 import { Toaster } from "react-hot-toast";
 import { ApiConfigProvider } from "./context/ApiConfigContext";
 import { DojaangProvider } from "./context/DojaangContext";
+import { TulProvider } from "./context/TulContext";
+import { RankProvider } from "./context/RankContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,12 +38,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ApiConfigProvider>
           <AuthProvider>
             <RoleProvider>
-              <DojaangProvider>
-                <div className="flex flex-col min-h-screen">
-                  <Header />
-                  <main className="flex-1 flex flex-col">{children}</main>
-                </div>
-              </DojaangProvider>
+              <TulProvider>
+                <DojaangProvider>
+                  <RankProvider>
+                    <div className="flex flex-col min-h-screen">
+                      <Header />
+                      <main className="flex-1 flex flex-col">{children}</main>
+                    </div>
+
+                  </RankProvider>
+
+                </DojaangProvider>
+
+              </TulProvider>
+
             </RoleProvider>
           </AuthProvider>
         </ApiConfigProvider>

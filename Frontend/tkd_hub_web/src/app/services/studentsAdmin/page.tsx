@@ -179,7 +179,7 @@ export default function StudentsAdmin() {
         />
       }
       onCreate={handleCreate}
-      createLabel="+ Create Student"
+      createLabel="Create"
       tableHead={
         <tr>
           <th>ID</th>
