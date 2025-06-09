@@ -16,7 +16,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Palermo'
            ,'+54 11 1234-5678'
            ,'dojang1@example.com'
-           ,'도장 1'
+           , N'도장 1'
            ,'Dojang 1'
            ,NULL
            ,1
@@ -41,7 +41,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Recoleta'
            ,'+54 11 2345-6789'
            ,'dojang2@example.com'
-           ,'도장 2'
+           , N'도장 2'
            ,'Dojang 2'
            ,NULL
            ,0
@@ -66,7 +66,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, San Telmo'
            ,'+54 11 3456-7890'
            ,'dojang3@example.com'
-           ,'도장 3'
+           , N'도장 3'
            ,'Dojang 3'
            ,NULL
            ,1
@@ -91,7 +91,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Belgrano'
            ,'+54 11 4567-8901'
            ,'dojang4@example.com'
-           ,'도장 4'
+           , N'도장 4'
            ,'Dojang 4'
            ,NULL
            ,0
@@ -116,7 +116,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Palermo'
            ,'+54 11 5678-9012'
            ,'dojang5@example.com'
-           ,'도장 5'
+           , N'도장 5'
            ,'Dojang 5'
            ,NULL
            ,1
@@ -141,7 +141,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Recoleta'
            ,'+54 11 6789-0123'
            ,'dojang6@example.com'
-           ,'도장 6'
+           , N'도장 6'
            ,'Dojang 6'
            ,NULL
            ,0
@@ -166,7 +166,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, San Telmo'
            ,'+54 11 7890-1234'
            ,'dojang7@example.com'
-           ,'도장 7'
+           , N'도장 7'
            ,'Dojang 7'
            ,NULL
            ,1
@@ -191,7 +191,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Belgrano'
            ,'+54 11 8901-2345'
            ,'dojang8@example.com'
-           ,'도장 8'
+           , N'도장 8'
            ,'Dojang 8'
            ,NULL
            ,0
@@ -216,7 +216,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Palermo'
            ,'+54 11 9012-3456'
            ,'dojang9@example.com'
-           ,'도장 9'
+           , N'도장 9'
            ,'Dojang 9'
            ,NULL
            ,1
@@ -241,7 +241,7 @@ INSERT INTO [dbo].[Dojaangs]
            ,'Buenos Aires, Argentina, Recoleta'
            ,'+54 11 0123-4567'
            ,'dojang10@example.com'
-           ,'도장 10'
+           , N'도장 10'
            ,'Dojang 10'
            ,NULL
            ,0
