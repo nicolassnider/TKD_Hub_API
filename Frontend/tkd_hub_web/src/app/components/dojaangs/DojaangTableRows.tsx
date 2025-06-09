@@ -1,6 +1,7 @@
 import { useDojaangs } from "@/app/context/DojaangContext";
 import { Dojaang } from "@/app/types/Dojaang";
 import TableActionButton from "../common/actionButtons/TableActionButton";
+import { useRole } from "@/app/context/RoleContext";
 
 type DojaangTableRowsProps = {
   dojaangs: Dojaang[];
@@ -14,6 +15,8 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
   onRequestDelete,
 }) => {
   const { refreshDojaangs } = useDojaangs();
+  const { getRole } = useRole(); // <-- Use useRole to get getRole
+  const role = getRole();
 
   const handleDelete = async (id: number) => {
     await onRequestDelete(id);
@@ -34,12 +37,14 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
               iconClass="bi bi-pencil-square"
               colorClass="bg-blue-600 text-white hover:bg-blue-700"
             />
-            <TableActionButton
-              onClick={() => handleDelete(dojaang.id)}
-              title="Delete"
-              iconClass="bi bi-trash"
-              colorClass="bg-red-600 text-white hover:bg-red-700"
-            />
+            {role==='Admin' && (
+              <TableActionButton
+                onClick={() => handleDelete(dojaang.id)}
+                title="Delete"
+                iconClass="bi bi-trash"
+                colorClass="bg-red-600 text-white hover:bg-red-700"
+              />
+            )}
           </td>
         </tr>
       ))}

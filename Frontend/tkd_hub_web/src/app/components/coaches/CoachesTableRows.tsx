@@ -1,7 +1,7 @@
 import React from "react";
 import TableActionButton from "../common/actionButtons/TableActionButton";
 import { Coach } from "@/app/types/Coach";
- // <-- Import the common button
+import router from "next/router";
 
 type CoachesTableRowsProps = {
   coaches: Coach[];
@@ -48,6 +48,20 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }
               />
+              {/* Promotions button */}
+              {coach.isActive && (
+                <TableActionButton
+                  onClick={() => {
+                    if (typeof coach.id === "number") {
+                      router.push(`/coaches/${coach.id}/promotions`);
+                    }
+                  }}
+                  title="Promotions"
+                  iconClass="bi bi-award"
+                  disabled={typeof coach.id !== "number"}
+                  colorClass="bg-purple-600 text-white hover:bg-purple-700"
+                />
+              )}
               {coach.isActive && (
                 <TableActionButton
                   onClick={() => typeof coach.id === "number" && onRequestDelete(coach.id)}

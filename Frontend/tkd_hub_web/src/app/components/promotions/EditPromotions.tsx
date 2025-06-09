@@ -28,27 +28,48 @@ type PromotionRequest = {
 interface Props {
 	promotionId?: number;
 	onClose: (refresh?: boolean) => void;
+	studentId?: number | null;
 }
 
-const EditPromotion: React.FC<Props> = ({ promotionId, onClose }) => {
+const EditPromotion: React.FC<Props> = ({ promotionId, onClose, studentId }) => {
 	const [students, setStudents] = useState<Student[]>([]);
 	const { ranks } = useRankContext();
 	const [saving, setSaving] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
 	const [form, setForm] = useState<PromotionRequest>({
-		studentId: 0,
+		studentId: typeof studentId === "number" ? studentId : 0, // always a number
 		rankId: 0,
 		promotionDate: "",
 		coachId: 0,
 		notes: "",
 		dojaangId: 0,
 	});
-	const [originalForm, setOriginalForm] = useState<PromotionRequest>(form);
-
+	const [originalForm, setOriginalForm] = useState<PromotionRequest>({
+		studentId: typeof studentId === "number" ? studentId : 0,
+		rankId: 0,
+		promotionDate: "",
+		coachId: 0,
+		notes: "",
+		dojaangId: 0,
+	});
 	const { getToken } = useAuth();
 	const { baseUrl } = useApiConfig();
+	
+
+	useEffect(() => {
+		if (!promotionId && studentId) {
+			setForm(f => ({ ...f, studentId }));
+		}
+	}, [promotionId, studentId])
+
+	// Set studentId on create only if provided and not already set
+	useEffect(() => {
+		if (!promotionId && typeof studentId === "number" && studentId !== form.studentId) {
+			setForm(f => ({ ...f, studentId }));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [promotionId, studentId]);
 
 	// Load students
 	useEffect(() => {
@@ -58,7 +79,20 @@ const EditPromotion: React.FC<Props> = ({ promotionId, onClose }) => {
 			.then(res => setStudents(res.data.data))
 			.catch(() => setStudents([]));
 	}, [baseUrl, getToken]);
-	
+
+	useEffect(() => {
+		if (
+			!promotionId &&
+			typeof studentId === "number" &&
+			students.length > 0 &&
+			form.studentId !== studentId &&
+			students.some(s => s.id === studentId)
+		) {
+			setForm(f => ({ ...f, studentId }));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [students, studentId, promotionId]);
+
 	// Load promotion for edit
 	useEffect(() => {
 		if (promotionId) {

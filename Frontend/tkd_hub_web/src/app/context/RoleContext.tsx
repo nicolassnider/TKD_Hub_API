@@ -8,11 +8,13 @@ export type UserRole = "Guest" | "Student" | "Coach" | "Admin";
 type RoleContextType = {
   role: UserRole;
   setRole: (role: UserRole) => void;
+  getRole: () => UserRole; // <-- Add getRole to context type
 };
 
 const RoleContext = createContext<RoleContextType>({
   role: "Guest",
-  setRole: () => {},
+  setRole: () => { },
+  getRole: () => "Guest", // <-- Default implementation
 });
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,8 +34,11 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [getToken]);
 
+  // Add getRole function
+  const getRole = () => role;
+
   return (
-    <RoleContext.Provider value={{ role, setRole }}>
+    <RoleContext.Provider value={{ role, setRole, getRole }}>
       {children}
     </RoleContext.Provider>
   );

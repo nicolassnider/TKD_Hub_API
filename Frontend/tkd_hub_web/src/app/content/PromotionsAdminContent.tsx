@@ -27,7 +27,14 @@ export default function PromotionsAdminContent() {
 
     // Always use the query param as the source of truth
     const studentIdParam = searchParams.get("studentId");
-    const studentIdFilter = studentIdParam ? Number(studentIdParam) : null;
+    const studentIdFilter = studentIdParam && !isNaN(Number(studentIdParam)) ? Number(studentIdParam) : undefined;
+
+
+    function handleClearStudent() {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("studentId");
+        router.replace(`?${params.toString()}`, { scroll: false });
+    }
 
     // Fetch students for selector
     useEffect(() => {
@@ -145,19 +152,32 @@ export default function PromotionsAdminContent() {
             }
             filters={
                 <div className="mb-4 flex items-center gap-2">
-                    
                     <div className="min-w-[220px]">
                         <StudentSelector
                             students={students}
-                            value={studentIdFilter}
+                            value={studentIdFilter ?? null}
                             onChange={handleStudentSelect}
                         />
                     </div>
+                    {studentIdFilter !== undefined && (
+                        <button
+                            type="button"
+                            className="ml-2 px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+                            onClick={handleClearStudent}
+                        >
+                            Clear Student
+                        </button>
+                    )}
                 </div>
             }
             modals={
                 <>
-                    {showCreate && <EditPromotion onClose={handleCreateClose} />}
+                    {showCreate && (
+                        <EditPromotion
+                            onClose={handleCreateClose}
+                            studentId={typeof studentIdFilter === "number" ? studentIdFilter : undefined}
+                        />
+                    )}
                     {editId !== null && (
                         <EditPromotion promotionId={editId} onClose={handleEditClose} />
                     )}

@@ -50,15 +50,17 @@ export const Header = () => {
           </button>
           {isServicesOpen && (
             <div className="absolute left-0 mt-2 min-w-[180px] bg-gray-800 rounded-md shadow-lg z-10 border border-purple-500">
-              {servicesRoutes.map(route => (
-                <Link
-                  key={route.href}
-                  href={route.href}
-                  className={`flex items-center px-4 py-2 hover:bg-purple-700 transition-colors rounded ${pathname === route.href ? 'text-purple-300 font-bold' : 'text-white'}`}
-                >
-                  <i className={`${route.icon} mr-2`}></i> {route.label}
-                </Link>
-              ))}
+              {servicesRoutes
+                .filter(route => !route.roles || route.roles.includes(role))
+                .map(route => (
+                  <Link
+                    key={route.href}
+                    href={route.href}
+                    className={`flex items-center px-4 py-2 hover:bg-purple-700 transition-colors rounded ${pathname === route.href ? 'text-purple-300 font-bold' : 'text-white'}`}
+                  >
+                    <i className={`${route.icon} mr-2`}></i> {route.label}
+                  </Link>
+                ))}
             </div>
           )}
         </div>
