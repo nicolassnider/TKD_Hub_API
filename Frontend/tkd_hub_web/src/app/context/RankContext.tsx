@@ -59,11 +59,7 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchRanks();
     // eslint-disable-next-line
-  }, [baseUrl, getToken]);
-
-  useEffect(() => {
-    console.log("RankContext ranks length:", ranks.length, "ranks:", ranks);
-  }, [ranks]);
+  }, [baseUrl, getToken]);  
 
   return (
     <RankContext.Provider value={{ ranks, loading, error, refresh: fetchRanks }}>

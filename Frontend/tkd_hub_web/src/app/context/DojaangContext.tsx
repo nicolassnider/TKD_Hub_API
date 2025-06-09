@@ -49,10 +49,7 @@ export const DojaangProvider: React.FC<{ children: React.ReactNode }> = ({ child
                         coachName: d.coachName,
                     }));
                 }
-                setDojaangs(arr);
-                if (arr.length > 0) {
-                    console.log(`[DojaangContext] Loaded ${arr.length} dojaangs into context.`);
-                }
+                setDojaangs(arr);                
             })
             .catch(() => setError("Failed to load dojaangs"))
             .finally(() => setLoading(false));
@@ -71,3 +68,4 @@ export const useDojaangs = () => {
     if (!ctx) throw new Error("useDojaangs must be used within a DojaangProvider");
     return ctx;
 };
+

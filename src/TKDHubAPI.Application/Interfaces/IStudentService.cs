@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Interfaces;
+﻿namespace TKDHubAPI.Application.Interfaces;
 
 /// <summary>
 /// Defines a contract for managing students asynchronously, including operations to create a student, retrieve a student by ID, retrieve students by dojaang, and retrieve all students.
@@ -33,4 +31,12 @@ public interface IStudentService
     /// </summary>
     /// <returns>A task that represents the asynchronous operation, containing a collection of UserDto representing all students.</returns>
     Task<IEnumerable<UserDto>> GetAllStudentsAsync();
+
+    /// <summary>
+    /// Updates an existing student asynchronously.
+    /// </summary>
+    /// <param name="id">The identifier of the student to update.</param>
+    /// <param name="updateStudentDto">The DTO containing the updated information for the student.</param>
+    /// <returns>A task that represents the asynchronous operation, containing the updated UserDto of the student if found; otherwise, null.</returns>
+    Task<UserDto?> UpdateStudentAsync(int id, UpdateStudentDto updateStudentDto);
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApiConfig } from '@/app/context/ApiConfigContext';
+import { apiRequest } from '@/app/utils/api';
 
 type ManagedDojaangsProps = {
 	managedDojaangIds: number[];
@@ -39,17 +40,18 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
 		}
 		try {
 			const token = getToken();
-			const res = await fetch(
+			const res = await apiRequest(
 				`${baseUrl}/Coaches/${coachId}/dojaang/${dojaangId}`,
 				{
 					method: 'DELETE',
 					headers: {
-						'Content-Type': 'application/json',
 						...(token ? { Authorization: `Bearer ${token}` } : {}),
 					},
 				}
 			);
-			if (!res.ok) throw new Error('Failed to remove managed dojaang');
+			// Cast res to Response for type safety
+			const response = res as Response;
+			if (!response.ok) throw new Error('Failed to remove managed dojaang');
 			if (onRemove) onRemove(dojaangId);
 			if (onRemoveSuccess) onRemoveSuccess(dojaangId);
 		} catch (err: unknown) {

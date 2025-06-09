@@ -243,6 +243,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 								value={form.gender}
 								onChange={handleChange}
 								disabled={loading}
+								className="px-3 py-2"
 							/>
 						</div>
 						<LabeledInput
