@@ -7,10 +7,8 @@ import DojaangSelector from "../../components/dojaangs/DojaangSelector";
 import { AdminListPage } from "@/app/components/AdminListPage";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
 import { apiRequest } from "@/app/utils/api";
-import { useDojaangs } from "@/app/context/DojaangContext"; // <-- Add this import
+import { useDojaangs } from "@/app/context/DojaangContext";
 import { Student } from "@/app/types/Student";
-
-
 
 export default function StudentsAdmin() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -22,8 +20,7 @@ export default function StudentsAdmin() {
   const { getToken } = useAuth();
   const [filterDojaangId, setFilterDojaangId] = useState<number | null>(null);
   const { baseUrl } = useApiConfig();
-  const { dojaangs, loading: dojaangsLoading } = useDojaangs(); // <-- Use context
-
+  const { dojaangs, loading: dojaangsLoading } = useDojaangs();
 
   function getDojaangName(dojaangId: number | null | undefined) {
     if (!dojaangId) return "None";
@@ -60,11 +57,6 @@ export default function StudentsAdmin() {
     return [];
   }
 
-  useEffect(() => {
-    console.log("[StudentsAdmin] Dojaangs from context:", dojaangs);
-  }, [dojaangs]);
-
-
   // Fetch students (all or by dojaang)
   useEffect(() => {
     const token = getToken();
@@ -73,26 +65,49 @@ export default function StudentsAdmin() {
     if (filterDojaangId) {
       url = `${baseUrl}/students/dojaang/${filterDojaangId}`;
     }
-    fetch(url, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
-      .then(res => res.json())
-      .then(data => setStudents(extractStudents(data)))
-      .catch(() => setError("Failed to load students"))
+    apiRequest(
+      url,
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      }
+    )
+      .then(data => {
+        try {
+          const students = extractStudents(data);
+          if (!Array.isArray(students)) {
+            setError("Failed to process students");
+            setStudents([]);
+          } else {
+            setStudents(students);
+            setError(null);
+          }
+        } catch (err) {
+          setError("Failed to process students");
+          setStudents([]);
+        }
+      })
+      .catch((err) => {
+        setError("Failed to load students");
+        setStudents([]);
+        console.error("[StudentsAdmin] Error fetching students:", err);
+      })
       .finally(() => setLoading(false));
   }, [getToken, filterDojaangId, baseUrl]);
 
   function handleDetails(id: number) {
     setSelectedStudent(null);
     const token = getToken();
-    fetch(`${baseUrl}/students/${id}`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
-      .then(res => res.json())
+    apiRequest(
+      `${baseUrl}/students/${id}`,
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      }
+    )
+      .then(res => (res as Response).json())
       .then(data => {
         let student = data;
         if (data?.data?.data) student = data.data.data[0];
@@ -115,13 +130,20 @@ export default function StudentsAdmin() {
       if (filterDojaangId) {
         url = `${baseUrl}/students/dojaang/${filterDojaangId}`;
       }
-      fetch(url, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      })
-        .then(res => res.json())
-        .then(data => setStudents(extractStudents(data)))
+      apiRequest(
+        url,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      )
+        .then(res => (res as Response).json())
+        .then(data => {
+          const students = extractStudents(data);
+          setStudents(students);
+          setError(null);
+        })
         .catch(() => setError("Failed to load students"))
         .finally(() => setLoading(false));
     }
@@ -133,11 +155,11 @@ export default function StudentsAdmin() {
 
   function handleDelete(id: number) {
     setLoading(true);
-    
+
     apiRequest(`${baseUrl}/students/${id}`, { method: "DELETE" }, getToken)
       .then(() => {
-        // Remove the deleted student from the list
         setStudents(prev => prev.filter(s => s.id !== id));
+        setError(null);
       })
       .catch(() => setError("Failed to delete student"))
       .finally(() => setLoading(false));
@@ -152,19 +174,25 @@ export default function StudentsAdmin() {
       if (filterDojaangId) {
         url = `${baseUrl}/students/dojaang/${filterDojaangId}`;
       }
-      fetch(url, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      })
-        .then(res => res.json())
-        .then(data => setStudents(extractStudents(data)))
+      apiRequest(
+        url,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      )
+        .then(res => (res as Response).json())
+        .then(data => {
+          const students = extractStudents(data);
+          setStudents(students);
+          setError(null);
+        })
         .catch(() => setError("Failed to load students"))
         .finally(() => setLoading(false));
     }
   }
 
-  // Use AdminListPage for rendering
   return (
     <AdminListPage
       title="Students Administration"

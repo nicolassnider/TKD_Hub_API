@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useRole } from "../context/RoleContext";
-import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -16,57 +14,27 @@ const errorAnimationStyle = `
 `;
 
 export default function LoginPage() {
-  const { setIsLoggedIn } = useAuth();
-  const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { setRole } = useRole();
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7046/api";
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`${apiBaseUrl}/Auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-
-      // Save user role ('Admin', 'Coach', 'Student')
-      let roleValue = "Student";
-      if (data.user && data.user.roles && Array.isArray(data.user.roles) && data.user.roles.length > 0) {
-        roleValue = data.user.roles[0];
-      } else if (data.user && data.user.role) {
-        roleValue = data.user.role;
-      }
-      localStorage.setItem("role", roleValue);
-      setRole(roleValue as "Admin" | "Coach" | "Student");
-      setIsLoggedIn(true);
-
-      // Show success toast
-      toast.success("Login successful!");
-
-      // Route to home after successful login
-      router.push("/");
+      await login(email, password);
+      // Success toast and redirect handled in AuthContext
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Login failed");
-        toast.error(err.message || "Login failed"); // Show error toast
+        toast.error(err.message || "Login failed");
       } else {
         setError("Login failed");
-        toast.error("Login failed"); // Show error toast
+        toast.error("Login failed");
       }
     } finally {
       setLoading(false);

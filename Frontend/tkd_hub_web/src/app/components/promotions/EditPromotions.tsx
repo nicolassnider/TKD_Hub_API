@@ -58,11 +58,7 @@ const EditPromotion: React.FC<Props> = ({ promotionId, onClose }) => {
 			.then(res => setStudents(res.data.data))
 			.catch(() => setStudents([]));
 	}, [baseUrl, getToken]);
-
-	useEffect(() => {
-		console.log("Form changed:", form);
-	}, [form]);
-
+	
 	// Load promotion for edit
 	useEffect(() => {
 		if (promotionId) {
