@@ -5,32 +5,24 @@ import { useAuth } from "@/app/context/AuthContext";
 import { apiRequest } from "@/app/utils/api";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
 import { useDojaangs } from "@/app/context/DojaangContext";
-import FormActionButtons from "../common/FormActionButtons";
+import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import equal from "fast-deep-equal";
-import ModalCloseButton from "../common/ModalCloseButton";
+import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 import LabeledInput from "../common/inputs/LabeledInput";
+import { Dojaang } from "@/app/types/Dojaang";
+
 
 type EditDojaangProps = {
   dojaangId?: number; // Optional: if undefined, create mode
   onClose: (refresh?: boolean) => void;
 };
 
-type Dojaang = {
-  id?: number;
-  name: string;
-  address: string;
-  location: string;
-  phoneNumber: string;
-  email: string;
-  koreanName: string;
-  koreanNamePhonetic: string;
-  coachId: number | null;
-  coachName?: string | null;
-};
 
 type DojaangApiResponse = {
   data: Dojaang;
 };
+
+
 
 
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
@@ -43,10 +35,12 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   const { baseUrl } = useApiConfig();
   const { refreshDojaangs } = useDojaangs();
 
+
   // Fetch existing dojaang if editing
   useEffect(() => {
     if (!dojaangId) {
       const empty = {
+        id: 0, // <-- Add this line
         name: "",
         address: "",
         location: "",
@@ -86,17 +80,20 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
     fetchDojaang();
   }, [dojaangId, getToken, baseUrl]);
 
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!dojaang) return;
     const { name, value } = e.target;
     setDojaang({ ...dojaang, [name]: value });
   }
 
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!dojaang) return;
     setSaving(true);
     setError(null);
+
 
     try {
       const payload = {
@@ -109,6 +106,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
         koreanNamePhonetic: dojaang.koreanNamePhonetic,
         coachId: dojaang.coachId ? dojaang.coachId : null,
       };
+
 
       if (dojaangId) {
         // Edit mode (PUT)
@@ -142,6 +140,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
       setSaving(false);
     }
   }
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

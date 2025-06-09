@@ -7,6 +7,14 @@ public class PromotionMappingProfile : Profile
     {
         CreateMap<CreatePromotionDto, Promotion>();
         CreateMap<UpdatePromotionDto, Promotion>();
-        CreateMap<Promotion, PromotionDto>();
+        CreateMap<Promotion, PromotionDto>()
+            .ForMember(dest => dest.StudentName,
+                opt => opt.MapFrom(src => src.Student != null
+                    ? $"{src.Student.FirstName} {src.Student.LastName}"
+                    : null))
+            .ForMember(dest => dest.RankName,
+                opt => opt.MapFrom(src => src.Rank != null
+                    ? src.Rank.Name
+                    : null));
     }
 }

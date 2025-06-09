@@ -42,17 +42,19 @@ export const Header = () => {
         <div className="relative" ref={servicesRef}>
           <button
             onClick={() => setIsServicesOpen(!isServicesOpen)}
-            className={`block ${isMobile ? 'w-full text-left' : 'hover:text-gray-300'} focus:outline-none`}
+            className={`block ${isMobile ? 'w-full text-left' : 'hover:text-gray-300'} focus:outline-none font-semibold px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 transition-colors`}
           >
+            <i className="bi bi-gear-fill mr-2"></i>
             Services
+            <i className={`bi ${isServicesOpen ? "bi-chevron-up" : "bi-chevron-down"} ml-2`}></i>
           </button>
           {isServicesOpen && (
-            <div className="absolute left-0 mt-2 min-w-[160px] bg-gray-700 rounded-md shadow-lg z-10">
+            <div className="absolute left-0 mt-2 min-w-[180px] bg-gray-800 rounded-md shadow-lg z-10 border border-purple-500">
               {servicesRoutes.map(route => (
                 <Link
                   key={route.href}
                   href={route.href}
-                  className={`block ${isMobile ? 'px-4 py-2' : 'hover:bg-gray-600 px-4 py-2'} ${pathname === route.href ? 'text-gray-300' : ''}`}
+                  className={`flex items-center px-4 py-2 hover:bg-purple-700 transition-colors rounded ${pathname === route.href ? 'text-purple-300 font-bold' : 'text-white'}`}
                 >
                   <i className={`${route.icon} mr-2`}></i> {route.label}
                 </Link>
@@ -66,7 +68,7 @@ export const Header = () => {
           <i className="bi bi-person-lines-fill mr-2"></i> Students
         </Link>
       )}
-      
+
     </>
   );
 
@@ -90,11 +92,20 @@ export const Header = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4">
             {renderMenuItems()}
+            {/* Profile Button (Desktop) */}
+            {isLoggedIn && (
+              <button
+                onClick={() => router.push("/profile")}
+                className="ml-4 px-4 py-1 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center"
+              >
+                Profile
+              </button>
+            )}
             {/* Login/Logout Button */}
             {!isLoggedIn ? (
               <button
                 onClick={() => router.push("/login")}
-                className="ml-4 px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                className={`px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center${isLoggedIn ? " ml-4" : " ml-4"}`}
               >
                 Login
               </button>
@@ -105,7 +116,7 @@ export const Header = () => {
                   setRole("Guest"); // use lowercase "guest"
                   router.push("/");
                 }}
-                className="ml-4 px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
+                className="ml-4 px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center"
               >
                 Logout
               </button>
@@ -151,26 +162,42 @@ export const Header = () => {
       {isOpen && (
         <div className="md:hidden bg-gray-700">
           {renderMenuItems(true)}
-          {/* Login/Logout Button */}
-          {!isLoggedIn ? (
-            <button
-              onClick={() => router.push("/login")}
-              className="w-full mt-2 px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-            >
-              Login
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                logout();
-                setRole("Guest"); // use lowercase "guest"
-                router.push("/");
-              }}
-              className="w-full mt-2 px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
-            >
-              Logout
-            </button>
-          )}
+          <div className="flex flex-col gap-2 mt-2 px-4">
+            {/* Profile Button (Mobile) */}
+            {isLoggedIn && (
+              <button
+                onClick={() => router.push("/profile")}
+                title="Profile"
+                className="w-full px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center justify-center gap-2"
+              >
+                <i className="bi bi-person-circle"></i>
+              </button>
+            )}
+            {/* Login/Logout Button */}
+            {!isLoggedIn ? (
+              <button
+                title="Login"
+                onClick={() => router.push("/login")}
+                className="w-full px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2"
+              >
+                <i className="bi bi-box-arrow-in-right"></i>
+
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  logout();
+                  setRole("Guest"); // use lowercase "guest"
+                  router.push("/");
+                }}
+                title="Logout"
+                className="w-full px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center justify-center gap-2"
+              >
+                <i className="bi bi-box-arrow-right"></i>
+
+              </button>
+            )}
+          </div>
         </div>
       )}
     </nav>

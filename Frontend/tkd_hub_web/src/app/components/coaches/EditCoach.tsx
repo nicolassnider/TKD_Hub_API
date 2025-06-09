@@ -6,28 +6,14 @@ import toast from 'react-hot-toast';
 import { useApiConfig } from '@/app/context/ApiConfigContext';
 import GenderSelector from '../common/selectors/GenderSelector';
 import equal from 'fast-deep-equal';
-import ModalCloseButton from '../common/ModalCloseButton';
+import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import LabeledInput from '../common/inputs/LabeledInput';
+import { Coach } from '@/app/types/Coach';
 
 type EditCoachProps = {
 	coachId: number;
 	onClose: (wasCreated?: boolean) => void;
 	handleRefresh?: () => void;
-};
-
-type Coach = {
-	id: number;
-	firstName: string;
-	lastName: string;
-	email: string;
-	phoneNumber?: string;
-	gender?: number;
-	dateOfBirth?: string;
-	dojaangId?: number | null;
-	currentRankId?: number;
-	joinDate?: string;
-	roles?: string[] | null;
-	managedDojaangIds?: number[];
 };
 
 type ApiCoachResponse = {
@@ -82,6 +68,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						joinDate: coachData.joinDate ?? '',
 						roles: coachData.roles ?? [],
 						managedDojaangIds: coachData.managedDojaangIds ?? [],
+						isActive: coachData.isActive ?? true,
 					};
 					setForm(loadedForm);
 					setOriginalForm(loadedForm); // <-- Set originalForm
@@ -98,6 +85,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						joinDate: '',
 						roles: [],
 						managedDojaangIds: [],
+						isActive: true,
 					};
 					setForm(emptyForm);
 					setOriginalForm(emptyForm); // <-- Set originalForm

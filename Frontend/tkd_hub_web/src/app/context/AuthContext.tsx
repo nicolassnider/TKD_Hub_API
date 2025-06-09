@@ -5,6 +5,7 @@ import { isTokenExpired } from "../utils/auth";
 import toast from "react-hot-toast";
 import { apiRequest } from "../utils/api"; // Adjust path if needed
 import { LoginResponse } from "../types/LoginResponse";
+import { User } from "../types/User";
 
 
 type AuthContextType = {
@@ -14,6 +15,7 @@ type AuthContextType = {
   logout: () => void;
   getToken: () => string | null;
   role: string | null;
+  user: User | null; // <-- add this
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -23,11 +25,13 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => { },
   getToken: () => null,
   role: null,
+  user: null, // <-- add this
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null); // <-- add this
   const router = useRouter();
 
   useEffect(() => {
@@ -50,11 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
-    });    
+    });
 
-    // If apiRequest returns JSON directly, just use it:
-    const data = res as LoginResponse;    
-
+    const data = res as LoginResponse;
     if (!data.token) throw new Error("Invalid credentials");
 
     localStorage.setItem("token", data.token);
@@ -62,11 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let roleValue = "Student";
     if (data.user && data.user.roles && Array.isArray(data.user.roles) && data.user.roles.length > 0) {
       roleValue = data.user.roles[0];
-    } else if (data.user && data.user.role) {
-      roleValue = data.user.role;
+    } else if (data.user && data.user.roles) {
+      roleValue = data.user.roles[0] || "Student";
     }
     localStorage.setItem("role", roleValue);
     setRole(roleValue);
+    setUser(data.user); // <-- store user profile
     setIsLoggedIn(true);
     toast.success("Login successful!");
     router.push("/");
@@ -84,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getToken = () => localStorage.getItem("token");
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, login, logout, getToken, role }}>
+    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, login, logout, getToken, role, user }}>
       {children}
     </AuthContext.Provider>
   );
