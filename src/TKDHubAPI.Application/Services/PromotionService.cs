@@ -52,9 +52,34 @@ public class PromotionService : IPromotionService
 
         // 4. Add promotion and update user's current rank
         student.CurrentRankId = nextRank.Id;
+
+        // 5. If promoted to first black belt degree, add Coach role
+        if (nextRank.DanLevel == 1 && !student.HasRole("Coach"))
+        {
+            await AddRoleToUserAsync(student, "Coach");
+        }
+
         await _promotionRepository.AddAsync(promotion);
         _unitOfWork.Users.Update(student);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    // Helper method to add a role to a user if not already present
+    private async Task AddRoleToUserAsync(User user, string roleName)
+    {
+        if (user.UserUserRoles == null)
+            user.UserUserRoles = new List<UserUserRole>();
+
+        // Check if the user already has the role
+        if (!user.UserUserRoles.Any(uur => uur.UserRole.Name == roleName))
+        {
+            // Fetch the UserRole entity from the database/repository
+            var userRole = await _unitOfWork.UserRoles.GetByNameAsync(roleName);
+            if (userRole == null)
+                throw new InvalidOperationException($"Role '{roleName}' does not exist.");
+
+            user.UserUserRoles.Add(new UserUserRole { UserRole = userRole, UserRoleId = userRole.Id, UserId = user.Id });
+        }
     }
 
     public async Task DeleteAsync(int id)
