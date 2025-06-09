@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.Application.Interfaces;
+﻿using TKDHubAPI.Application.DTOs.User;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
@@ -84,5 +81,29 @@ public class StudentsController : BaseApiController
     {
         var students = await _studentService.GetStudentsByDojaangIdAsync(dojaangId);
         return SuccessResponse(new { data = students });
+    }
+
+    /// <summary>
+    /// Updates an existing student user.
+    /// </summary>
+    /// <param name="id">The student user ID.</param>
+    /// <param name="updateStudentDto">The student update DTO.</param>
+    /// <returns>The updated student user as a <see cref="UserDto"/>.</returns>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, [FromBody] UpdateStudentDto updateStudentDto)
+    {
+        try
+        {
+            var updatedStudent = await _studentService.UpdateStudentAsync(id, updateStudentDto);
+            if (updatedStudent == null)
+                return ErrorResponse("Student not found", 404);
+
+            return SuccessResponse(updatedStudent);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error updating student");
+            return ErrorResponse(ex.Message, 500);
+        }
     }
 }
