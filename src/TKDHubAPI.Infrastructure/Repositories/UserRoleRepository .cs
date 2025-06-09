@@ -15,4 +15,10 @@ public class UserRoleRepository : GenericRepository<UserRole>, IUserRoleReposito
             .Where(r => roleIds.Contains(r.Id))
             .ToListAsync();
     }
+    public async Task<UserRole?> GetByNameAsync(string name)
+    {
+        return await _context.UserRoles
+            .FirstOrDefaultAsync(r => r.Name == name);
+    }
 }
+
