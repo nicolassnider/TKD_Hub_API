@@ -1,11 +1,4 @@
-import React from "react";
-
-type Student = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email?: string;
-};
+import { Student } from "@/app/types/Student";
 
 type StudentSelectorProps = {
   students: Student[];
@@ -17,7 +10,7 @@ type StudentSelectorProps = {
 };
 
 const StudentSelector: React.FC<StudentSelectorProps> = ({
-  students,
+  students = [],
   value,
   onChange,
   disabled = false,
@@ -29,13 +22,13 @@ const StudentSelector: React.FC<StudentSelectorProps> = ({
     <select
       id={id}
       className="form-control"
-      value={value ?? ""}
+      value={value !== null && value !== undefined ? String(value) : ""}
       onChange={e => onChange(e.target.value ? Number(e.target.value) : null)}
       disabled={disabled}
     >
       <option value="">Select a student</option>
-      {students.map(student => (
-        <option key={student.id} value={student.id}>
+      {Array.isArray(students) && students.map(student => (
+        <option key={student.id} value={String(student.id)}>
           {student.firstName} {student.lastName} {student.email ? `(${student.email})` : ""}
         </option>
       ))}

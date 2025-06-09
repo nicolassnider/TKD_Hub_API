@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Services;
+﻿namespace TKDHubAPI.Application.Services;
 public class StudentService : IStudentService
 {
     private readonly IUserRepository _userRepository;
@@ -83,5 +80,44 @@ public class StudentService : IStudentService
     {
         var users = await _userRepository.GetUsersByRoleAsync("Student");
         return users.Select(_mapper.Map<UserDto>);
+    }
+
+    public async Task<UserDto?> UpdateStudentAsync(int id, UpdateStudentDto updateStudentDto)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null || !user.UserUserRoles.Any(r => r.UserRoleId == StudentRoleId))
+            return null;
+
+        // Store the old DojaangId before mapping
+        var oldDojaangId = user.DojaangId;
+
+        _mapper.Map(updateStudentDto, user);
+
+        // If DojaangId has changed, update UserDojaangs relation
+        if (updateStudentDto.DojaangId.HasValue && updateStudentDto.DojaangId != oldDojaangId)
+        {
+            // Remove previous student-dojaang relations
+            var oldRelations = user.UserDojaangs
+                .Where(ud => ud.Role == "Student")
+                .ToList();
+            foreach (var rel in oldRelations)
+                user.UserDojaangs.Remove(rel);
+
+            // Add new relation if DojaangId is set
+            if (updateStudentDto.DojaangId.Value != 0)
+            {
+                user.UserDojaangs.Add(new UserDojaang
+                {
+                    UserId = user.Id,
+                    DojaangId = updateStudentDto.DojaangId.Value,
+                    Role = "Student"
+                });
+            }
+        }
+
+        _userRepository.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return _mapper.Map<UserDto>(user);
     }
 }

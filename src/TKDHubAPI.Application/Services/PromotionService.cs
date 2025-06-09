@@ -21,6 +21,14 @@ public class PromotionService : IPromotionService
         if (student == null)
             throw new ArgumentException("Student not found.", nameof(promotion.StudentId));
 
+        // 1a. Check CoachId
+        if (promotion.CoachId <= 0)
+            throw new ArgumentException("CoachId must be provided and greater than zero.", nameof(promotion.CoachId));
+
+        var coach = await _unitOfWork.Users.GetByIdAsync(promotion.CoachId);
+        if (coach == null)
+            throw new ArgumentException("Coach not found.", nameof(promotion.CoachId));
+
         // 2. Get all ranks ordered by 'Order'
         var allRanks = (await _unitOfWork.Ranks.GetAllAsync()).OrderBy(r => r.Order).ToList();
 
@@ -34,8 +42,13 @@ public class PromotionService : IPromotionService
         if (nextRank == null)
             throw new InvalidOperationException("No next rank available for promotion.");
 
-        // Enforce: Only allow promotion to the next rank
-        promotion.RankId = nextRank.Id;
+        // Validate that the provided rankId is the next rank
+        if (promotion.RankId != nextRank.Id)
+            throw new InvalidOperationException("Provided rankId does not match the next available rank for this student.");
+
+        // Prevent duplicate promotion
+        if (student.CurrentRankId == nextRank.Id)
+            throw new InvalidOperationException("Student already has the next rank. Promotion not allowed.");
 
         // 4. Add promotion and update user's current rank
         student.CurrentRankId = nextRank.Id;
@@ -61,6 +74,8 @@ public class PromotionService : IPromotionService
 
     public async Task<Promotion?> GetByIdAsync(int id)
     {
+        // This will include Student, Rank, and Dojaang if your repository is set up correctly
+        var promotion = await _promotionRepository.GetByIdAsync(id);
         return await _promotionRepository.GetByIdAsync(id);
     }
 

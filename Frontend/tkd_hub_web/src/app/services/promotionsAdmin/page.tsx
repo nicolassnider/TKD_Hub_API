@@ -6,14 +6,8 @@ import { toast } from "react-hot-toast";
 import PromotionTableRows from "@/app/components/promotions/PromotionsTableRows";
 import EditPromotion from "@/app/components/promotions/EditPromotions";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
-
-type Promotion = {
-  id: number;
-  name: string;
-  description?: string;
-  date: string;
-};
-
+import { apiRequest } from "@/app/utils/api";
+import { Promotion } from "@/app/types/Promotion";
 
 export default function PromotionsAdmin() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -29,11 +23,10 @@ export default function PromotionsAdmin() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${baseUrl}/Promotions`, {
+      const data = await apiRequest<{ data: Promotion[] }>(`${baseUrl}/Promotions`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      const data = await res.json();
-      setPromotions(Array.isArray(data) ? data : data.data || []);
+      setPromotions(Array.isArray(data.data) ? data.data : []);
     } catch {
       setError("Failed to load promotions");
     } finally {
@@ -88,9 +81,8 @@ export default function PromotionsAdmin() {
       createLabel="Add Promotion"
       tableHead={
         <tr className="bg-gray-100">
-          <th className="px-4 py-2 text-left font-semibold text-gray-700">ID</th>
           <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
-          <th className="px-4 py-2 text-left font-semibold text-gray-700">Description</th>
+          <th className="px-4 py-2 text-left font-semibold text-gray-700">Promoted To</th>
           <th className="px-4 py-2 text-left font-semibold text-gray-700">Date</th>
           <th className="px-4 py-2 text-left font-semibold text-gray-700">Options</th>
         </tr>

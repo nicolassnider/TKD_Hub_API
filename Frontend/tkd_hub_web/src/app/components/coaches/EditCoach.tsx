@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import RanksSelector from '@/app/components/ranks/RanksSelector';
+import RanksSelector from '@/app/components/common/selectors/RanksSelector';
 import { useAuth } from '@/app/context/AuthContext';
 import { apiRequest } from '@/app/utils/api';
 import toast from 'react-hot-toast';
 import { useApiConfig } from '@/app/context/ApiConfigContext';
-import GenderSelector from '../common/GenderSelector';
+import GenderSelector from '../common/selectors/GenderSelector';
+import equal from 'fast-deep-equal';
+import ModalCloseButton from '../common/ModalCloseButton';
+import LabeledInput from '../common/inputs/LabeledInput';
 
 type EditCoachProps = {
 	coachId: number;
@@ -51,8 +54,10 @@ const EditCoach: React.FC<EditCoachProps> = ({
 		{ id: number; name: string }[]
 	>([]);
 	const [form, setForm] = useState<Omit<Coach, 'id'> | null>(null);
+	const [originalForm, setOriginalForm] = useState<Omit<Coach, 'id'> | null>(null); // <-- Add this line
 	const { getToken } = useAuth();
 	const { baseUrl } = useApiConfig();
+	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
 		const fetchCoachAndDojaangs = async () => {
@@ -65,7 +70,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							getToken
 						);
 					const coachData: Coach = data.data?.coach || ({} as Coach);
-					setForm({
+					const loadedForm = {
 						firstName: coachData.firstName,
 						lastName: coachData.lastName,
 						email: coachData.email,
@@ -77,9 +82,11 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						joinDate: coachData.joinDate ?? '',
 						roles: coachData.roles ?? [],
 						managedDojaangIds: coachData.managedDojaangIds ?? [],
-					});
+					};
+					setForm(loadedForm);
+					setOriginalForm(loadedForm); // <-- Set originalForm
 				} else {
-					setForm({
+					const emptyForm = {
 						firstName: '',
 						lastName: '',
 						email: '',
@@ -91,7 +98,9 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						joinDate: '',
 						roles: [],
 						managedDojaangIds: [],
-					});
+					};
+					setForm(emptyForm);
+					setOriginalForm(emptyForm); // <-- Set originalForm
 				}
 				const dojaangsData: ApiDojaangResponse =
 					await apiRequest<ApiDojaangResponse>(
@@ -115,8 +124,18 @@ const EditCoach: React.FC<EditCoachProps> = ({
 		fetchCoachAndDojaangs();
 	}, [coachId, getToken, baseUrl]);
 
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+		const { name, value } = e.target;
+		setForm(prev => ({
+			...prev!,
+			[name]: name === "gender" ? Number(value) : value,
+		}));
+	};
+
+
 	const handleUpdate = async () => {
 		if (!form) return;
+		setSaving(true); // <-- Start saving
 		try {
 			await apiRequest(
 				`${baseUrl}/Coaches/upsert`,
@@ -139,7 +158,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							? new Date(form.joinDate).toISOString()
 							: null,
 						roleIds: [2],
-						managedDojaangIds: form.managedDojaangIds ?? [], // <-- Add this line
+						managedDojaangIds: form.managedDojaangIds ?? [],
 					}),
 				},
 				getToken
@@ -151,6 +170,8 @@ const EditCoach: React.FC<EditCoachProps> = ({
 			if (err instanceof Error)
 				toast.error(err.message || 'Failed to upsert coach');
 			else toast.error('Failed to upsert coach');
+		} finally {
+			setSaving(false); // <-- End saving
 		}
 	};
 
@@ -161,16 +182,8 @@ const EditCoach: React.FC<EditCoachProps> = ({
 	return (
 		<div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
 			<div className="bg-white rounded shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col">
-				<button
-					className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-					onClick={() => onClose(false)}
-					aria-label="Close"
-				>
-					&times;
-				</button>
-				<h3 className="text-lg font-bold mb-4 text-center">
-					Edit Coach
-				</h3>
+				<ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
+
 				<form
 					className="flex-1 overflow-y-auto pr-2 space-y-3"
 					onSubmit={(e) => {
@@ -179,91 +192,44 @@ const EditCoach: React.FC<EditCoachProps> = ({
 					}}
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						<div>
-							<label
-								className="block font-medium mb-1"
-								htmlFor="firstName"
-							>
-								First Name
-							</label>
-							<input
-								id="firstName"
-								type="text"
-								className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								value={form.firstName}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f!,
-										firstName: e.target.value,
-									}))
-								}
-								required
-							/>
-						</div>
-						<div>
-							<label
-								className="block font-medium mb-1"
-								htmlFor="lastName"
-							>
-								Last Name
-							</label>
-							<input
-								id="lastName"
-								type="text"
-								className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								value={form.lastName}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f!,
-										lastName: e.target.value,
-									}))
-								}
-								required
-							/>
-						</div>
+
+
+						<LabeledInput
+							label="First Name"
+							name="firstName"
+							value={form.firstName}
+							onChange={handleChange}
+							disabled={saving}
+						/>
+						<LabeledInput
+							label="Last Name"
+							name="lastName"
+							value={form.lastName}
+							onChange={handleChange}
+							disabled={saving}
+						/>
+
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						<div>
-							<label
-								className="block font-medium mb-1"
-								htmlFor="email"
-							>
-								Email
-							</label>
-							<input
-								id="email"
-								type="email"
-								className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								value={form.email}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f!,
-										email: e.target.value,
-									}))
-								}
-								required
-							/>
-						</div>
-						<div>
-							<label
-								className="block font-medium mb-1"
-								htmlFor="phoneNumber"
-							>
-								Phone Number
-							</label>
-							<input
-								id="phoneNumber"
-								type="text"
-								className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								value={form.phoneNumber}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f!,
-										phoneNumber: e.target.value,
-									}))
-								}
-							/>
-						</div>
+						<LabeledInput
+							label="Email"
+							name="email"
+							type="email"
+							value={form.email}
+							onChange={handleChange}
+							disabled={saving}
+							placeholder="Enter email address"
+						/>
+						<LabeledInput
+							label="Phone Number"
+							name="phoneNumber"
+							type="tel"
+							value={form.phoneNumber || ''}
+							onChange={handleChange}
+							disabled={saving}
+							placeholder="Enter phone number"
+						/>
+
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 						<div>
@@ -275,43 +241,22 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							</label>
 							<GenderSelector
 								value={form.gender}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f!,
-										gender: Number(e.target.value),
-									}))
-								}
+								onChange={handleChange}
 								disabled={loading}
 							/>
 						</div>
-						<div>
-							<label
-								className="block font-medium mb-1"
-								htmlFor="dateOfBirth"
-							>
-								Date of Birth
-							</label>
-							<input
-								id="dateOfBirth"
-								type="date"
-								className="form-input w-full rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								value={
-									form.dateOfBirth
-										? form.dateOfBirth.substring(0, 10)
-										: ''
-								}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f!,
-										dateOfBirth: e.target.value,
-									}))
-								}
-							/>
-						</div>
+						<LabeledInput
+							label="Date of Birth"
+							name="dateOfBirth"
+							type="date"
+							value={form.dateOfBirth || ''}
+							onChange={handleChange}
+							disabled={saving}
+						/>
 					</div>
 					<div>
 						<RanksSelector
-							value={form.currentRankId ?? ''}
+							value={form.currentRankId ?? 0}
 							onChange={(e) =>
 								setForm((f) => ({
 									...f!,
@@ -350,7 +295,6 @@ const EditCoach: React.FC<EditCoachProps> = ({
 													id,
 												],
 											}));
-											// Optionally, call handleAddManagedDojaang(id) here if you want to persist immediately
 										}
 									}}
 									title="Add Managed Dojaang"
@@ -402,7 +346,6 @@ const EditCoach: React.FC<EditCoachProps> = ({
 															(did) => did !== id
 														),
 													}));
-													// Optionally, call handleRemoveManagedDojaang(id) here if you want to persist immediately
 												}}
 											>
 												Remove
@@ -414,20 +357,22 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						</div>
 					)}
 				</form>
-				<div className="flex justify-end gap-2 mt-4">
+				<div className="flex justify-center gap-2 mt-4">
 					<button
 						type="button"
-						className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+						className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400 flex items-center justify-center"
 						onClick={() => onClose(false)}
 					>
-						Cancel
+						<i className="bi bi-x-lg md:hidden text-lg"></i>
+						<span className="hidden md:inline">Cancel</span>
 					</button>
 					<button
-						type="button"
-						className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-						onClick={handleUpdate}
+						type="submit"
+						className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+						disabled={loading || equal(form, originalForm)}
 					>
-						{coachId ? 'Update' : 'Create'}
+						<i className="bi bi-check-lg md:hidden text-lg"></i>
+						<span className="hidden md:inline">{coachId ? "Update" : "Create"}</span>
 					</button>
 				</div>
 			</div>
