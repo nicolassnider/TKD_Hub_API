@@ -1,7 +1,7 @@
 "use client";
 export default function Home() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-blue-100 px-4">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-gradient-to-b from-gray-100 to-blue-100 px-4 pt-4 sm:pt-8">
       <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 drop-shadow">
         Welcome to <span className="text-blue-600">TKD Hub</span>
       </h1>
