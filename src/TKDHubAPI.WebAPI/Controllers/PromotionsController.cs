@@ -1,8 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using TKDHubAPI.Application.DTOs.Promotion;
-using TKDHubAPI.Application.Interfaces;
+﻿using TKDHubAPI.Application.DTOs.Promotion;
 using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.WebAPI.Controllers;

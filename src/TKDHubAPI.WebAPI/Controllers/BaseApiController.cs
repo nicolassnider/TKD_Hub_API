@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace TKDHubAPI.WebAPI.Controllers;
+﻿namespace TKDHubAPI.WebAPI.Controllers;
 
 /// <summary>
 /// Serves as the base class for all API controllers, providing common functionality such as standardized success and error responses,

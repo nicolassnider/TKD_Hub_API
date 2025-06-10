@@ -1,9 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Domain.Entities;
 using TKDHubAPI.WebAPI.Middlewares;
 

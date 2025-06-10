@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.WebAPI.Controllers;
+﻿using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.WebAPI.Middlewares;
+
+namespace TKDHubAPI.WebAPI.Controllers;
 
 /// <summary>
 /// API controller for authentication operations such as user login.
