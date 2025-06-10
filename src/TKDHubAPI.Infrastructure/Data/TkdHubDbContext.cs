@@ -7,7 +7,7 @@ public class TkdHubDbContext : DbContext
 
     public TkdHubDbContext(
         DbContextOptions<TkdHubDbContext> options,
-    IHttpContextAccessor httpContextAccessor
+        IHttpContextAccessor httpContextAccessor
     ) : base(options)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -29,6 +29,9 @@ public class TkdHubDbContext : DbContext
     public DbSet<UserUserRole> UserUserRoles { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<UserDojaang> UserDojaangs { get; set; }
+    public DbSet<TrainingClass> TrainingClasses { get; set; }
+    public DbSet<ClassSchedule> ClassSchedules { get; set; }
+    public DbSet<StudentClass> StudentClasses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,8 +45,6 @@ public class TkdHubDbContext : DbContext
         modelBuilder.Entity<UserUserRole>().HasData(SeedData.GetUserUserRoles());
         modelBuilder.Entity<UserDojaang>().HasData(SeedData.GetUserDojaangs());
         modelBuilder.Entity<Tul>().HasData(SeedData.GetTuls());
-
-
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -142,4 +143,3 @@ public class TkdHubDbContext : DbContext
         return result;
     }
 }
-

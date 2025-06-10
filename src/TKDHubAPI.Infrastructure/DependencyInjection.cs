@@ -38,6 +38,9 @@ public static class DependencyInjection
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IPromotionRepository, PromotionRepository>();
         services.AddScoped<IUserDojaangRepository, UserDojaangRepository>();
+        services.AddScoped<ITrainingClassRepository, TrainingClassRepository>();
+        services.AddScoped<IClassScheduleRepository, ClassScheduleRepository>();
+        services.AddScoped<IStudentClassRepository, StudentClassRepository>();
 
 
         // 4. Add Logging (Optional, but highly recommended) - Already handled by default, but configure if needed
@@ -60,3 +63,4 @@ public static class DependencyInjection
         return services;
     }
 }
+
