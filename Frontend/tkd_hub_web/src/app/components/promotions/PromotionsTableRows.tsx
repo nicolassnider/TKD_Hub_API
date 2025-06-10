@@ -38,19 +38,21 @@ const PromotionTableRows: React.FC<PromotionTableRowsProps> = ({
               })
               : ""}
           </td>
-          <td className="px-4 py-2 flex gap-2">
-            <TableActionButton
-              onClick={() => onEdit(promotion.id)}
-              title="Edit"
-              iconClass="bi bi-pencil-square"
-              colorClass="bg-blue-600 text-white hover:bg-blue-700"
-            />
-            <TableActionButton
-              onClick={() => onDelete(promotion.id)}
-              title="Delete"
-              iconClass="bi bi-trash"
-              colorClass="bg-red-600 text-white hover:bg-red-700"
-            />
+          <td className="px-4 py-2">
+            <div className="flex gap-2">
+              <TableActionButton
+                onClick={() => onEdit(promotion.id)}
+                title="Edit"
+                iconClass="bi bi-pencil-square"
+                colorClass="bg-blue-600 text-white hover:bg-blue-700"
+              />
+              <TableActionButton
+                onClick={() => onDelete(promotion.id)}
+                title="Delete"
+                iconClass="bi bi-trash"
+                colorClass="bg-red-600 text-white hover:bg-red-700"
+              />
+            </div>
           </td>
         </tr>
       ))}

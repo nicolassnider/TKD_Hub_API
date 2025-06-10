@@ -30,21 +30,23 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
           <td className="px-4 py-2">{dojaang.id}</td>
           <td className="px-4 py-2">{dojaang.name}</td>
           <td className="px-4 py-2">{dojaang.email}</td>
-          <td className="px-4 py-2 flex gap-2">
-            <TableActionButton
-              onClick={() => onEdit(dojaang.id)}
-              title="Edit"
-              iconClass="bi bi-pencil-square"
-              colorClass="bg-blue-600 text-white hover:bg-blue-700"
-            />
-            {role==='Admin' && (
+          <td className="px-4 py-2">
+            <div className="flex gap-2">
               <TableActionButton
-                onClick={() => handleDelete(dojaang.id)}
-                title="Delete"
-                iconClass="bi bi-trash"
-                colorClass="bg-red-600 text-white hover:bg-red-700"
+                onClick={() => onEdit(dojaang.id)}
+                title="Edit"
+                iconClass="bi bi-pencil-square"
+                colorClass="bg-blue-600 text-white hover:bg-blue-700"
               />
-            )}
+              {role === "Admin" && (
+                <TableActionButton
+                  onClick={() => handleDelete(dojaang.id)}
+                  title="Delete"
+                  iconClass="bi bi-trash"
+                  colorClass="bg-red-600 text-white hover:bg-red-700"
+                />
+              )}
+            </div>
           </td>
         </tr>
       ))}

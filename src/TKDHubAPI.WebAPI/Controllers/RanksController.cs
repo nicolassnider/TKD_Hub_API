@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TKDHubAPI.Application.Interfaces;
-
-namespace TKDHubAPI.WebAPI.Controllers;
+﻿namespace TKDHubAPI.WebAPI.Controllers;
 
 /// <summary>
 /// API controller for managing ranks.

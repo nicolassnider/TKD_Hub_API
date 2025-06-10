@@ -11,20 +11,16 @@ export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const { role, setRole } = useRole(); // <-- Add this line
-  const { isLoggedIn, logout } = useAuth(); // <-- Make sure you have this
-  const router = useRouter()
-
-  const pathname = usePathname(); // Get the current pathname
+  const { role, setRole } = useRole();
+  const { isLoggedIn, logout } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Close Services dropdown when clicking outside
   useEffect(() => {
     if (!isServicesOpen) return;
     function handleClickOutside(event: MouseEvent) {
-      if (
-        servicesRef.current &&
-        !servicesRef.current.contains(event.target as Node)
-      ) {
+      if (servicesRef.current && !servicesRef.current.contains(event.target as Node)) {
         setIsServicesOpen(false);
       }
     }
@@ -34,28 +30,29 @@ export const Header = () => {
 
   const renderMenuItems = (isMobile = false) => (
     <>
-      <Link href="/" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/' ? 'text-gray-300' : ''}`}>Home</Link>
-      <Link href="/blog" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/blog' ? 'text-gray-300' : ''}`}>Blog</Link>
-      <Link href="/about" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/about' ? 'text-gray-300' : ''}`}>About</Link>
-      <Link href="/contact" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/contact' ? 'text-gray-300' : ''}`}>Contact</Link>
+      <Link href="/" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300 transition duration-300 ease-in-out'} ${pathname === '/' ? 'text-gray-300 font-bold' : ''}`}>Home</Link>
+      <Link href="/blog" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300 transition duration-300 ease-in-out'} ${pathname === '/blog' ? 'text-gray-300 font-bold' : ''}`}>Blog</Link>
+      <Link href="/about" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300 transition duration-300 ease-in-out'} ${pathname === '/about' ? 'text-gray-300 font-bold' : ''}`}>About</Link>
+      <Link href="/contact" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300 transition duration-300 ease-in-out'} ${pathname === '/contact' ? 'text-gray-300 font-bold' : ''}`}>Contact</Link>
       {(role === "Coach" || role === "Admin") && (
         <div className="relative" ref={servicesRef}>
           <button
             onClick={() => setIsServicesOpen(!isServicesOpen)}
-            className={`block ${isMobile ? 'w-full text-left' : 'hover:text-gray-300'} focus:outline-none font-semibold px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 transition-colors`}
+            className={`block ${isMobile ? 'w-full text-left' : 'hover:text-gray-300 transition duration-300 ease-in-out'} focus:outline-none font-semibold px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 transition-colors`}
           >
             <i className="bi bi-gear-fill mr-2"></i>
             Services
-            <i className={`bi ${isServicesOpen ? "bi-chevron-up" : "bi-chevron-down"} ml-2`}></i>
+            <i className={`bi ${isServicesOpen ? "bi-chevron-up" : "bi-chevron-down"} ml-2 transition-transform duration-300`}></i>
           </button>
           {isServicesOpen && (
-            <div className="absolute left-0 mt-2 min-w-[180px] bg-gray-800 rounded-md shadow-lg z-10 border border-purple-500">
+            <div className="absolute left-0 mt-2 min-w-[180px] bg-gray-800 rounded-md shadow-lg z-10 border border-purple-500 transition-all duration-300 ease-in-out">
               {servicesRoutes
                 .filter(route => !route.roles || route.roles.includes(role))
                 .map(route => (
                   <Link
                     key={route.href}
                     href={route.href}
+                    onClick={() => setIsServicesOpen(false)}
                     className={`flex items-center px-4 py-2 hover:bg-purple-700 transition-colors rounded ${pathname === route.href ? 'text-purple-300 font-bold' : 'text-white'}`}
                   >
                     <i className={`${route.icon} mr-2`}></i> {route.label}
@@ -66,22 +63,20 @@ export const Header = () => {
         </div>
       )}
       {role === "Student" && (
-        <Link href="/students" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300'} ${pathname === '/students' ? 'text-gray-300' : ''}`}>
+        <Link href="/students" className={`block ${isMobile ? 'px-4 py-2' : 'hover:text-gray-300 transition duration-300 ease-in-out'} ${pathname === '/students' ? 'text-gray-300 font-bold' : ''}`}>
           <i className="bi bi-person-lines-fill mr-2"></i> Students
         </Link>
       )}
-
     </>
   );
 
-
   return (
-    <nav className="bg-gray-800 text-white">
+    <nav className="bg-gray-800 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-xl font-bold">MyLogo</Link>
+            <Link href="/" className="text-xl font-bold transition duration-300 hover:text-purple-400">MyLogo</Link>
           </div>
 
           {/* Show actual role on the right side of the header */}
@@ -98,7 +93,7 @@ export const Header = () => {
             {isLoggedIn && (
               <button
                 onClick={() => router.push("/profile")}
-                className="ml-4 px-4 py-1 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center"
+                className="ml-4 px-4 py-1 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center transition duration-300 ease-in-out"
               >
                 Profile
               </button>
@@ -107,7 +102,7 @@ export const Header = () => {
             {!isLoggedIn ? (
               <button
                 onClick={() => router.push("/login")}
-                className={`px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center${isLoggedIn ? " ml-4" : " ml-4"}`}
+                className={`px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center transition duration-300 ease-in-out`}
               >
                 Login
               </button>
@@ -115,10 +110,10 @@ export const Header = () => {
               <button
                 onClick={() => {
                   logout();
-                  setRole("Guest"); // use lowercase "guest"
+                  setRole("Guest");
                   router.push("/");
                 }}
-                className="ml-4 px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center"
+                className="ml-4 px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center transition duration-300 ease-in-out"
               >
                 Logout
               </button>
@@ -129,7 +124,7 @@ export const Header = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-300 hover:text-white focus:outline-none"
+              className="text-gray-300 hover:text-white focus:outline-none transition duration-300"
               aria-label={isOpen ? "Close menu" : "Open menu"}
             >
               <svg
@@ -162,7 +157,7 @@ export const Header = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-gray-700">
+        <div className="md:hidden bg-gray-700 transition duration-300">
           {renderMenuItems(true)}
           <div className="flex flex-col gap-2 mt-2 px-4">
             {/* Profile Button (Mobile) */}
@@ -170,7 +165,7 @@ export const Header = () => {
               <button
                 onClick={() => router.push("/profile")}
                 title="Profile"
-                className="w-full px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center justify-center gap-2 transition duration-300"
               >
                 <i className="bi bi-person-circle"></i>
               </button>
@@ -180,23 +175,21 @@ export const Header = () => {
               <button
                 title="Login"
                 onClick={() => router.push("/login")}
-                className="w-full px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 transition duration-300"
               >
                 <i className="bi bi-box-arrow-in-right"></i>
-
               </button>
             ) : (
               <button
                 onClick={() => {
                   logout();
-                  setRole("Guest"); // use lowercase "guest"
+                  setRole("Guest");
                   router.push("/");
                 }}
                 title="Logout"
-                className="w-full px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center justify-center gap-2 transition duration-300"
               >
                 <i className="bi bi-box-arrow-right"></i>
-
               </button>
             )}
           </div>

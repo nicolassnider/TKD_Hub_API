@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using TKDHubAPI.Application.DTOs.Tul;
-using TKDHubAPI.Application.Interfaces;
+﻿using TKDHubAPI.Application.DTOs.Tul;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
