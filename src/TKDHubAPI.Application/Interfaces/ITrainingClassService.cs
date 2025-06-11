@@ -36,4 +36,13 @@ public interface ITrainingClassService
     /// </summary>
     /// <param name="id">The unique identifier of the training class to delete.</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Checks if a coach has a schedule conflict with the given schedules.
+    /// </summary>
+    /// <param name="coachId">The coach's user ID.</param>
+    /// <param name="schedules">The schedules to check.</param>
+    /// <param name="excludeClassId">Optional: exclude a class (for updates).</param>
+    /// <returns>True if there is a conflict, otherwise false.</returns>
+    Task<bool> HasCoachScheduleConflictAsync(int coachId, IEnumerable<ClassSchedule> schedules, int? excludeClassId = null);
 }
