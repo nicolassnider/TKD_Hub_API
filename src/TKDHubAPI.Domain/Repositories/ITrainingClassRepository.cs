@@ -47,4 +47,12 @@ public interface ITrainingClassRepository
     /// <param name="excludeClassId">Optional: a class ID to exclude from the results (e.g., when updating).</param>
     /// <returns>A collection of class schedules for the coach on the specified day.</returns>
     Task<IEnumerable<ClassSchedule>> GetSchedulesForCoachOnDayAsync(int coachId, DayOfWeek day, int? excludeClassId = null);
+
+    /// <summary>
+    /// Retrieves all <see cref="TrainingClass"/> entities where the specified user is assigned as the coach.
+    /// </summary>
+    /// <param name="coachId">The unique identifier of the coach.</param>
+    /// <returns>An enumerable collection of <see cref="TrainingClass"/> entities coached by the specified user.</returns>
+    Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId);
 }
+

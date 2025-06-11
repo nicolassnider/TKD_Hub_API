@@ -1,12 +1,18 @@
-﻿namespace TKDHubAPI.Application.Services;
+﻿using TKDHubAPI.Application.DTOs.TrainingClass;
+
+namespace TKDHubAPI.Application.Services;
 
 public class TrainingClassService : ITrainingClassService
 {
     private readonly ITrainingClassRepository _trainingClassRepository;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IMapper _mapper;
 
-    public TrainingClassService(ITrainingClassRepository trainingClassRepository)
+    public TrainingClassService(ITrainingClassRepository trainingClassRepository, ICurrentUserService currentUserService, IMapper mapper)
     {
         _trainingClassRepository = trainingClassRepository;
+        _currentUserService = currentUserService;
+        _mapper = mapper;
     }
 
     public async Task<TrainingClass> CreateAsync(TrainingClass trainingClass)
@@ -66,5 +72,15 @@ public class TrainingClassService : ITrainingClassService
     public async Task<IEnumerable<TrainingClass>> GetAllAsync()
     {
         return await _trainingClassRepository.GetAllAsync();
+    }
+
+    public async Task<IEnumerable<TrainingClassDto>> GetClassesForCurrentCoachAsync()
+    {
+        var currentUser = await _currentUserService.GetCurrentUserAsync();
+        if (currentUser == null || !currentUser.HasRole("Coach"))
+            return Enumerable.Empty<TrainingClassDto>();
+
+        var classes = await _trainingClassRepository.GetByCoachIdAsync(currentUser.Id);
+        return _mapper.Map<IEnumerable<TrainingClassDto>>(classes);
     }
 }
