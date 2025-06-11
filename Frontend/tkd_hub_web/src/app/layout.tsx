@@ -39,24 +39,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ApiConfigProvider>
           <AuthProvider>
             <RoleProvider>
-              <TulProvider>
-                <DojaangProvider>
+              <DojaangProvider>
+                <TulProvider>
                   <RankProvider>
                     <ClassProvider>
                       <div className="flex flex-col min-h-screen">
                         <Header />
                         <main className="flex-1 flex flex-col">{children}</main>
                       </div>
-
                     </ClassProvider>
-
-
                   </RankProvider>
-
-                </DojaangProvider>
-
-              </TulProvider>
-
+                </TulProvider>
+              </DojaangProvider>
             </RoleProvider>
           </AuthProvider>
         </ApiConfigProvider>

@@ -1,25 +1,60 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useApiConfig } from "../context/ApiConfigContext";
+import { apiRequest } from "../utils/api";
+import { CoachClass } from "../types/CoachClass";
+import ProfileInfo from "../components/profiles/ProfileInfo";
+import CoachClasses from "../components/profiles/CoachClasses";
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, getToken, loading: authLoading } = useAuth();
+    const { baseUrl } = useApiConfig();
+    const [coachClasses, setCoachClasses] = useState<CoachClass[] | null>(null);
+    const [loading, setLoading] = useState(false);
+    
+    useEffect(() => {
+        const fetchCoachClasses = async () => {
+            setLoading(true);
+            try {
+                const data = await apiRequest(
+                    `${baseUrl}/Users/coach/classes`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${getToken()}`,
+                        },
+                    }
+                );
+                setCoachClasses(Array.isArray(data) ? data : []);
+            } catch {
+                setCoachClasses([]);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    if (!user) return <div className="p-8 text-center">Not logged in.</div>;
+        if (user?.roles?.includes("Coach")) {
+            fetchCoachClasses();
+        }
+    }, [user, baseUrl, getToken]);
+
+    if (authLoading) {
+        return <div className="p-8 text-center">Loading...</div>;
+    }
+
+    if (!user) {
+        return <div className="p-8 text-center">Not logged in.</div>;
+    }
 
     return (
-        <div className="max-w-xl mx-auto my-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold mb-4">My Profile</h2>
-            <div className="space-y-2">
-                <div><strong>Name:</strong> {user.firstName} {user.lastName}</div>
-                <div><strong>Email:</strong> {user.email}</div>
-                {user.phoneNumber && <div><strong>Phone:</strong> {user.phoneNumber}</div>}
-                {user.gender !== undefined && <div><strong>Gender:</strong> {user.gender}</div>}
-                {user.dateOfBirth && <div><strong>Date of Birth:</strong> {user.dateOfBirth}</div>}
-                {user.dojaangId && <div><strong>Dojaang ID:</strong> {user.dojaangId}</div>}
-                {user.currentRankId && <div><strong>Current Rank ID:</strong> {user.currentRankId}</div>}
-                {user.joinDate && <div><strong>Join Date:</strong> {user.joinDate}</div>}
-                {user.roles && <div><strong>Roles:</strong> {user.roles.join(", ")}</div>}
-                <div><strong>Status:</strong> {user.isActive ? "Active" : "Inactive"}</div>
+        <div className="flex justify-center items-center my-10">
+            <div className="w-full max-w-6xl bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-10 flex flex-col gap-10 mx-auto text-center">
+                <h2 className="text-3xl font-bold mb-4 self-center">My Profile</h2>
+                <ProfileInfo user={user} />
+                {user.roles?.includes("Coach") && (
+                    <CoachClasses loading={loading} coachClasses={coachClasses} />
+                )}
             </div>
         </div>
     );
