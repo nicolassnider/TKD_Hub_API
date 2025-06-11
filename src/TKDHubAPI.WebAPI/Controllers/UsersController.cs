@@ -1,5 +1,7 @@
 ﻿using System.Security.Claims;
+using TKDHubAPI.Application.DTOs.TrainingClass;
 using TKDHubAPI.Application.DTOs.User;
+using TKDHubAPI.Application.Services;
 using TKDHubAPI.Domain.Entities;
 using TKDHubAPI.WebAPI.Middlewares;
 
@@ -14,6 +16,8 @@ public partial class UsersController : BaseApiController
 {
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
+    private readonly IDojaangService _dojaangService;
+    private readonly ITrainingClassService _trainingClassService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersController"/> class.
@@ -21,11 +25,18 @@ public partial class UsersController : BaseApiController
     /// <param name="userService">The user service instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
     /// <param name="logger">The logger instance.</param>
-    public UsersController(IUserService userService, IMapper mapper, ILogger<UsersController> logger)
+    public UsersController(
+        IUserService userService,
+        IMapper mapper,
+        ILogger<UsersController> logger,
+        IDojaangService dojaangService,
+        ITrainingClassService trainingClassService)
         : base(logger)
     {
         _userService = userService;
         _mapper = mapper;
+        _dojaangService = dojaangService;
+        _trainingClassService = trainingClassService;
     }
 
     /// <summary>
@@ -242,5 +253,19 @@ public partial class UsersController : BaseApiController
             return BadRequest("User already exists.");
 
         return Ok(user);
+    }
+
+    /// <summary>
+    /// Retrieves all <see cref="TrainingClass"/> entities that are imparted by the currently logged-in coach.
+    /// Only accessible to users with the "Coach" role.
+    /// </summary>
+    /// <returns>A list of <see cref="TrainingClassDto"/> representing the classes imparted by the current coach.</returns>  
+
+    [HttpGet("coach/classes")]
+    [Authorize(Roles = "Coach")]
+    public async Task<ActionResult<IEnumerable<TrainingClassDto>>> GetClassesForCurrentCoach()
+    {
+        var classes = await _trainingClassService.GetClassesForCurrentCoachAsync();
+        return Ok(classes);
     }
 }
