@@ -6,7 +6,6 @@ using TKDHubAPI.WebAPI;
 using TKDHubAPI.WebAPI.Converters;
 using TKDHubAPI.WebAPI.Middlewares;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -19,9 +18,6 @@ builder.Services.AddControllers()
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddWebAPIServices(builder.Configuration);
-
-
-
 
 var app = builder.Build();
 
@@ -40,7 +36,6 @@ using (var scope = app.Services.CreateScope())
 
 // Configure the HTTP request pipeline.
 
-
 app.UseMiddleware<CustomErrorResponseMiddleware>();
 // Enable Swagger middleware
 app.UseSwagger();
@@ -50,18 +45,13 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger"; // Optional: sets the Swagger UI at /swagger
 });
 
-
 app.UseHttpsRedirection();
 
-
 app.UseCors("AllowFrontend");
-
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapControllers();
-
 
 app.Run();

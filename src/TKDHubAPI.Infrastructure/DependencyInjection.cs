@@ -14,7 +14,6 @@ public static class DependencyInjection
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-
         // Register generic repositories for all relevant entities
         services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
         services.AddScoped<IGenericRepository<UserDojaang>, GenericRepository<UserDojaang>>();
@@ -25,7 +24,6 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<EventAttendance>, GenericRepository<EventAttendance>>();
         services.AddScoped<IGenericRepository<UserRole>, GenericRepository<UserRole>>();
         services.AddScoped<IGenericRepository<Promotion>, GenericRepository<Promotion>>();
-
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -42,7 +40,6 @@ public static class DependencyInjection
         services.AddScoped<IClassScheduleRepository, ClassScheduleRepository>();
         services.AddScoped<IStudentClassRepository, StudentClassRepository>();
 
-
         // 4. Add Logging (Optional, but highly recommended) - Already handled by default, but configure if needed
         //   If you are using the default ASP.NET Core logging, you don't need to do anything here.
         //   If you're using a custom logging provider (like Serilog), configure it here.
@@ -56,9 +53,6 @@ public static class DependencyInjection
         //     return new SerilogLoggerFactory(Log.Logger);
         // });
         // services.AddLogging(); // Make sure the Logging service is registered.
-
-
-
 
         return services;
     }
