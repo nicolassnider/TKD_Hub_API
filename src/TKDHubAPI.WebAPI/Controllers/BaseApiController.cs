@@ -1,4 +1,6 @@
-﻿namespace TKDHubAPI.WebAPI.Controllers;
+﻿using TKDHubAPI.WebAPI.Middlewares;
+
+namespace TKDHubAPI.WebAPI.Controllers;
 
 /// <summary>
 /// Serves as the base class for all API controllers, providing common functionality such as standardized success and error responses,
@@ -28,9 +30,10 @@ public abstract class BaseApiController : ControllerBase
     /// <param name="message">The error message to include in the response.</param>
     /// <param name="statusCode">The HTTP status code to return (default is 400).</param>
     /// <returns>An <see cref="IActionResult"/> containing the error message and status code.</returns>
-    protected IActionResult ErrorResponse(string message, int statusCode = 400)
+    protected IActionResult ErrorResponse(string message, int statusCode)
     {
-        return StatusCode(statusCode, new { error = message });
+        CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, message);
+        return StatusCode(statusCode);
     }
 
     /// <summary>

@@ -21,17 +21,21 @@ public class CustomErrorResponseMiddleware
 
         await _next(context);
 
-        if (context.Response.StatusCode >= 300)
+        memStream.Seek(0, SeekOrigin.Begin);
+        string responseBody = await new StreamReader(memStream).ReadToEndAsync();
+
+        if (context.Response.StatusCode >= 400)
         {
             string message = context.Items.ContainsKey(ErrorMessageKey)
                 ? context.Items[ErrorMessageKey]?.ToString()
-                : context.Response.StatusCode switch
-                {
-                    (int)HttpStatusCode.Forbidden => "You do not have permission to perform this action.",
-                    (int)HttpStatusCode.Unauthorized => "Authentication is required to access this resource.",
-                    (int)HttpStatusCode.BadRequest => "The request was invalid or cannot be served.",
-                    _ => $"An error occurred. Status code: {context.Response.StatusCode}"
-                };
+                : TryExtractMessageFromBody(responseBody)
+                    ?? context.Response.StatusCode switch
+                    {
+                        (int)HttpStatusCode.Forbidden => "You do not have permission to perform this action.",
+                        (int)HttpStatusCode.Unauthorized => "Authentication is required to access this resource.",
+                        (int)HttpStatusCode.BadRequest => "The request was invalid or cannot be served.",
+                        _ => $"An error occurred. Status code: {context.Response.StatusCode}"
+                    };
 
             context.Response.Body = originalBody;
             context.Response.ContentType = "application/json";
@@ -43,6 +47,23 @@ public class CustomErrorResponseMiddleware
             memStream.Seek(0, SeekOrigin.Begin);
             await memStream.CopyToAsync(originalBody);
         }
+    }
+
+    private string? TryExtractMessageFromBody(string responseBody)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(responseBody);
+            if (doc.RootElement.TryGetProperty("message", out var messageProp))
+            {
+                return messageProp.GetString();
+            }
+        }
+        catch
+        {
+            // Ignore parsing errors
+        }
+        return null;
     }
 
     // Helper to set a dynamic error message from anywhere in the pipeline
