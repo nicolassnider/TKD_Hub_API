@@ -1,6 +1,7 @@
 ﻿using TKDHubAPI.Application.DTOs.TrainingClass;
 using TKDHubAPI.Application.Services;
 using TKDHubAPI.Domain.Entities;
+using TKDHubAPI.WebAPI.Middlewares;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
@@ -65,10 +66,19 @@ public class ClassesController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTrainingClassDto trainingClassDto)
     {
-        var entity = _mapper.Map<TrainingClass>(trainingClassDto);
-        var created = await _trainingClassService.CreateAsync(entity);
-        var resultDto = _mapper.Map<TrainingClassDto>(created);
-        return SuccessResponse(resultDto);
+        try
+        {
+            var entity = _mapper.Map<TrainingClass>(trainingClassDto);
+            var created = await _trainingClassService.CreateAsync(entity);
+            var resultDto = _mapper.Map<TrainingClassDto>(created);
+            return SuccessResponse(resultDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Set the error message for the middleware
+            CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, ex.Message);
+            return StatusCode(400);
+        }
     }
 
     /// <summary>

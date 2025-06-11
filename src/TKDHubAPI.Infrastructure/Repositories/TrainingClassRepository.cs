@@ -50,4 +50,14 @@ public class TrainingClassRepository : ITrainingClassRepository
         _context.TrainingClasses.Update(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<ClassSchedule>> GetSchedulesForCoachOnDayAsync(int coachId, DayOfWeek day, int? excludeClassId = null)
+    {
+        return await _context.ClassSchedules
+            .Where(s =>
+                s.TrainingClass.Coach.Id == coachId &&
+                s.Day == day &&
+                (excludeClassId == null || s.TrainingClassId != excludeClassId))
+            .ToListAsync();
+    }
 }
