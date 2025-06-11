@@ -2,6 +2,7 @@ import { useDojaangs } from "@/app/context/DojaangContext";
 import { Dojaang } from "@/app/types/Dojaang";
 import TableActionButton from "../common/actionButtons/TableActionButton";
 import { useRole } from "@/app/context/RoleContext";
+import NotFoundTableRow from "../common/NotFoundTableRow";
 
 type DojaangTableRowsProps = {
   dojaangs: Dojaang[];
@@ -15,13 +16,17 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
   onRequestDelete,
 }) => {
   const { refreshDojaangs } = useDojaangs();
-  const { getRole } = useRole(); // <-- Use useRole to get getRole
+  const { getRole } = useRole();
   const role = getRole();
 
   const handleDelete = async (id: number) => {
     await onRequestDelete(id);
     refreshDojaangs();
   };
+
+  if (dojaangs.length === 0) {
+    return <NotFoundTableRow colSpan={4} message="No dojaangs found." />;
+  }
 
   return (
     <>

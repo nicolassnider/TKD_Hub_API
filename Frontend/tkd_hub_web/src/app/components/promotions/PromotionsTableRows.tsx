@@ -1,6 +1,7 @@
 import { Promotion } from "@/app/types/Promotion";
 import React from "react";
 import TableActionButton from "../common/actionButtons/TableActionButton";
+import NotFoundTableRow from "../common/NotFoundTableRow";
 
 type PromotionTableRowsProps = {
   promotions: Promotion[];
@@ -14,13 +15,7 @@ const PromotionTableRows: React.FC<PromotionTableRowsProps> = ({
   onDelete,
 }) => {
   if (!promotions.length) {
-    return (
-      <tr>
-        <td colSpan={6} className="text-center text-gray-500 py-3">
-          No promotions found.
-        </td>
-      </tr>
-    );
+    return <NotFoundTableRow colSpan={6} message="No promotions found." />;
   }
 
   return (

@@ -2,6 +2,7 @@ import React from "react";
 import TableActionButton from "../common/actionButtons/TableActionButton";
 import { Coach } from "@/app/types/Coach";
 import router from "next/router";
+import NotFoundTableRow from "../common/NotFoundTableRow";
 
 type CoachesTableRowsProps = {
   coaches: Coach[];
@@ -17,13 +18,18 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
   onRequestDelete,
   onReactivate,
   isActiveFilter = null,
-}) => (
-  <>
-    {coaches
-      .filter(coach =>
-        isActiveFilter === null ? true : coach.isActive === isActiveFilter
-      )
-      .map((coach) => (
+}) => {
+  const filteredCoaches = coaches.filter(coach =>
+    isActiveFilter === null ? true : coach.isActive === isActiveFilter
+  );
+
+  if (filteredCoaches.length === 0) {
+    return <NotFoundTableRow colSpan={4} message="No coaches found." />;
+  }
+
+  return (
+    <>
+      {filteredCoaches.map((coach) => (
         <tr key={coach.id ?? Math.random()}>
           <td className="px-4 py-2">{coach.id}</td>
           <td className="px-4 py-2">
@@ -84,7 +90,8 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
           </td>
         </tr>
       ))}
-  </>
-);
+    </>
+  );
+};
 
 export default CoachesTableRows;
