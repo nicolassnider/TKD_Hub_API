@@ -11,6 +11,7 @@ import { ApiConfigProvider } from "./context/ApiConfigContext";
 import { DojaangProvider } from "./context/DojaangContext";
 import { TulProvider } from "./context/TulContext";
 import { RankProvider } from "./context/RankContext";
+import { ClassProvider } from "./context/ClassContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,10 +42,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <TulProvider>
                 <DojaangProvider>
                   <RankProvider>
-                    <div className="flex flex-col min-h-screen">
-                      <Header />
-                      <main className="flex-1 flex flex-col">{children}</main>
-                    </div>
+                    <ClassProvider>
+                      <div className="flex flex-col min-h-screen">
+                        <Header />
+                        <main className="flex-1 flex flex-col">{children}</main>
+                      </div>
+
+                    </ClassProvider>
+
 
                   </RankProvider>
 
