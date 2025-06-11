@@ -1,9 +1,50 @@
 ﻿namespace TKDHubAPI.Domain.Repositories;
+
+/// <summary>
+/// Repository interface for managing TrainingClass entities and their related schedules.
+/// Provides methods for CRUD operations and schedule conflict checks for coaches.
+/// </summary>
 public interface ITrainingClassRepository
 {
+    /// <summary>
+    /// Gets a training class by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the training class.</param>
+    /// <returns>The training class entity, or null if not found.</returns>
     Task<TrainingClass> GetByIdAsync(int id);
+
+    /// <summary>
+    /// Gets all training classes, including related entities.
+    /// </summary>
+    /// <returns>A collection of all training class entities.</returns>
     Task<IEnumerable<TrainingClass>> GetAllAsync();
+
+    /// <summary>
+    /// Adds a new training class to the data store.
+    /// </summary>
+    /// <param name="entity">The training class entity to add.</param>
+    /// <returns>The added training class entity.</returns>
     Task<TrainingClass> AddAsync(TrainingClass entity);
+
+    /// <summary>
+    /// Updates an existing training class in the data store.
+    /// </summary>
+    /// <param name="entity">The training class entity with updated values.</param>
     Task UpdateAsync(TrainingClass entity);
+
+    /// <summary>
+    /// Deletes a training class by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the training class to delete.</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Gets all class schedules for a coach on a specific day, optionally excluding a specific class.
+    /// Used to check for schedule conflicts.
+    /// </summary>
+    /// <param name="coachId">The unique identifier of the coach.</param>
+    /// <param name="day">The day of the week to filter schedules.</param>
+    /// <param name="excludeClassId">Optional: a class ID to exclude from the results (e.g., when updating).</param>
+    /// <returns>A collection of class schedules for the coach on the specified day.</returns>
+    Task<IEnumerable<ClassSchedule>> GetSchedulesForCoachOnDayAsync(int coachId, DayOfWeek day, int? excludeClassId = null);
 }
