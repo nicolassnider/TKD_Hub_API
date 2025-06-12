@@ -1,4 +1,6 @@
-﻿namespace TKDHubAPI.Application.Services;
+﻿using TKDHubAPI.Application.DTOs.TrainingClass;
+
+namespace TKDHubAPI.Application.Services;
 
 /// <summary>
 /// Service interface for managing <see cref="TrainingClass"/> entities, including retrieval, creation, update, and deletion.
@@ -45,4 +47,11 @@ public interface ITrainingClassService
     /// <param name="excludeClassId">Optional: exclude a class (for updates).</param>
     /// <returns>True if there is a conflict, otherwise false.</returns>
     Task<bool> HasCoachScheduleConflictAsync(int coachId, IEnumerable<ClassSchedule> schedules, int? excludeClassId = null);
+
+    /// <summary>
+    /// Retrieves all <see cref="TrainingClassDto"/> entities that are imparted by the currently logged-in coach.
+    /// Only classes where the current user is assigned as the coach are returned.
+    /// </summary>
+    /// <returns>An enumerable collection of <see cref="TrainingClassDto"/> for the current coach, or an empty collection if the user is not a coach or not authenticated.</returns>
+    Task<IEnumerable<TrainingClassDto>> GetClassesForCurrentCoachAsync();
 }

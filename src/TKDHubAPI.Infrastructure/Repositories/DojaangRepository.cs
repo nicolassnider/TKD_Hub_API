@@ -22,4 +22,11 @@ public class DojaangRepository : GenericRepository<Dojaang>, IDojaangRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Dojaang>> GetDojaangsByCoachIdAsync(int coachId)
+    {
+        return await _context.Dojaangs
+            .Where(d => d.UserDojaangs.Any(ud => ud.UserId == coachId))
+            .ToListAsync();
+    }
+
 }

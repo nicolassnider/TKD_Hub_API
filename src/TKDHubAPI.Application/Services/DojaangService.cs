@@ -7,9 +7,6 @@ public class DojaangService : IDojaangService
     private readonly IUserDojaangRepository _userDojaangRepository;
     private readonly IDojaangRepository _dojaangRepository;
     private readonly ICurrentUserService _currentUserService;
-
-
-
     public DojaangService(
         IUnitOfWork unitOfWork,
         IDojaangRepository dojaangRepository,
@@ -235,5 +232,16 @@ public class DojaangService : IDojaangService
     {
         throw new NotImplementedException();
     }
-}
 
+    public async Task<IEnumerable<DojaangDto>> GetDojaangsForCurrentCoachAsync()
+    {
+        var currentUser = await _currentUserService.GetCurrentUserAsync();
+        if (currentUser == null || !currentUser.HasRole("Coach"))
+            return Enumerable.Empty<DojaangDto>();
+
+        var dojaangs = await _dojaangRepository.GetDojaangsByCoachIdAsync(currentUser.Id);
+        var dtos = _mapper.Map<IEnumerable<DojaangDto>>(dojaangs);
+        MapCoachNames(dojaangs, dtos);
+        return dtos;
+    }
+}

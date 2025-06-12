@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
-
-namespace TKDHubAPI.Application.Interfaces;
+﻿namespace TKDHubAPI.Application.Interfaces;
 
 /// <summary>
 /// Defines CRUD operations and domain-specific actions for Dojaang entities, including creation, coach assignment, and updates.
@@ -35,5 +33,10 @@ public interface IDojaangService : ICrudService<DojaangDto>
     /// <param name="dto">The update DTO containing the dojaang information.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task UpdateAsync(UpdateDojaangDto dto);
-}
 
+    /// <summary>
+    /// Retrieves all dojaangs (classes) assigned to the currently logged-in coach.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation, containing a collection of DojaangDto.</returns>
+    Task<IEnumerable<DojaangDto>> GetDojaangsForCurrentCoachAsync();
+}
