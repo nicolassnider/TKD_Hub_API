@@ -3,25 +3,16 @@ using TKDHubAPI.Application;
 using TKDHubAPI.Infrastructure;
 using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
-using TKDHubAPI.WebAPI.Converters;
 using TKDHubAPI.WebAPI.Middlewares;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
-    });
 // Add services to the container using DI extension methods
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddWebAPIServices(builder.Configuration);
-
-
-
 
 var app = builder.Build();
 
@@ -50,16 +41,12 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger"; // Optional: sets the Swagger UI at /swagger
 });
 
-
 app.UseHttpsRedirection();
-
 
 app.UseCors("AllowFrontend");
 
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapControllers();
 

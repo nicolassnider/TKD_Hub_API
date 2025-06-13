@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using TKDHubAPI.Application.Settings;
+using TKDHubAPI.WebAPI.Converters;
 
 namespace TKDHubAPI.WebAPI;
 
@@ -11,7 +12,11 @@ public static class DependencyInjection
     public static IServiceCollection AddWebAPIServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Add controllers and API explorer
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+            });
         services.AddEndpointsApiExplorer();
 
 
