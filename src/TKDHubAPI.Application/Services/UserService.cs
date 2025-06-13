@@ -89,6 +89,20 @@ public class UserService : IUserService
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
+        // Only add UserDojaang for the user's main role (e.g., Student), not for Coach due to black belt
+        if (normalizedDojaangId.HasValue)
+        {
+            // Pick the main role for the UserDojaang relation (e.g., Student, not Coach)
+            var mainRole = roles.FirstOrDefault()?.Name ?? "Student";
+            user.UserDojaangs.Add(new UserDojaang
+            {
+                UserId = user.Id,
+                DojaangId = normalizedDojaangId.Value,
+                Role = mainRole
+            });
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         return user;
     }
 
