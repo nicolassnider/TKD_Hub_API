@@ -60,4 +60,14 @@ public class TrainingClassRepository : ITrainingClassRepository
                 (excludeClassId == null || s.TrainingClassId != excludeClassId))
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId)
+    {
+        return await _context.TrainingClasses
+            .Include(tc => tc.Schedules)
+            .Include(tc => tc.Coach)
+            .Include(tc => tc.Dojaang)
+            .Where(tc => tc.CoachId == coachId)
+            .ToListAsync();
+    }
 }
