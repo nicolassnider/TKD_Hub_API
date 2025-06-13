@@ -25,7 +25,8 @@ public static class DependencyInjection
             {
                 policy.WithOrigins(corsSettings.AllowedOrigins)
                       .AllowAnyHeader()
-                      .AllowAnyMethod();
+                      .AllowAnyMethod()
+                      .AllowCredentials();
             });
         });
 
