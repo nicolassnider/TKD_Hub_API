@@ -54,4 +54,14 @@ public interface ITrainingClassService
     /// </summary>
     /// <returns>An enumerable collection of <see cref="TrainingClassDto"/> for the current coach, or an empty collection if the user is not a coach or not authenticated.</returns>
     Task<IEnumerable<TrainingClassDto>> GetClassesForCurrentCoachAsync();
+
+    /// <summary>
+    /// Adds a student to a training class.
+    /// </summary>
+    /// <param name="trainingClassId">The unique identifier of the training class.</param>
+    /// <param name="studentId">The unique identifier of the student to add.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if the training class or student does not exist.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the student is already enrolled in the class.</exception>
+    Task AddStudentToClassAsync(int trainingClassId, int studentId);
 }

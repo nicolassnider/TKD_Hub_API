@@ -5,14 +5,23 @@ namespace TKDHubAPI.Application.Services;
 public class TrainingClassService : ITrainingClassService
 {
     private readonly ITrainingClassRepository _trainingClassRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public TrainingClassService(ITrainingClassRepository trainingClassRepository, ICurrentUserService currentUserService, IMapper mapper)
+    public TrainingClassService(
+        ITrainingClassRepository trainingClassRepository,
+        ICurrentUserService currentUserService,
+        IMapper mapper,
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork)
     {
         _trainingClassRepository = trainingClassRepository;
         _currentUserService = currentUserService;
         _mapper = mapper;
+        _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<TrainingClass> CreateAsync(TrainingClass trainingClass)
@@ -82,5 +91,28 @@ public class TrainingClassService : ITrainingClassService
 
         var classes = await _trainingClassRepository.GetByCoachIdAsync(currentUser.Id);
         return _mapper.Map<IEnumerable<TrainingClassDto>>(classes);
+    }
+
+    public async Task AddStudentToClassAsync(int trainingClassId, int studentId)
+    {
+        var trainingClass = await _trainingClassRepository.GetByIdAsync(trainingClassId);
+        if (trainingClass == null)
+            throw new Exception("Training class not found.");
+
+        var student = await _userRepository.GetByIdAsync(studentId);
+        if (student == null)
+            throw new Exception("Student not found.");
+
+        // Prevent duplicates
+        if (trainingClass.StudentClasses.Any(sc => sc.StudentId == studentId))
+            throw new InvalidOperationException("Student is already enrolled in this class.");
+
+        trainingClass.StudentClasses.Add(new StudentClass
+        {
+            StudentId = studentId,
+            TrainingClassId = trainingClassId
+        });
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }
