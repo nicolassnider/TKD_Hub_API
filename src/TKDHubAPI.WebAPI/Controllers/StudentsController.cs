@@ -1,4 +1,5 @@
 ﻿using TKDHubAPI.Application.DTOs.User;
+using TKDHubAPI.Application.Services;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
@@ -10,6 +11,7 @@ namespace TKDHubAPI.WebAPI.Controllers;
 public class StudentsController : BaseApiController
 {
     private readonly IStudentService _studentService;
+    private readonly ITrainingClassService _trainingClassService;
 
 
     /// <summary>
@@ -20,11 +22,13 @@ public class StudentsController : BaseApiController
     /// <param name="logger">The logger instance.</param>
     public StudentsController(
         IStudentService studentService,
+        ITrainingClassService trainingClassService,
 
         ILogger<StudentsController> logger
     ) : base(logger)
     {
         _studentService = studentService;
+        _trainingClassService = trainingClassService;
 
     }
 
@@ -104,6 +108,32 @@ public class StudentsController : BaseApiController
         {
             Logger.LogError(ex, "Error updating student");
             return ErrorResponse(ex.Message, 500);
+        }
+    }
+
+    /// <summary>
+    /// Adds a student to a training class.
+    /// </summary>
+    /// <param name="studentId">The unique identifier of the student to add.</param>
+    /// <param name="classId">The unique identifier of the training class.</param>
+    /// <returns>
+    /// A success response if the student was added to the class; otherwise, an error response with details.
+    /// </returns>
+    /// <remarks>
+    /// Returns HTTP 200 on success, or HTTP 400 with an error message if the operation fails.
+    /// </remarks>
+    [HttpPost("{studentId}/trainingclasses/{classId}")]
+    public async Task<IActionResult> AddStudentToClass(int studentId, int classId)
+    {
+        try
+        {
+            await _trainingClassService.AddStudentToClassAsync(classId, studentId);
+            return SuccessResponse("Student added to class.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error adding student to class");
+            return ErrorResponse(ex.Message, 400);
         }
     }
 }

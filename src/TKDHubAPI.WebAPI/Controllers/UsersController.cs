@@ -268,4 +268,38 @@ public partial class UsersController : BaseApiController
         var classes = await _trainingClassService.GetClassesForCurrentCoachAsync();
         return Ok(classes);
     }
+
+    /// <summary>
+    /// Reactivates a user by setting their IsActive status to true.
+    /// This endpoint allows authorized users to restore a previously deactivated user account.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user to reactivate.</param>
+    /// <returns>
+    /// A standardized success response if the user is reactivated,
+    /// or an error response if the user is not found or the operation is unauthorized.
+    /// </returns>
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{userId}/reactivate")]
+    public async Task<IActionResult> Reactivate(int userId)
+    {
+        try
+        {
+            var user = await _userService.GetByIdAsync(userId);
+            if (user == null)
+                return ErrorResponse("User not found.", 404);
+
+            await _userService.ReactivateAsync(userId);
+            return SuccessResponse(new { Message = "User reactivated." });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.LogWarning(ex, "Unauthorized attempt to reactivate user.");
+            return ErrorResponse(ex.Message, 403);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error reactivating user");
+            return ErrorResponse("An error occurred while reactivating the user.", 500);
+        }
+    }
 }

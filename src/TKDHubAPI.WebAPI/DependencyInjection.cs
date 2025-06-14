@@ -17,6 +17,7 @@ public static class DependencyInjection
             {
                 options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
             });
+
         services.AddEndpointsApiExplorer();
 
 

@@ -235,38 +235,4 @@ public class CoachesController : BaseApiController
             return ErrorResponse("An error occurred while deleting the coach.", 500);
         }
     }
-
-    /// <summary>
-    /// Reactivates a coach by setting their IsActive status to true.
-    /// This endpoint allows authorized users to restore a previously deactivated coach account.
-    /// </summary>
-    /// <param name="coachId">The unique identifier of the coach to reactivate.</param>
-    /// <returns>
-    /// A standardized success response if the coach is reactivated,
-    /// or an error response if the coach is not found or the operation is unauthorized.
-    /// </returns>
-    [Authorize(Roles = "Admin")]
-    [HttpPost("{coachId}/reactivate")]
-    public async Task<IActionResult> Reactivate(int coachId)
-    {
-        try
-        {
-            var coach = await _coachService.GetCoachByIdAsync(coachId);
-            if (coach == null)
-                return ErrorResponse("Coach not found.", 404);
-
-            await _userService.ReactivateAsync(coachId);
-            return SuccessResponse(new { Message = "Coach reactivated." });
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            Logger.LogWarning(ex, "Unauthorized attempt to reactivate coach.");
-            return ErrorResponse(ex.Message, 403);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error reactivating coach");
-            return ErrorResponse("An error occurred while reactivating the coach.", 500);
-        }
-    }
 }

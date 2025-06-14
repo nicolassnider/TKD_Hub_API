@@ -5,7 +5,6 @@ using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
 using TKDHubAPI.WebAPI.Middlewares;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container using DI extension methods
@@ -31,7 +30,6 @@ using (var scope = app.Services.CreateScope())
 
 // Configure the HTTP request pipeline.
 
-
 app.UseMiddleware<CustomErrorResponseMiddleware>();
 // Enable Swagger middleware
 app.UseSwagger();
@@ -49,6 +47,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 app.Run();

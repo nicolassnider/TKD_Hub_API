@@ -27,7 +27,7 @@ public class RanksController : BaseApiController
     public async Task<IActionResult> GetAll()
     {
         var ranks = await _rankService.GetAllAsync();
-        return Ok(ranks);
+        return SuccessResponse(ranks);
     }
 
     /// <summary>
@@ -41,6 +41,6 @@ public class RanksController : BaseApiController
         var rank = await _rankService.GetByIdAsync(id);
         if (rank == null)
             return NotFound();
-        return Ok(rank);
+        return SuccessResponse(rank);
     }
 }
