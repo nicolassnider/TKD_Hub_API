@@ -1,0 +1,153 @@
+"use client";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { useApiRequest } from "../utils/api";
+import { useAuth } from "@/app/context/AuthContext";
+import toast from "react-hot-toast";
+import { Student } from "@/app/types/Student";
+
+type StudentContextType = {
+  students: Student[];
+  loading: boolean;
+  error: string | null;
+  fetchStudents: () => Promise<void>;
+  getStudentById: (id: number) => Promise<Student | null>;
+  createStudent: (data: Omit<Student, "id" | "joinDate" | "isActive">) => Promise<void>;
+  updateStudent: (id: number, data: Partial<Student>) => Promise<void>;
+  getStudentsByDojaang: (dojaangId: number) => Promise<Student[]>;
+};
+
+const StudentContext = createContext<StudentContextType>({
+  students: [],
+  loading: false,
+  error: null,
+  fetchStudents: async () => { },
+  getStudentById: async () => null,
+  createStudent: async () => { },
+  updateStudent: async () => { },
+  getStudentsByDojaang: async () => [],
+});
+
+export const useStudents = () => useContext(StudentContext);
+
+export const StudentProvider = ({ children }: { children: ReactNode }) => {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { getToken } = useAuth();
+  const { apiRequest } = useApiRequest();
+
+  const fetchStudents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiRequest<Student[]>("/Students", {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setStudents(res);
+    } catch {
+      setError("Failed to load students");
+      setStudents([]);
+      toast.error("Failed to load students");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStudentById = async (id: number): Promise<Student | null> => {
+    setLoading(true);
+    setError(null);
+    console.log("[StudentContext] getStudentById called with id:", id);
+    try {
+      const res = await apiRequest<{ data: Student }>(`/Students/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      console.log("[StudentContext] getStudentById API response:", res);
+      setLoading(false);
+      return res.data ?? null; // <-- Return the student object, not the wrapper
+    } catch (err) {
+      setError("Failed to load student");
+      setLoading(false);
+      toast.error("Failed to load student");
+      console.error("[StudentContext] getStudentById error:", err);
+      return null;
+    }
+  };
+
+  const createStudent = async (data: Omit<Student, "id" | "joinDate" | "isActive">) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiRequest("/Students", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      toast.success("Student created");
+      await fetchStudents();
+    } catch {
+      setError("Failed to create student");
+      toast.error("Failed to create student");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStudent = async (id: number, data: Partial<Student>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiRequest(`/Students/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      await fetchStudents();
+    } catch {
+      setError("Failed to update student");
+      toast.error("Failed to update student");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStudentsByDojaang = async (dojaangId: number): Promise<Student[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiRequest<Student[]>(`/Students/Dojaang/${dojaangId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setLoading(false);
+      return res;
+    } catch {
+      setError("Failed to load students by dojaang");
+      setLoading(false);
+      toast.error("Failed to load students by dojaang");
+      return [];
+    }
+  };
+
+  return (
+    <StudentContext.Provider
+      value={{
+        students,
+        loading,
+        error,
+        fetchStudents,
+        getStudentById,
+        createStudent,
+        updateStudent,
+        getStudentsByDojaang,
+      }}
+    >
+      {children}
+    </StudentContext.Provider>
+  );
+};

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import LabeledInput from "../common/inputs/LabeledInput";
 import DojaangSelector from "../dojaangs/DojaangSelector";
 import CoachSelector from "../coaches/CoachSelector";
-import { useApiConfig } from "@/app/context/ApiConfigContext";
 import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 import { TrainingClass } from "@/app/types/TrainingClass";
@@ -28,7 +27,6 @@ const defaultForm: Omit<TrainingClass, "id"> = {
 
 const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialData }) => {
     const [form, setForm] = useState<Omit<TrainingClass, "id">>(defaultForm);
-    const { baseUrl } = useApiConfig();
     const [saving, setSaving] = useState(false);
 
 
@@ -155,7 +153,6 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                         onChange={id => setForm({ ...form, dojaangId: id ?? 0 })}
                     />
                     <CoachSelector
-                        baseUrl={baseUrl}
                         value={form.coachId ? String(form.coachId) : ""}
                         onChange={handleCoachChange}
                     />

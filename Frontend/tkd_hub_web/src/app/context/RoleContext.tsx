@@ -1,40 +1,41 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { isTokenExpired } from "../utils/auth";
-import { useAuth } from "./AuthContext"; // <-- Import useAuth
+import { useAuth } from "./AuthContext";
 
 export type UserRole = "Guest" | "Student" | "Coach" | "Admin";
 
 type RoleContextType = {
   role: UserRole;
   setRole: (role: UserRole) => void;
-  getRole: () => UserRole; // <-- Add getRole to context type
+  getRole: () => UserRole;
 };
 
 const RoleContext = createContext<RoleContextType>({
   role: "Guest",
-  setRole: () => { },
-  getRole: () => "Guest", // <-- Default implementation
+  setRole: () => {},
+  getRole: () => "Guest",
 });
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<UserRole>("Guest");
-  const { getToken } = useAuth(); // <-- Use getToken
+  const { getToken } = useAuth();
 
   useEffect(() => {
     // Get role and token from context/localStorage
-    const storedRole = localStorage.getItem("role") as UserRole | null;
+    const storedRole = (typeof window !== "undefined" ? localStorage.getItem("role") : null) as UserRole | null;
     const token = getToken();
     // If token is missing or expired, remove role and set to Guest
     if (!token || isTokenExpired(token)) {
-      localStorage.removeItem("role");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("role");
+      }
       setRole("Guest");
     } else if (storedRole) {
       setRole(storedRole);
     }
   }, [getToken]);
 
-  // Add getRole function
   const getRole = () => role;
 
   return (

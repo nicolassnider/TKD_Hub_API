@@ -15,13 +15,13 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
   onEdit,
   onRequestDelete,
 }) => {
-  const { refreshDojaangs } = useDojaangs();
+  const { fetchDojaangs } = useDojaangs();
   const { getRole } = useRole();
   const role = getRole();
 
   const handleDelete = async (id: number) => {
     await onRequestDelete(id);
-    refreshDojaangs();
+    fetchDojaangs();
   };
 
   if (dojaangs.length === 0) {

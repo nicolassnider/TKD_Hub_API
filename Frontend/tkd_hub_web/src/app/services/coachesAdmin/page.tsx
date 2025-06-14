@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import CoachesTableRows from "../../components/coaches/CoachesTableRows";
 import EditCoach from "../../components/coaches/EditCoach";
 import { useAuth } from "../../context/AuthContext";
-import { apiRequest } from "../../utils/api";
+import { useApiRequest } from "../../utils/api"; // <-- Use the hook, not direct import
 import { toast } from "react-hot-toast";
 import { AdminListPage } from "../../components/AdminListPage";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
@@ -51,6 +51,7 @@ export default function CoachesAdmin() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const { baseUrl } = useApiConfig();
+  const { apiRequest } = useApiRequest(); // <-- Use the hook
 
   const fetchCoaches = async (): Promise<Coach[]> => {
     const data: ApiCoachResponse = await apiRequest<ApiCoachResponse>(`${baseUrl}/Coaches`, {}, getToken);
@@ -72,6 +73,7 @@ export default function CoachesAdmin() {
       // add other fields if needed
     }));
   };
+
   const handleRefresh = () => {
     setLoading(true);
     fetchCoaches()

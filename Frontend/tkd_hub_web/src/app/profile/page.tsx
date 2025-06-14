@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useApiConfig } from "../context/ApiConfigContext";
-import { apiRequest } from "../utils/api";
+import { useApiRequest } from "../utils/api"; // <-- Use the hook, not direct import
 import { CoachClass } from "../types/CoachClass";
 import ProfileInfo from "../components/profiles/ProfileInfo";
 import CoachClasses from "../components/profiles/CoachClasses";
@@ -12,7 +12,8 @@ export default function ProfilePage() {
     const { baseUrl } = useApiConfig();
     const [coachClasses, setCoachClasses] = useState<CoachClass[] | null>(null);
     const [loading, setLoading] = useState(false);
-    
+    const { apiRequest } = useApiRequest(); // <-- Use the hook
+
     useEffect(() => {
         const fetchCoachClasses = async () => {
             setLoading(true);
@@ -37,7 +38,7 @@ export default function ProfilePage() {
         if (user?.roles?.includes("Coach")) {
             fetchCoachClasses();
         }
-    }, [user, baseUrl, getToken]);
+    }, [user, baseUrl, getToken, apiRequest]);
 
     if (authLoading) {
         return <div className="p-8 text-center">Loading...</div>;

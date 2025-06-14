@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { RoleProvider } from "./context/RoleContext";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { AuthProvider } from "./context/AuthContext";
 import Header from "./components/Header";
 import { Toaster } from "react-hot-toast";
-import { ApiConfigProvider } from "./context/ApiConfigContext";
-import { DojaangProvider } from "./context/DojaangContext";
-import { TulProvider } from "./context/TulContext";
-import { RankProvider } from "./context/RankContext";
-import { ClassProvider } from "./context/ClassContext";
+import { AppProviders } from "./context/AppProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,24 +30,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-white min-h-screen`}>
         <Toaster />
-        <ApiConfigProvider>
-          <AuthProvider>
-            <RoleProvider>
-              <DojaangProvider>
-                <TulProvider>
-                  <RankProvider>
-                    <ClassProvider>
-                      <div className="flex flex-col min-h-screen">
-                        <Header />
-                        <main className="flex-1 flex flex-col">{children}</main>
-                      </div>
-                    </ClassProvider>
-                  </RankProvider>
-                </TulProvider>
-              </DojaangProvider>
-            </RoleProvider>
-          </AuthProvider>
-        </ApiConfigProvider>
+        <AppProviders>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1 flex flex-col">{children}</main>
+          </div>
+        </AppProviders>
       </body>
     </html>
   );

@@ -1,9 +1,6 @@
 "use client";
 import CoachSelector from "@/app/components/coaches/CoachSelector";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/app/context/AuthContext";
-import { apiRequest } from "@/app/utils/api";
-import { useApiConfig } from "@/app/context/ApiConfigContext";
 import { useDojaangs } from "@/app/context/DojaangContext";
 import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import equal from "fast-deep-equal";
@@ -18,68 +15,69 @@ type EditDojaangProps = {
 };
 
 
-type DojaangApiResponse = {
-  data: Dojaang;
-};
-
-
-
-
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   const [dojaang, setDojaang] = useState<Dojaang | null>(null);
-  const [originalDojaang, setOriginalDojaang] = useState<Dojaang | null>(null); // <-- Add this line
+  const [originalDojaang, setOriginalDojaang] = useState<Dojaang | null>(null);
   const [loading, setLoading] = useState(!!dojaangId);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const { getToken } = useAuth();
-  const { baseUrl } = useApiConfig();
-  const { refreshDojaangs } = useDojaangs();
+  const {
+    dojaangs,
+    fetchDojaangs,
+    createDojaang,
+    updateDojaang,
+    getDojaang,
+  } = useDojaangs();
 
-
-  // Fetch existing dojaang if editing
+  // Fetch dojaang for edit mode, or set empty for create mode
   useEffect(() => {
-    if (!dojaangId) {
-      const empty = {
-        id: 0, // <-- Add this line
-        name: "",
-        address: "",
-        location: "",
-        phoneNumber: "",
-        email: "",
-        koreanName: "",
-        koreanNamePhonetic: "",
-        coachId: null,
-      };
-      setDojaang(empty);
-      setOriginalDojaang(empty); // <-- Set original for create mode
-      setLoading(false);
-      return;
-    }
-    const fetchDojaang = async () => {
-      const token = getToken();
-      if (!token) {
-        setError("Not authenticated.");
+    let ignore = false;
+    async function fetch() {
+      setLoading(true);
+      setError(null);
+      if (!dojaangId) {
+        const empty = {
+          id: 0,
+          name: "",
+          address: "",
+          location: "",
+          phoneNumber: "",
+          email: "",
+          koreanName: "",
+          koreanNamePhonetic: "",
+          coachId: null,
+        };
+        setDojaang(empty);
+        setOriginalDojaang(empty);
         setLoading(false);
         return;
       }
-      try {
-        const response: DojaangApiResponse = await apiRequest<DojaangApiResponse>(
-          `${baseUrl}/Dojaang/${dojaangId}`,
-          { method: "GET" },
-          getToken
-        );
-        setDojaang(response.data);
-        setOriginalDojaang(response.data); // <-- Set original for edit mode
-      } catch (err) {
-        if (err instanceof Error) setError(err.message || "Failed to fetch dojaang");
-        else setError("Failed to fetch dojaang");
-      } finally {
+      // Try to get from context first
+      const contextDojaang = dojaangs.find(d => d.id === dojaangId);
+      if (contextDojaang) {
+        setDojaang(contextDojaang);
+        setOriginalDojaang(contextDojaang);
         setLoading(false);
+      } else {
+        // fallback to context getDojaang (which fetches from API)
+        try {
+          const apiDojaang = await getDojaang(dojaangId);
+          if (!ignore && apiDojaang) {
+            setDojaang(apiDojaang);
+            setOriginalDojaang(apiDojaang);
+          }
+        } catch (e) {
+          if (!ignore) setError(e instanceof Error ? e.message : "Failed to fetch dojaang");
+        } finally {
+          if (!ignore) setLoading(false);
+        }
       }
+    }
+    fetch();
+    return () => {
+      ignore = true;
     };
-    fetchDojaang();
-  }, [dojaangId, getToken, baseUrl]);
-
+  }, [dojaangId, dojaangs, getDojaang]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!dojaang) return;
@@ -87,60 +85,37 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
     setDojaang({ ...dojaang, [name]: value });
   }
 
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!dojaang) return;
     setSaving(true);
     setError(null);
 
+    const payload = {
+      name: dojaang.name,
+      address: dojaang.address,
+      location: dojaang.location,
+      phoneNumber: dojaang.phoneNumber,
+      email: dojaang.email,
+      koreanName: dojaang.koreanName,
+      koreanNamePhonetic: dojaang.koreanNamePhonetic,
+      coachId: dojaang.coachId ? dojaang.coachId : null,
+    };
 
     try {
-      const payload = {
-        name: dojaang.name,
-        address: dojaang.address,
-        location: dojaang.location,
-        phoneNumber: dojaang.phoneNumber,
-        email: dojaang.email,
-        koreanName: dojaang.koreanName,
-        koreanNamePhonetic: dojaang.koreanNamePhonetic,
-        coachId: dojaang.coachId ? dojaang.coachId : null,
-      };
-
-
       if (dojaangId) {
-        // Edit mode (PUT)
-        await apiRequest(
-          `${baseUrl}/Dojaang/${dojaangId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: dojaangId, ...payload }),
-          },
-          getToken
-        );
+        await updateDojaang(dojaangId, payload);
       } else {
-        // Create mode (POST)
-        await apiRequest(
-          `${baseUrl}/Dojaang`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          },
-          getToken
-        );
+        await createDojaang(payload);
       }
-      refreshDojaangs();
+      fetchDojaangs();
       onClose(true);
     } catch (err) {
-      if (err instanceof Error) setError(err.message || "An error occurred");
-      else setError("An error occurred");
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setSaving(false);
     }
   }
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -221,7 +196,6 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   placeholder="Enter Korean name phonetic"
                 />
                 <CoachSelector
-                  baseUrl={baseUrl}
                   value={dojaang.coachId ? String(dojaang.coachId) : ""}
                   onChange={e =>
                     setDojaang({

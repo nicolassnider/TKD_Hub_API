@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import PromotionTableRows from "@/app/components/promotions/PromotionsTableRows";
 import EditPromotion from "@/app/components/promotions/EditPromotions";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
-import { apiRequest } from "@/app/utils/api";
+import { useApiRequest } from "@/app/utils/api"; // <-- Use the hook, not direct import
 import { Promotion } from "@/app/types/Promotion";
 import StudentSelector from "@/app/components/students/StudentSelector";
 import { Student } from "@/app/types/Student";
@@ -24,11 +24,11 @@ export default function PromotionsAdminContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [students, setStudents] = useState<Student[]>([]);
+    const { apiRequest } = useApiRequest(); // <-- Use the hook
 
     // Always use the query param as the source of truth
     const studentIdParam = searchParams.get("studentId");
     const studentIdFilter = studentIdParam && !isNaN(Number(studentIdParam)) ? Number(studentIdParam) : undefined;
-
 
     function handleClearStudent() {
         const params = new URLSearchParams(searchParams.toString());
@@ -53,7 +53,7 @@ export default function PromotionsAdminContent() {
                 setStudents(mappedStudents);
             })
             .catch(() => setStudents([]));
-    }, [baseUrl, getToken]);
+    }, [baseUrl, getToken, apiRequest]);
 
     // Fetch promotions whenever studentIdFilter changes
     const fetchPromotions = async (studentId?: number | null) => {
@@ -115,7 +115,7 @@ export default function PromotionsAdminContent() {
         if (!deleteId) return;
         setLoading(true);
         try {
-            await fetch(`${baseUrl}/Promotions/${deleteId}`, {
+            await apiRequest(`${baseUrl}/Promotions/${deleteId}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${getToken()}` },
             });

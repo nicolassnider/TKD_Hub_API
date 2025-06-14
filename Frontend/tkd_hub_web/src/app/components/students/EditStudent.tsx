@@ -1,19 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
-import DojaangSelector from "../dojaangs/DojaangSelector";
-import RanksSelector from "../common/selectors/RanksSelector";
-import { useApiConfig } from "@/app/context/ApiConfigContext";
-import { useAuth } from "@/app/context/AuthContext";
-import GenderSelector from "../common/selectors/GenderSelector";
-import { apiRequest } from "@/app/utils/api";
 import toast from "react-hot-toast";
+import equal from "fast-deep-equal";
+
 import { useDojaangs } from "@/app/context/DojaangContext";
 import { Student } from "@/app/types/Student";
-import equal from "fast-deep-equal";
+
+import DojaangSelector from "../dojaangs/DojaangSelector";
+import RanksSelector from "../common/selectors/RanksSelector";
+import GenderSelector from "../common/selectors/GenderSelector";
 import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 import LabeledInput from "../common/inputs/LabeledInput";
-
+import { useRankContext } from "@/app/context/RankContext";
+import { useStudents } from "@/app/context/StudentContext";
 
 type EditStudentProps = {
   studentId?: number;
@@ -22,29 +22,43 @@ type EditStudentProps = {
 
 const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Student, "id"> | null>(null);
-  const { baseUrl } = useApiConfig();
-  const { getToken } = useAuth();
-  const { dojaangs, loading: dojaangsLoading } = useDojaangs();
   const [originalForm, setOriginalForm] = useState<Omit<Student, "id"> | null>(null);
-  const [saving, setSaving] = useState(false);
+  const { ranks, loading: ranksLoading, fetchRanks } = useRankContext();
 
+  const { dojaangs, loading: dojaangsLoading } = useDojaangs();
+  const { getStudentById, createStudent, updateStudent } = useStudents();
+
+  const [isBlackBelt, setIsBlackBelt] = useState(false);
 
   useEffect(() => {
+    fetchRanks();
+  }, []);
+
+  useEffect(() => {    
     const fetchStudent = async () => {
       try {
         if (studentId) {
-          const response = await apiRequest<{ data: Student }>(
-            `${baseUrl}/students/${studentId}`,
-            {},
-            getToken
-          );
-          const data = response.data;
-          setForm(data);
-          setOriginalForm(data); // <-- Store original
+          const apiResponse = await getStudentById(studentId);
+          // Type-safe extraction of data
+          const data: Omit<Student, "id"> | null =
+            apiResponse && typeof apiResponse === "object" && "id" in apiResponse
+              ? (() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { id: _id, ...rest } = apiResponse as Student;
+                return rest;
+              })()
+              : null;
+          if (data) {
+            setForm(data);
+            setOriginalForm(data);
+          } else {
+            setError("Student not found");
+          }
         } else {
-          const emptyForm = {
+          const emptyForm: Omit<Student, "id"> = {
             firstName: "",
             lastName: "",
             email: "",
@@ -65,7 +79,9 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
       }
     };
     fetchStudent();
-  }, [studentId, getToken, baseUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({
@@ -91,33 +107,27 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form) return;
-    setSaving(true); // <-- Add this
+    setSaving(true);
     try {
       const payload = {
         ...form,
-        dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth).toISOString() : null,
+        dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth).toISOString() : undefined,
       };
 
-      const method = studentId ? "PUT" : "POST";
-      const url = studentId ? `${baseUrl}/students/${studentId}` : `${baseUrl}/students`;
-
-      await apiRequest(
-        url,
-        {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-        getToken
-      );
+      if (studentId) {
+        await updateStudent(studentId, payload);
+        toast.success("Student updated successfully!");
+      } else {
+        await createStudent(payload as Omit<Student, "id" | "joinDate" | "isActive">);
+        toast.success("Student created successfully!");
+      }
 
       onClose(true);
-      toast.success("Student saved successfully!");
     } catch (err: unknown) {
       if (err instanceof Error) toast.error(err.message || "Failed to save student");
       else toast.error("Failed to save student");
     } finally {
-      setSaving(false); // <-- Add this
+      setSaving(false);
     }
   };
 
@@ -148,7 +158,6 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
               disabled={saving}
             />
 
-
             <LabeledInput
               label="Email"
               name="email"
@@ -167,13 +176,13 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
               placeholder="Enter phone number"
             />
 
-
             <div>
               <label className="block font-medium mb-1" htmlFor="gender">Gender</label>
               <GenderSelector
                 value={form.gender}
                 onChange={e => setForm(prev => ({ ...prev!, gender: Number(e.target.value) }))}
                 disabled={loading}
+                className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <LabeledInput
@@ -185,22 +194,41 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
               disabled={saving}
             />
 
-            <div>
+            <div className="flex-1">
               <label className="block font-medium mb-1" htmlFor="currentRankId">Rank</label>
               <RanksSelector
                 value={form.currentRankId ?? 0}
                 onChange={handleRankChange}
-                disabled={loading}
-                filter="color"
+                disabled={loading || ranksLoading}
+                filter={isBlackBelt ? "black" : "color"}
+                ranks={ranks}
+                className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  id="isBlackBelt"
+                  type="checkbox"
+                  checked={isBlackBelt}
+                  onChange={e => setIsBlackBelt(e.target.checked)}
+                  disabled={loading || ranksLoading}
+                  className="accent-black w-5 h-5 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                />
+                <label htmlFor="isBlackBelt" className="font-medium select-none cursor-pointer mb-0">
+                  Is Black Belt?
+                </label>
+              </div>
+            </div>
+            <div className="flex-1">
+              <label className="block font-medium mb-1" htmlFor="dojaang-selector">Select Dojaang</label>
+              <DojaangSelector
+                value={form.dojaangId ?? null}
+                onChange={handleDojaangChange}
+                disabled={loading || dojaangsLoading}
+                allDojaangs={dojaangs}
+                label=""
+                className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
               />
             </div>
-
-            <DojaangSelector
-              value={form.dojaangId ?? null}
-              onChange={handleDojaangChange}
-              disabled={loading || dojaangsLoading}
-              allDojaangs={dojaangs}
-            />
 
 
           </div>
@@ -212,8 +240,8 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
             disabled={equal(form, originalForm)}
           />
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

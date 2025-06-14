@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDojaangs } from "@/app/context/DojaangContext";
 
 type Dojaang = {
@@ -12,6 +12,7 @@ type DojaangSelectorProps = {
   label?: string;
   disabled?: boolean;
   allDojaangs?: Dojaang[]; // Optional, fallback to context if not provided
+  className?: string; // <-- Add this line
 };
 
 const DojaangSelector: React.FC<DojaangSelectorProps> = ({
@@ -20,10 +21,18 @@ const DojaangSelector: React.FC<DojaangSelectorProps> = ({
   label = "Select Dojaang",
   disabled = false,
   allDojaangs,
+  className, // <-- Add this line
 }) => {
   // Use context if allDojaangs not provided
-   const { dojaangs: contextDojaangs } = useDojaangs();
+  const { dojaangs: contextDojaangs, fetchDojaangs } = useDojaangs();
   const dojaangs = allDojaangs ?? contextDojaangs ?? [];
+
+  useEffect(() => {
+    if (!allDojaangs) {
+      fetchDojaangs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDojaangs]);
 
   return (
     <div className="mb-4">
@@ -38,7 +47,11 @@ const DojaangSelector: React.FC<DojaangSelectorProps> = ({
       <select
         id="dojaang-selector"
         name="dojaang-selector"
-        className="w-full rounded border border-gray-300 bg-white text-gray-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        className={
+          className
+            ? className
+            : "w-full rounded border border-gray-300 bg-white text-gray-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        }
         value={value ?? ""}
         onChange={(e) => {
           const selected = e.target.value;
@@ -50,7 +63,7 @@ const DojaangSelector: React.FC<DojaangSelectorProps> = ({
         <option value="">None</option>
         {dojaangs.map((d) => (
           <option key={d.id} value={d.id}>
-            {d.name} #{d.id}
+            {d.name}
           </option>
         ))}
       </select>

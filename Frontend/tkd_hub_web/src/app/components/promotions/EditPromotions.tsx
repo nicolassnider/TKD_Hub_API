@@ -1,282 +1,192 @@
+"use client";
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useApiConfig } from "@/app/context/ApiConfigContext";
-import StudentSelector from "../students/StudentSelector";
-import { apiRequest } from "@/app/utils/api";
-import { Student } from "@/app/types/Student";
-import RanksSelector from "../common/selectors/RanksSelector";
+import { usePromotions } from "@/app/context/PromotionContext";
 import { Promotion } from "@/app/types/Promotion";
-import CoachSelector from "../coaches/CoachSelector";
-import { useRankContext } from "@/app/context/RankContext";
-import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
-import FormActionButtons from "../common/actionButtons/FormActionButtons";
-import equal from "fast-deep-equal";
 import LabeledInput from "../common/inputs/LabeledInput";
-import DojaangSelector from "../dojaangs/DojaangSelector";
+import StudentSelector from "../students/StudentSelector";
+import { useStudents } from "@/app/context/StudentContext";
+import RanksSelector from "../common/selectors/RanksSelector";
 
-
-
-type PromotionRequest = {
-	studentId: number;
-	rankId: number;
-	promotionDate: string;
-	coachId: number;
-	notes?: string;
-	dojaangId: number;
+type EditPromotionProps = {
+	promotionId?: number; // If undefined, create mode
+	onClose: (refresh?: boolean) => void;
+	studentId?: number; // <-- Add this line
 };
 
-interface Props {
-	promotionId?: number;
-	onClose: (refresh?: boolean) => void;
-	studentId?: number | null;
-}
+export default function EditPromotion({ promotionId, onClose }: EditPromotionProps) {
+	const {
+		getPromotionById,
+		createPromotion,
+		updatePromotion,
+		fetchPromotions,
+		loading,
+		error,
+	} = usePromotions();
 
-const EditPromotion: React.FC<Props> = ({ promotionId, onClose, studentId }) => {
-	const [students, setStudents] = useState<Student[]>([]);
-	const { ranks } = useRankContext();
+	const [promotion, setPromotion] = useState<Partial<Promotion>>({
+		studentId: undefined,
+		rankId: undefined,
+		promotionDate: "",
+		notes: "",
+	});
+	const [originalPromotion, setOriginalPromotion] = useState<Partial<Promotion> | null>(null);
 	const [saving, setSaving] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [form, setForm] = useState<PromotionRequest>({
-		studentId: typeof studentId === "number" ? studentId : 0, // always a number
-		rankId: 0,
-		promotionDate: "",
-		coachId: 0,
-		notes: "",
-		dojaangId: 0,
-	});
-	const [originalForm, setOriginalForm] = useState<PromotionRequest>({
-		studentId: typeof studentId === "number" ? studentId : 0,
-		rankId: 0,
-		promotionDate: "",
-		coachId: 0,
-		notes: "",
-		dojaangId: 0,
-	});
-	const { getToken } = useAuth();
-	const { baseUrl } = useApiConfig();
-	
+	const [localError, setLocalError] = useState<string | null>(null);
+	const { students, loading: studentsLoading } = useStudents(); // Get students from context/provider
 
+
+	// Fetch promotion for edit mode, or set empty for create mode
 	useEffect(() => {
-		if (!promotionId && studentId) {
-			setForm(f => ({ ...f, studentId }));
+		let ignore = false;
+		async function fetchPromotion() {
+			setLocalError(null);
+			if (!promotionId) {
+				setPromotion({
+					studentId: undefined,
+					rankId: undefined,
+					promotionDate: "",
+					notes: "",
+				});
+				setOriginalPromotion({
+					studentId: undefined,
+					rankId: undefined,
+					promotionDate: "",
+					notes: "",
+				});
+				return;
+			}
+			try {
+				const data = await getPromotionById(promotionId);
+				if (!ignore && data) {
+					setPromotion(data);
+					setOriginalPromotion(data);
+				}
+			} catch {
+				if (!ignore) setLocalError("Failed to fetch promotion");
+			}
 		}
-	}, [promotionId, studentId])
+		fetchPromotion();
+		return () => {
+			ignore = true;
+		};
+	}, [promotionId, getPromotionById]);
 
-	// Set studentId on create only if provided and not already set
-	useEffect(() => {
-		if (!promotionId && typeof studentId === "number" && studentId !== form.studentId) {
-			setForm(f => ({ ...f, studentId }));
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [promotionId, studentId]);
+	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+		const { name, value } = e.target;
+		setPromotion(prev => ({
+			...prev,
+			[name]: value,
+		}));
+	}
 
-	// Load students
-	useEffect(() => {
-		apiRequest<{ data: { data: Student[] } }>(`${baseUrl}/Students`, {
-			headers: { Authorization: `Bearer ${getToken()}` },
-		})
-			.then(res => setStudents(res.data.data))
-			.catch(() => setStudents([]));
-	}, [baseUrl, getToken]);
-
-	useEffect(() => {
-		if (
-			!promotionId &&
-			typeof studentId === "number" &&
-			students.length > 0 &&
-			form.studentId !== studentId &&
-			students.some(s => s.id === studentId)
-		) {
-			setForm(f => ({ ...f, studentId }));
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [students, studentId, promotionId]);
-
-	// Load promotion for edit
-	useEffect(() => {
-		if (promotionId) {
-			setLoading(true);
-			apiRequest<{ data: Promotion }>(`${baseUrl}/Promotions/${promotionId}`, {
-				headers: { Authorization: `Bearer ${getToken()}` },
-			})
-				.then((res) => {
-					const data = res.data; // <-- extract the data property
-					const loadedForm: PromotionRequest = {
-						studentId: data.studentId,
-						rankId: data.rankId,
-						promotionDate: data.promotionDate ? data.promotionDate.slice(0, 10) : "",
-						coachId: data.coachId,
-						notes: data.notes || "",
-						dojaangId: data.dojaangId,
-					};
-					setForm(loadedForm);
-					setOriginalForm(loadedForm);
-				})
-				.catch(() => setError("Failed to load promotion"))
-				.finally(() => setLoading(false));
-		} else {
-			const emptyForm = {
-				studentId: 0,
-				rankId: 0,
-				promotionDate: "",
-				coachId: 0,
-				notes: "",
-				dojaangId: 0,
-			};
-			setForm(emptyForm);
-			setOriginalForm(emptyForm);
-		}
-	}, [promotionId, baseUrl, getToken]);
-
-	// Compute next rank for selected student (only on create)
-	useEffect(() => {
-		if (
-			!form.studentId ||
-			students.length === 0 ||
-			ranks.length === 0 ||
-			promotionId // <-- Only run on create, not edit
-		)
-			return;
-		const selectedStudent = students.find(s => s.id === form.studentId);
-		const currentRankId = selectedStudent?.currentRankId;
-		const currentRankIndex = ranks.findIndex(r => r.id === currentRankId);
-		const nextRank = currentRankIndex >= 0 ? ranks[currentRankIndex + 1] : undefined;
-		const newAvailableRanks = nextRank ? [nextRank] : [];
-		if (newAvailableRanks.length > 0) {
-			setForm(f => ({ ...f, rankId: newAvailableRanks[0].id }));
-		}
-	}, [form.studentId, students, ranks, promotionId]);
-
-	const handleSubmit = async (e: React.FormEvent) => {
+	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setSaving(true);
-		setLoading(true);
-		setError(null);
-
-		// Require coachId
-		if (!form.coachId) {
-			setError("Coach is required.");
-			setSaving(false);
-			setLoading(false);
-			return;
-		}
+		setLocalError(null);
 
 		try {
-			const method = promotionId ? "PUT" : "POST";
-			const url = promotionId
-				? `${baseUrl}/Promotions/${promotionId}`
-				: `${baseUrl}/Promotions`;
-
-			const payload: PromotionRequest = { ...form };
-
-			await apiRequest(url, {
-				method,
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${getToken()}`,
-				},
-				body: JSON.stringify(payload),
-			});
+			if (promotionId) {
+				await updatePromotion(promotionId, promotion);
+			} else {
+				const { ...createData } = promotion as Promotion; // Removed unused variables
+				await createPromotion(createData);
+			}
+			fetchPromotions();
 			onClose(true);
 		} catch {
-			setError("Failed to save promotion");
+			setLocalError("Failed to save promotion");
 		} finally {
 			setSaving(false);
-			setLoading(false);
 		}
-	};
-
+	}
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-			<div className="bg-white rounded shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col">
-				<ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
-				<h3 className="text-lg font-semibold">
-					{promotionId ? "Edit Promotion" : "Add Promotion"}
-				</h3>
-
-				<form className="flex-1 overflow-y-auto pr-2 space-y-4" onSubmit={handleSubmit}>
-					<div className="flex justify-between items-center border-b px-4 sm:px-6 py-4">
-
-
-					</div>
-					<div className="px-4 sm:px-6 py-4 space-y-4">
-						{error && <div className="text-red-600">{error}</div>}
-
-						<StudentSelector
-							value={form.studentId}
-							onChange={val => setForm(f => ({ ...f, studentId: val ?? 0 }))}
-							disabled={loading}
-							students={students}
-						/>
-
-						<RanksSelector
-							value={form.rankId}
-							onChange={e => setForm(f => ({ ...f, rankId: Number(e.target.value) }))}
-							disabled={loading}
-							ranks={
-								promotionId
-									? ranks // <-- show all ranks on edit
-									: (() => {
-										const selectedStudent = students.find(s => s.id === form.studentId);
-										const currentRankId = selectedStudent?.currentRankId;
-										const currentRankIndex = ranks.findIndex(r => r.id === currentRankId);
-										const nextRank = currentRankIndex >= 0 ? ranks[currentRankIndex + 1] : undefined;
-										return nextRank ? [nextRank] : [];
-									})()
-							}
-						/>
-
-						<LabeledInput
-							label="Promotion Date"
-							name="promotionDate"
-							type="date"
-							value={form.promotionDate}
-							onChange={e => setForm(f => ({ ...f, promotionDate: e.target.value }))}
-							required
-							disabled={loading}
-							placeholder="Select promotion date"
-							title="Promotion Date"
-						/>
-
-						<CoachSelector
-							value={form.coachId ? String(form.coachId) : ""}
-							onChange={e => setForm(f => ({
-								...f,
-								coachId: e.target.value && !isNaN(Number(e.target.value)) ? Number(e.target.value) : 0
-							}))}
-							disabled={loading}
-							baseUrl={baseUrl}
-						/>
-
-						<LabeledInput
-							label="Notes"
-							name="notes"
-							type="textarea"
-							value={form.notes}
-							onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-							disabled={loading}
-							placeholder="Enter notes"
-							title="Notes"
-						/>
-						<DojaangSelector
-							value={form.dojaangId}
-							onChange={val => setForm(f => ({ ...f, dojaangId: val ?? 0 }))}
-							disabled={loading}
-						// If you have a dojaangs list, pass it as a prop, e.g. allDojaangs={dojaangs}
-						// allDojaangs={dojaangs}
-						/>
-						<FormActionButtons
-							onCancel={() => onClose(false)}
-							onSubmitLabel={promotionId ? "Update" : "Create"}
-							loading={saving}
-							disabled={promotionId ? equal(form, originalForm) : saving || loading}
-						/>
-					</div>
-				</form>
+		<div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+			<div className="bg-white rounded-lg shadow-lg w-full max-w-lg mx-auto relative max-h-[90vh] flex flex-col">
+				<button
+					type="button"
+					className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
+					aria-label="Close"
+					onClick={() => onClose(false)}
+					disabled={saving}
+				>
+					&times;
+				</button>
+				<div className="px-4 pt-8 pb-2 flex-1 overflow-y-auto">
+					<h2 className="text-xl font-semibold mb-6 text-center">
+						{promotionId ? "Edit Promotion" : "Create Promotion"}
+					</h2>
+					{(loading || saving || studentsLoading) && <div className="text-center text-gray-600">Loading...</div>}
+					{(error || localError) && <div className="text-red-600 text-center">{error || localError}</div>}
+					{!loading && !saving && !studentsLoading && (
+						<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<StudentSelector
+									students={students}
+									value={promotion.studentId ?? null}
+									onChange={id =>
+										setPromotion(prev => ({
+											...prev,
+											studentId: id ?? undefined,
+										}))
+									}
+									disabled={saving}
+									label="Student"
+								/>
+								<RanksSelector
+									value={promotion.rankId ?? 0}
+									onChange={e =>
+										setPromotion(prev => ({
+											...prev,
+											rankId: e.target.value ? Number(e.target.value) : undefined,
+										}))
+									}
+									disabled={saving}
+								/>
+								<LabeledInput
+									label="Promotion Date"
+									name="promotionDate"
+									type="date"
+									value={promotion.promotionDate ?? ""}
+									onChange={handleChange}
+									required
+									disabled={saving}
+								/>
+								<div className="col-span-2">
+									<label htmlFor="notes" className="block mb-1 font-medium">
+										Notes
+									</label>
+									<textarea
+										id="notes"
+										name="notes"
+										value={promotion.notes ?? ""}
+										onChange={handleChange}
+										placeholder="Notes"
+										disabled={saving}
+										className="w-full border rounded px-3 py-2"
+									/>
+								</div>
+							</div>
+							<div className="flex gap-2 justify-end mt-4">
+								<button
+									type="button"
+									onClick={() => onClose(false)}
+									className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+									disabled={saving}
+								>
+									Cancel
+								</button>
+								<button
+									type="submit"
+									className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+									disabled={saving || JSON.stringify(promotion) === JSON.stringify(originalPromotion)}
+								>
+									{promotionId ? (saving ? "Saving..." : "Save") : (saving ? "Creating..." : "Create")}
+								</button>
+							</div>
+						</form>
+					)}
+				</div>
 			</div>
 		</div>
 	);
-};
-
-export default EditPromotion;
+}

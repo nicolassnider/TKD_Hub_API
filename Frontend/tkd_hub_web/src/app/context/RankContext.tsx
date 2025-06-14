@@ -1,24 +1,23 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { Rank } from "@/app/types/Rank";
-import { useApiConfig } from "@/app/context/ApiConfigContext";
-import { useAuth } from "@/app/context/AuthContext";
-import { apiRequest } from "../utils/api";
+import { useApiRequest } from "../utils/api";
 import toast from "react-hot-toast";
-
 
 type RankContextType = {
   ranks: Rank[];
   loading: boolean;
   error: string | null;
-  refresh: () => void;
+  fetchRanks: () => Promise<void>;
+  getRankById: (id: number) => Promise<Rank | null>;
 };
 
 const RankContext = createContext<RankContextType>({
   ranks: [],
   loading: false,
   error: null,
-  refresh: () => { },
+  fetchRanks: async () => { },
+  getRankById: async () => null,
 });
 
 export const useRankContext = () => useContext(RankContext);
@@ -28,41 +27,42 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { baseUrl } = useApiConfig();
-  const { getToken } = useAuth();
+  const { apiRequest } = useApiRequest();
 
-  const fetchRanks = async () => {
+  const fetchRanks = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<{ data: { data: Rank[] } }>(`${baseUrl}/Ranks`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      // Handles both { data: { data: Rank[] } } and Rank[] directly
-      if (Array.isArray(res)) {
-        setRanks(res as unknown as Rank[]);
-      } else if (res?.data?.data) {
-        setRanks(res.data.data);
-      } else {
-        setRanks([]);
-      }
+      const res = await apiRequest<{ data: Rank[] }>("/Ranks");
+      const ranksArray = Array.isArray(res.data) ? res.data : [];
+      console.log("Setting ranks in context:", ranksArray); // Add this log
+      setRanks(ranksArray);
     } catch (err) {
       setError("Failed to load ranks");
       setRanks([]);
-      // Show error toast
-      toast?.error?.("Failed to load ranks" + (err instanceof Error ? `: ${err.message}` : ""));
+      toast.error("Failed to load ranks" + (err instanceof Error ? `: ${err.message}` : ""));
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiRequest]);
 
-  useEffect(() => {
-    fetchRanks();
-    // eslint-disable-next-line
-  }, [baseUrl, getToken]);  
+  const getRankById = useCallback(async (id: number): Promise<Rank | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiRequest<Rank>(`/Ranks/${id}`);
+      return res;
+    } catch (err) {
+      setError("Failed to load rank");
+      toast.error("Failed to load rank" + (err instanceof Error ? `: ${err.message}` : ""));
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [apiRequest]);
 
   return (
-    <RankContext.Provider value={{ ranks, loading, error, refresh: fetchRanks }}>
+    <RankContext.Provider value={{ ranks, loading, error, fetchRanks, getRankById }}>
       {children}
     </RankContext.Provider>
   );

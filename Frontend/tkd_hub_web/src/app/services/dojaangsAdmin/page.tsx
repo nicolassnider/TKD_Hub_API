@@ -1,15 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import EditDojaang from "../../components/dojaangs/EditDojaang";
-import { useAuth } from "../../context/AuthContext";
-import { apiRequest } from "../../utils/api";
 import { toast } from "react-hot-toast";
 import { AdminListPage } from "../../components/AdminListPage";
 import DojaangTableRows from "@/app/components/dojaangs/DojaangTableRows";
-import { useApiConfig } from "@/app/context/ApiConfigContext";
-import { Dojaang } from "@/app/types/Dojaang";
-
-type ApiDojaangResponse = Dojaang[] | { data: Dojaang[] };
+import { useDojaangs } from "@/app/context/DojaangContext";
 
 const ModalConfirmDelete: React.FC<{
   loading: boolean;
@@ -41,81 +36,38 @@ const ModalConfirmDelete: React.FC<{
 );
 
 export default function DojaangsAdmin() {
-  // const { role } = useRole(); // Removed unused variable
-  const [dojaangs, setDojaangs] = useState<Dojaang[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    dojaangs,
+    loading,
+    error,
+    fetchDojaangs,
+    deleteDojaang,
+  } = useDojaangs();
+
   const [editId, setEditId] = useState<number | null>(null);
-  const { getToken } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const { baseUrl } = useApiConfig();
   const [showInactive, setShowInactive] = useState(false);
-
-
-  const fetchDojaangs = async (): Promise<Dojaang[]> => {
-    const data: ApiDojaangResponse = await apiRequest<ApiDojaangResponse>(`${baseUrl}/Dojaang`, {}, getToken);
-    const dojaangsArray =
-      Array.isArray(data)
-        ? data
-        : Array.isArray(data.data)
-          ? data.data
-          : [];
-    return dojaangsArray.map(
-      (d: Dojaang) => ({
-        id: d.id,
-        name: d.name,
-        email: d.email || "",
-        address: d.address || "",
-        phoneNumber: d.phoneNumber || "",
-        koreanName: d.koreanName || "",
-        koreanNamePhonetic: d.koreanNamePhonetic || "",
-        coachId: d.coachId ?? null,
-        coachName: d.coachName ?? "",
-        isActive: d.isActive !== undefined ? d.isActive : true,
-      })
-    );
-  };
-
-  const handleRefresh = () => {
-    setLoading(true);
-    fetchDojaangs()
-      .then(setDojaangs)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    handleRefresh();
-    // eslint-disable-next-line
-  }, []);
 
   function handleEditClose(wasUpdated?: boolean) {
     setEditId(null);
-    handleRefresh();
+    fetchDojaangs();
     if (wasUpdated !== false) toast.success("Dojaang updated!");
   }
 
   function handleAddClose(wasCreated?: boolean) {
     setShowAdd(false);
-    handleRefresh();
+    fetchDojaangs();
     if (wasCreated !== false) toast.success("Dojaang created!");
   }
 
   async function handleDelete(dojaangId: number) {
     setDeleteLoading(true);
     try {
-      const token = getToken();
-      await apiRequest(`${baseUrl}/Dojaang/${dojaangId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      await deleteDojaang(dojaangId);
       toast.success("Dojaang deleted!");
-      handleRefresh();
+      fetchDojaangs();
     } catch {
       toast.error("Failed to delete dojaang.");
     } finally {

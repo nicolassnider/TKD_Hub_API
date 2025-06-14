@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Rank } from "@/app/types/Rank";
 import { useRankContext } from "@/app/context/RankContext";
 
@@ -8,6 +8,7 @@ type RanksSelectorProps = {
   disabled?: boolean;
   ranks?: Rank[];
   filter?: "all" | "color" | "black";
+  className?: string; // Allow custom className
 };
 
 const RanksSelector: React.FC<RanksSelectorProps> = ({
@@ -16,8 +17,22 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
   disabled = false,
   ranks,
   filter = "all",
+  className,
 }) => {
-  const { ranks: contextRanks, loading } = useRankContext();
+  const { ranks: contextRanks, loading, fetchRanks } = useRankContext();
+
+  useEffect(() => {
+    if ((!ranks || ranks.length === 0) && contextRanks.length === 0) {
+      fetchRanks();
+    }
+    // Only run on mount!
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    console.log("contextRanks in selector:", contextRanks);
+  }, [contextRanks]);
+
   let displayRanks = ranks ?? contextRanks;
 
   if (filter === "black") {
@@ -28,7 +43,7 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
 
   return (
     <select
-      className="form-select"
+      className={className ? className : "form-select"}
       value={value ?? ""}
       onChange={onChange}
       disabled={disabled || loading}
@@ -51,5 +66,4 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
     </select>
   );
 };
-
 export default RanksSelector;

@@ -3,9 +3,13 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isTokenExpired } from "../utils/auth";
 import toast from "react-hot-toast";
-import { apiRequest } from "../utils/api"; // Adjust path if needed
+import { useApiRequest } from "../utils/api";
 import { LoginResponse } from "../types/LoginResponse";
 import { User } from "../types/User";
+import { useClasses } from "./ClassContext";
+import { useRankContext } from "./RankContext";
+import { useTulContext } from "./TulContext";
+import { useCoaches } from "./CoachContext";
 
 type AuthContextType = {
   isLoggedIn: boolean;
@@ -15,7 +19,7 @@ type AuthContextType = {
   getToken: () => string | null;
   role: string | null;
   user: User | null;
-  loading: boolean; // <-- add this
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,7 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   getToken: () => null,
   role: null,
   user: null,
-  loading: false, // <-- add this
+  loading: false,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -35,6 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { apiRequest } = useApiRequest();
+
+  const { fetchClasses } = useClasses();
+  const { fetchCoaches } = useCoaches();
+  const { fetchRanks } = useRankContext();
+  const { fetchTuls } = useTulContext();  
 
   // Check token and restore user on mount
   useEffect(() => {
@@ -61,46 +71,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [router]);
 
-  // ...periodic session check stays the same...
+  // Fetch essential data after login
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchClasses?.();
+      fetchCoaches?.();
+      fetchRanks?.();      
+      fetchTuls?.();      
+    }
+  }, [
+    isLoggedIn,
+    fetchClasses,
+    fetchCoaches,
+    fetchRanks,
+    fetchTuls,
+  ]);
+
+  // ...periodic session check can be added here if needed...
 
   const login = async (email: string, password: string) => {
-    const res = await apiRequest(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    setLoading(true);
+    try {
+      const data = await apiRequest<LoginResponse>("/Auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = res as LoginResponse;
-    if (!data.token) throw new Error("Invalid credentials");
+      if (!data.token) throw new Error("Invalid credentials");
 
-    localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.token);
 
-    let roleValue = "Student";
-    if (data.user && data.user.roles && Array.isArray(data.user.roles) && data.user.roles.length > 0) {
-      roleValue = data.user.roles[0];
-    } else if (data.user && data.user.roles) {
-      roleValue = data.user.roles[0] || "Student";
+      let roleValue = "Student";
+      if (data.user && data.user.roles && Array.isArray(data.user.roles) && data.user.roles.length > 0) {
+        roleValue = data.user.roles[0];
+      } else if (data.user && data.user.roles) {
+        roleValue = data.user.roles[0] || "Student";
+      }
+      localStorage.setItem("role", roleValue);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setRole(roleValue);
+      setUser(data.user);
+      setIsLoggedIn(true);
+      toast.success("Login successful!");
+      router.push("/");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Login failed";
+      toast.error(errorMsg);
+      setIsLoggedIn(false);
+      setRole(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    localStorage.setItem("role", roleValue);
-    localStorage.setItem("user", JSON.stringify(data.user)); // <-- Save user to localStorage
-    setRole(roleValue);
-    setUser(data.user);
-    setIsLoggedIn(true);
-    toast.success("Login successful!");
-    router.push("/");
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    localStorage.removeItem("user"); // <-- Remove user on logout
+    localStorage.removeItem("user");
     setIsLoggedIn(false);
     setRole(null);
     setUser(null);
     toast.success("Logout successful!");
     router.push("/login");
   };
-
 
   const getToken = () => localStorage.getItem("token");
 

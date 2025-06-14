@@ -1,4 +1,3 @@
-
 import { GENDER_LABELS } from "@/app/const/genders";
 import { useRankContext } from "@/app/context/RankContext";
 import { User } from "@/app/types/User";
