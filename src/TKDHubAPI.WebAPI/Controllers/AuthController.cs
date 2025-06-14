@@ -1,5 +1,4 @@
 ﻿using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.WebAPI.Middlewares;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 

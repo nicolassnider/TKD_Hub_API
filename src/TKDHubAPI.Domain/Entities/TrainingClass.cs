@@ -1,7 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class TrainingClass : BaseEntity
+public partial class TrainingClass : BaseEntity
 {
-    public int Id { get; set; }
     public string Name { get; set; } // e.g., "Kids", "Infantiles", "Juveniles y Adultos"
     public int DojaangId { get; set; }
     public Dojaang Dojaang { get; set; }

@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using TKDHubAPI.Application.DTOs.User;
+﻿using TKDHubAPI.Application.DTOs.User;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 

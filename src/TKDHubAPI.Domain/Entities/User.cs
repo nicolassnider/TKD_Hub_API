@@ -1,6 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
 
-public class User : BaseEntity
+public partial class User : BaseEntity
 {
 
     [Required]

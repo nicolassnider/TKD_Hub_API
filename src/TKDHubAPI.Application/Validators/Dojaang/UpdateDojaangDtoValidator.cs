@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
-
-namespace TKDHubAPI.Application.Validators.Dojaang;
+﻿namespace TKDHubAPI.Application.Validators.Dojaang;
 public class UpdateDojaangDtoValidator : AbstractValidator<UpdateDojaangDto>
 {
     public UpdateDojaangDtoValidator()

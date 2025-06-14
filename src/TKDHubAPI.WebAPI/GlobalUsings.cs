@@ -1,5 +1,9 @@
 ﻿global using AutoMapper;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
+global using System.Security.Claims;
+global using System.Text.Json;
 global using TKDHubAPI.Application.Interfaces;
-
+global using TKDHubAPI.Application.Services;
+global using TKDHubAPI.Domain.Entities;
+global using TKDHubAPI.WebAPI.Middlewares;

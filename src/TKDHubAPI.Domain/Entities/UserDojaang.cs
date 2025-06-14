@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class UserDojaang : BaseEntity
+public partial class UserDojaang : BaseEntity
 {
     public int UserId { get; set; }
     public User User { get; set; }

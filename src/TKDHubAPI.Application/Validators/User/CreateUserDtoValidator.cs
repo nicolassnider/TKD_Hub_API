@@ -1,6 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Validators.User;
+﻿namespace TKDHubAPI.Application.Validators.User;
 public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
 {
     public CreateUserDtoValidator()

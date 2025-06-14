@@ -1,7 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
-using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Mappings;
+﻿namespace TKDHubAPI.Application.Mappings;
 public class MappingProfile : Profile
 {
     public MappingProfile()

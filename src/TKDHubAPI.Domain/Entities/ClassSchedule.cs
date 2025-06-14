@@ -1,6 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
 
-public class ClassSchedule : BaseEntity
+public partial class ClassSchedule : BaseEntity
 {
     public int TrainingClassId { get; set; }
     public TrainingClass TrainingClass { get; set; }

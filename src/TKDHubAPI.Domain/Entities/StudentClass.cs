@@ -1,8 +1,7 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
 
-public class StudentClass : BaseEntity
+public partial class StudentClass : BaseEntity
 {
-    public int Id { get; set; }
     public int StudentId { get; set; }
     public User Student { get; set; }
     public int TrainingClassId { get; set; }

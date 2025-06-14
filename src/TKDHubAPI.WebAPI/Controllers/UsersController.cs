@@ -1,9 +1,5 @@
-﻿using System.Security.Claims;
-using TKDHubAPI.Application.DTOs.TrainingClass;
+﻿using TKDHubAPI.Application.DTOs.TrainingClass;
 using TKDHubAPI.Application.DTOs.User;
-using TKDHubAPI.Application.Services;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.WebAPI.Middlewares;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 

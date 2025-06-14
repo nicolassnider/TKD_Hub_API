@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class UserRole : BaseEntity
+public partial class UserRole : BaseEntity
 {
 
     public string Name { get; set; } = string.Empty;

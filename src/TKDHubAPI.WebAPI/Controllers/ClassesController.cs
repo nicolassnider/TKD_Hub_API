@@ -1,7 +1,4 @@
 ﻿using TKDHubAPI.Application.DTOs.TrainingClass;
-using TKDHubAPI.Application.Services;
-using TKDHubAPI.Domain.Entities;
-using TKDHubAPI.WebAPI.Middlewares;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 

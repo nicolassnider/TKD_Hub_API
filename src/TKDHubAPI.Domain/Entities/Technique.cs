@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Technique : BaseEntity
+public partial class Technique : BaseEntity
 {
     public string Name { get; set; }
     public string Description { get; set; } = string.Empty;

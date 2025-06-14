@@ -1,5 +1,4 @@
 ﻿using TKDHubAPI.Application.DTOs.Promotion;
-using TKDHubAPI.Domain.Entities;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 

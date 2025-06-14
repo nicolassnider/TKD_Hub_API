@@ -1,7 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
-using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Services
+﻿namespace TKDHubAPI.Application.Services
 {
 
     public class CoachService : ICoachService

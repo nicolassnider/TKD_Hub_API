@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Tul : BaseEntity
+public partial class Tul : BaseEntity
 {
     [Required]
     [MaxLength(255)]

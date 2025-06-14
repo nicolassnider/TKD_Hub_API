@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
-public class Tournament : BaseEntity
+public partial class Tournament : BaseEntity
 {
     [Required]
     [MaxLength(200)]

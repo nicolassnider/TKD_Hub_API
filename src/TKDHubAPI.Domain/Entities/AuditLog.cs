@@ -1,6 +1,6 @@
 ﻿namespace TKDHubAPI.Domain.Entities;
 
-public class AuditLog : BaseEntity
+public partial class AuditLog : BaseEntity
 {
     public int? EntityId { get; set; }
     public AuditOperation Operation { get; set; }

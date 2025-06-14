@@ -1,7 +1,4 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
-using TKDHubAPI.Application.DTOs.User;
-
-namespace TKDHubAPI.Application.Interfaces;
+﻿namespace TKDHubAPI.Application.Interfaces;
 
 /// <summary>
 /// Provides methods for managing coach entities, including retrieval of coaches, management of associated dojaangs, and assignment or removal of managed dojaangs.

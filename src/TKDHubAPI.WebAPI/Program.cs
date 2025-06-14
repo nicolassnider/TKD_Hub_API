@@ -3,7 +3,6 @@ using TKDHubAPI.Application;
 using TKDHubAPI.Infrastructure;
 using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
-using TKDHubAPI.WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
