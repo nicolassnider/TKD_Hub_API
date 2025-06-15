@@ -32,6 +32,7 @@ public class TkdHubDbContext : DbContext
     public DbSet<TrainingClass> TrainingClasses { get; set; }
     public DbSet<ClassSchedule> ClassSchedules { get; set; }
     public DbSet<StudentClass> StudentClasses { get; set; }
+    public DbSet<BlogPost> BlogPosts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,12 +87,37 @@ public class TkdHubDbContext : DbContext
                     audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
                     break;
                 case EntityState.Modified:
-                    audit.Operation = AuditOperation.Update;
-                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(new
+                    var original = entry.OriginalValues.ToObject();
+                    var current = entry.CurrentValues.ToObject();
+                    var isSoftDelete = false;
+
+                    // Check for IsActive property (soft delete: true -> false)
+                    var isActiveProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "IsActive");
+                    if (isActiveProp != null)
                     {
-                        Original = entry.OriginalValues.ToObject(),
-                        Current = entry.CurrentValues.ToObject()
-                    });
+                        var originalIsActive = entry.OriginalValues["IsActive"] as bool? ?? true;
+                        var currentIsActive = entry.CurrentValues["IsActive"] as bool? ?? true;
+                        isSoftDelete = originalIsActive && !currentIsActive;
+                    }
+
+                    if (isSoftDelete)
+                    {
+                        audit.Operation = AuditOperation.Delete;
+                        audit.Changes = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            Original = original,
+                            Current = current
+                        });
+                    }
+                    else
+                    {
+                        audit.Operation = AuditOperation.Update;
+                        audit.Changes = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            Original = original,
+                            Current = current
+                        });
+                    }
                     auditEntries.Add(audit);
                     break;
                 case EntityState.Deleted:
