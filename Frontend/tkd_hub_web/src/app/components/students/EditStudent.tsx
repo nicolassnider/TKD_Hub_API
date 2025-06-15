@@ -33,10 +33,9 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 
   const [isBlackBelt, setIsBlackBelt] = useState(false);
 
-  // ...existing code...
   useEffect(() => {
     fetchRanks();
-  }, []);
+  }, [fetchRanks]);
 
   useEffect(() => {
     const fetchStudent = async () => {

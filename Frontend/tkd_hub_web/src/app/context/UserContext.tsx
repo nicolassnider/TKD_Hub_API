@@ -16,10 +16,10 @@ interface UserContextType {
 }
 
 const UserContext = createContext<UserContextType>({
-    users:[],
+    users: [],
     loading: false,
     error: null,
-    fetchUsers: async () => {},
+    fetchUsers: async () => { },
     getUserById: async () => undefined,
     createUser: async () => undefined,
     updateUser: async () => undefined,
@@ -120,23 +120,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    }, [apiRequest, fetchUsers]);
+    }, [apiRequest]);
 
     const reactivateUser = useCallback(async (id: number) => {
-        setLoading(true);
-        setError(null);
-        try {
-            await apiRequest<void>(`/Users/${id}/reactivate`, { method: "POST" });
-            setUsers(prev => prev.map(u => (u.id === id ? { ...u, isActive: true } : u)));
-            return true;
-        } catch (err) {
-            const errorMsg = err instanceof Error ? err.message : "Unknown error";
-            setError(errorMsg);
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    }, [apiRequest,fetchUsers]);    
+    setLoading(true);
+    setError(null);
+    try {
+        await apiRequest<void>(`/Users/${id}/reactivate`, { method: "POST" });
+        setUsers(prev => prev.map(u => (u.id === id ? { ...u, isActive: true } : u)));
+        return true;
+    } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : "Unknown error";
+        setError(errorMsg);
+        return false;
+    } finally {
+        setLoading(false);
+    }
+}, [apiRequest]);
 
     return (
         <UserContext.Provider
