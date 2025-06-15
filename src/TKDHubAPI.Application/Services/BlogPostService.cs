@@ -1,4 +1,5 @@
-﻿using TKDHubAPI.Application.DTOs.BlogPost;
+﻿using Ganss.Xss;
+using TKDHubAPI.Application.DTOs.BlogPost;
 
 namespace TKDHubAPI.Application.Services;
 
@@ -28,7 +29,6 @@ public class BlogPostService : IBlogPostService
             Title = dto.Title,
             Content = SanitizeHtml(dto.Content),
             AuthorId = authorId,
-            CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
 
@@ -62,7 +62,6 @@ public class BlogPostService : IBlogPostService
         {
             blogPost.Title = dto.Title;
             blogPost.Content = SanitizeHtml(dto.Content);
-            blogPost.UpdatedAt = DateTime.UtcNow;
             await _blogPostRepository.UpdateAsync(blogPost);
             return _mapper.Map<BlogPostDto>(blogPost);
         }

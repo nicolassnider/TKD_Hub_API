@@ -2,8 +2,19 @@
 
 public class TrainingClassServiceTests : BaseServiceTest<TrainingClassService, ITrainingClassRepository>
 {
+    private static Mock<ICurrentUserService> _currentUserServiceMock = new();
+    private static Mock<IMapper> _mapperMock = new();
+    private static Mock<IUserRepository> _userRepositoryMock = new();
+    private static Mock<IUnitOfWork> _unitOfWorkMock = new();
+
     public TrainingClassServiceTests()
-        : base(repoMock => new TrainingClassService(repoMock.Object))
+        : base(repoMock =>
+            new TrainingClassService(
+                repoMock.Object,
+                _currentUserServiceMock.Object,
+                _mapperMock.Object,
+                _userRepositoryMock.Object,
+                _unitOfWorkMock.Object))
     {
     }
 

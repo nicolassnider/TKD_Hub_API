@@ -16,15 +16,9 @@ public class BlogPostConfiguration : BaseEntityConfiguration<BlogPost>
         builder.Property(b => b.Content)
             .IsRequired();
 
-        builder.Property(b => b.CreatedAt)
-            .IsRequired();
-
         builder.Property(b => b.IsActive)
             .IsRequired()
             .HasDefaultValue(true);
-
-        builder.Property(b => b.UpdatedAt)
-            .IsRequired(false);
 
         builder.HasOne(b => b.Author)
             .WithMany()

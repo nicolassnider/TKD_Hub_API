@@ -28,7 +28,6 @@ public class BlogPostRepository : IBlogPostRepository
         return await _context.BlogPosts
             .Include(b => b.Author)
             .Where(b => b.IsActive)
-            .OrderByDescending(b => b.CreatedAt)
             .ToListAsync();
     }
 
@@ -45,7 +44,6 @@ public class BlogPostRepository : IBlogPostRepository
         {
             // Soft delete: set IsActive to false
             blogPost.IsActive = false;
-            blogPost.UpdatedAt = DateTime.UtcNow;
             _context.BlogPosts.Update(blogPost);
             await _context.SaveChangesAsync();
         }
