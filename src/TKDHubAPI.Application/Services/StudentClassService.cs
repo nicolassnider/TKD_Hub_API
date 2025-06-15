@@ -38,4 +38,15 @@ public class StudentClassService : IStudentClassService
     {
         await _studentClassRepository.UpdateAsync(studentClass);
     }
+
+    public async Task<IEnumerable<User>> GetStudentsByTrainingClassIdAsync(int trainingClassId)
+    {
+        var studentClasses = await _studentClassRepository.GetByTrainingClassIdAsync(trainingClassId);
+        // Select the Student property from each StudentClass, filter out nulls, and return distinct students
+        return studentClasses
+            .Where(sc => sc.Student != null)
+            .Select(sc => sc.Student)
+            .Distinct()
+            .ToList();
+    }
 }

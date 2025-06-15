@@ -38,4 +38,11 @@ public interface ICoachService
     /// <param name="coachId">The coach's user ID.</param>
     /// <param name="dojaangId">The dojaang ID to add to management.</param>
     Task AddManagedDojaangAsync(int coachId, int dojaangId);
+
+    /// <summary>
+    /// Retrieves all coaches associated with a specific dojaang asynchronously.
+    /// </summary>
+    /// <param name="dojaangId">The identifier of the dojaang.</param>
+    /// <returns>A task that represents the asynchronous operation, containing a collection of UserDto representing the coaches of the dojaang.</returns>
+    Task<IEnumerable<UserDto>> GetCoachesByDojaangAsync(int dojaangId);
 }

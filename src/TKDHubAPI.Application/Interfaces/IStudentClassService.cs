@@ -44,4 +44,12 @@ public interface IStudentClassService
     /// </summary>
     /// <param name="id">The unique identifier of the student class attendance record to delete.</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Retrieves all students associated with a specific training class.
+    /// </summary>
+    /// <param name="trainingClassId">The unique identifier of the training class.</param>
+    /// <returns>An enumerable collection of <see cref="User"/> representing the students in the specified training class.</returns>
+    Task<IEnumerable<User>> GetStudentsByTrainingClassIdAsync(int trainingClassId);
 }
+

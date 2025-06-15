@@ -552,6 +552,14 @@ public class UserService : IUserService
 
     public async Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto)
     {
+        // Ensure at least the Coach role is present
+        if (dto.RoleIds == null || !dto.RoleIds.Any())
+        {
+            var coachRole = await _userRoleRepository.GetByNameAsync("Coach");
+            if (coachRole == null)
+                throw new Exception("Coach role not found in the system.");
+            dto.RoleIds = new List<int> { coachRole.Id };
+        }
         if (dto.Id.HasValue && dto.Id.Value > 0)
         {
             // Update existing coach
@@ -608,6 +616,7 @@ public class UserService : IUserService
                 JoinDate = dto.JoinDate,
                 RoleIds = dto.RoleIds
             };
+
             var user = await AddCoachToDojaangAsync(requestingUserId, createDto);
 
             // Add managed dojaangs if provided
