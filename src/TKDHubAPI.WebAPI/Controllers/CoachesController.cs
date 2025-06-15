@@ -234,4 +234,12 @@ public class CoachesController : BaseApiController
             return ErrorResponse("An error occurred while deleting the coach.", 500);
         }
     }
+
+    [HttpGet("by-dojaang/{dojaangId}")]
+    public async Task<IActionResult> GetCoachesByDojaang(int dojaangId)
+    {
+        var coaches = await _coachService.GetCoachesByDojaangAsync(dojaangId);
+        var result = coaches.Select(_mapper.Map<UserDto>);
+        return SuccessResponse(result);
+    }
 }

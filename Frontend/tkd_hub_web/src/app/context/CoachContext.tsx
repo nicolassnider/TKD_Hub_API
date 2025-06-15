@@ -5,7 +5,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import toast from "react-hot-toast";
 import { Coach } from "@/app/types/Coach";
 import { CoachApiResponse } from "../components/coaches/EditCoach";
-import { UpsertCoachDto } from "../types/UserCoachDto";
+import { UpsertCoachDto } from "../types/UpsertCoachDto";
+
 
 type CoachContextType = {
     coaches: Coach[];

@@ -1,4 +1,5 @@
 ﻿using TKDHubAPI.Application.DTOs.TrainingClass;
+using TKDHubAPI.Application.DTOs.User;
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
@@ -8,6 +9,7 @@ namespace TKDHubAPI.WebAPI.Controllers;
 public class ClassesController : BaseApiController
 {
     private readonly ITrainingClassService _trainingClassService;
+    private readonly IStudentClassService _studentClassService;
     private readonly IMapper _mapper;
 
     /// <summary>
@@ -16,11 +18,16 @@ public class ClassesController : BaseApiController
     /// <param name="logger">The logger instance for logging operations.</param>
     /// <param name="trainingClassService">The service for managing training classes.</param>
     /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-    public ClassesController(ILogger<ClassesController> logger, ITrainingClassService trainingClassService, IMapper mapper)
+    public ClassesController(
+        ILogger<ClassesController> logger,
+        ITrainingClassService trainingClassService,
+        IMapper mapper,
+        IStudentClassService studentClassService)
         : base(logger)
     {
         _trainingClassService = trainingClassService;
         _mapper = mapper;
+        _studentClassService = studentClassService;
     }
 
     /// <summary>
@@ -109,5 +116,39 @@ public class ClassesController : BaseApiController
     {
         await _trainingClassService.DeleteAsync(id);
         return SuccessResponse("Training class deleted successfully.");
+    }
+
+    /// <summary>
+    /// Retrieves all students enrolled in a specific training class.
+    /// </summary>
+    /// <param name="classId">The unique identifier of the training class.</param>
+    /// <returns>A list of <see cref="UserDto"/> objects representing the students in the class.</returns>
+    [HttpGet("{classId}/students")]
+    public async Task<IActionResult> GetStudentsByClassId(int classId)
+    {
+        var students = await _studentClassService.GetStudentsByTrainingClassIdAsync(classId);
+        var dtos = students.Select(_mapper.Map<UserDto>).ToList();
+        return SuccessResponse(dtos);
+    }
+
+    /// <summary>
+    /// Retrieves training classes scheduled for a specific day of the week.
+    /// If no day is provided, returns classes for today.
+    /// </summary>
+    /// <param name="day">The day of the week (optional). If not provided, uses today's day.</param>
+    /// <returns>A list of <see cref="TrainingClassDto"/> objects scheduled for the specified day.</returns>
+    [HttpGet("by-day")]
+
+    public async Task<IActionResult> GetByDay([FromQuery] DayOfWeek? day = null)
+    {
+        var targetDay = day ?? DateTime.Today.DayOfWeek;
+
+        var classes = await _trainingClassService.GetAllAsync();
+        var filtered = classes
+            .Where(c => c.Schedules != null && c.Schedules.Any(s => s.Day == targetDay))
+        .ToList();
+
+        var dtos = _mapper.Map<List<TrainingClassDto>>(filtered);
+        return SuccessResponse(dtos);
     }
 }

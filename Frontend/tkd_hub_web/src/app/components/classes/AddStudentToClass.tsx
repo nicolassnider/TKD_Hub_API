@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 
 import StudentSelector from "../students/StudentSelector";
 import { Student } from "@/app/types/Student";
-import StudentsInClass from "./StudentsInClass";
 import ClassDetails from "./ClassDetails";
+import StudentsInClass from "./StudentsInClass";
 
 
 type Props = {

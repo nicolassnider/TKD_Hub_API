@@ -13,8 +13,8 @@ import RanksSelector from '@/app/components/common/selectors/RanksSelector';
 import GenderSelector from '../common/selectors/GenderSelector';
 import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import LabeledInput from '../common/inputs/LabeledInput';
-import { UpsertCoachDto } from '@/app/types/UserCoachDto';
 import ManagedDojaangs from './ManagedDojaangs';
+import { UpsertCoachDto } from '@/app/types/UpsertCoachDto';
 
 type EditCoachProps = {
     coachId: number;

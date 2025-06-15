@@ -37,6 +37,7 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
   const { getToken } = useAuth();
   const { apiRequest } = useApiRequest();
 
+  // --- GET /Promotions ---
   const fetchPromotions = async () => {
     setLoading(true);
     setError(null);
@@ -54,6 +55,7 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- GET /Promotions/:id ---
   const getPromotionById = async (id: number): Promise<Promotion | null> => {
     setLoading(true);
     setError(null);
@@ -71,6 +73,7 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- POST /Promotions ---
   const createPromotion = async (data: Omit<Promotion, "id" | "studentName" | "rankName">) => {
     setLoading(true);
     setError(null);
@@ -93,6 +96,7 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- PUT /Promotions/:id ---
   const updatePromotion = async (id: number, data: Partial<Promotion>) => {
     setLoading(true);
     setError(null);
@@ -115,6 +119,7 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- DELETE /Promotions/:id ---
   const deletePromotion = async (id: number) => {
     setLoading(true);
     setError(null);
@@ -150,3 +155,4 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
     </PromotionContext.Provider>
   );
 };
+

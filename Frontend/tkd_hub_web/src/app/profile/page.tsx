@@ -6,6 +6,7 @@ import { useApiRequest } from "../utils/api"; // <-- Use the hook, not direct im
 import { CoachClass } from "../types/CoachClass";
 import ProfileInfo from "../components/profiles/ProfileInfo";
 import CoachClasses from "../components/profiles/CoachClasses";
+import TodaysClassesFloating from "../components/classes/TodaysClassesFloating";
 
 export default function ProfilePage() {
     const { user, getToken, loading: authLoading } = useAuth();
@@ -57,6 +58,7 @@ export default function ProfilePage() {
                     <CoachClasses loading={loading} coachClasses={coachClasses} />
                 )}
             </div>
+			<TodaysClassesFloating />
         </div>
     );
 }
