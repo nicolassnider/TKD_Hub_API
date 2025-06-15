@@ -1,45 +1,36 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useApiRequest } from "../../utils/api";
-
-type Coach = { id: number; name: string; firstName?: string; lastName?: string };
-
-type ApiCoach = {
-  id: number;
-  firstName?: string;
-  lastName?: string;
-};
+import { useEffect } from "react";
+import { useCoaches } from "@/app/context/CoachContext";
+import { Coach } from "@/app/types/Coach"; // Adjust import if needed
 
 type CoachSelectorProps = {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   disabled?: boolean;
   label?: string;
+  coaches?: Coach[]; // <-- Add this line
 };
 
-export default function CoachSelector({ value, onChange, disabled, label = "Coach (optional)" }: CoachSelectorProps) {
-  const [coaches, setCoaches] = useState<Coach[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
-  const { apiRequest } = useApiRequest();
+export default function CoachSelector({
+  value,
+  onChange,
+  disabled,
+  label = "Coach (optional)",
+  coaches, // <-- Destructure coaches
+}: CoachSelectorProps) {
+  const context = useCoaches();
+  const contextCoaches = context.coaches;
+  const fetchCoaches = context.fetchCoaches;
+  const loading = context.loading;
 
+  // Only fetch if no coaches are provided as prop
   useEffect(() => {
-    setLoading(true);
-    apiRequest<ApiCoach[]>("/Coaches", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then((data) => {
-        const arr: Coach[] = Array.isArray(data)
-          ? data.map((c) => ({
-              id: c.id,
-              name: [c.firstName, c.lastName].filter(Boolean).join(" "),
-            }))
-          : [];
-        setCoaches(arr);
-      })
-      .catch(() => setCoaches([]))
-      .finally(() => setLoading(false));
-  }, [getToken, apiRequest]);
+    if (!coaches && (!contextCoaches || contextCoaches.length === 0)) {
+      fetchCoaches();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coaches]);
+
+  const coachList = coaches ?? contextCoaches;
 
   return (
     <div className="mb-4">
@@ -59,12 +50,16 @@ export default function CoachSelector({ value, onChange, disabled, label = "Coac
         aria-label={label}
       >
         <option value="">Select Coach</option>
-        {loading ? (
+        {loading && !coaches ? (
           <option disabled>Loading coaches...</option>
+        ) : coachList.length === 0 ? (
+          <option disabled>No coaches available</option>
         ) : (
-          coaches.map((c) => (
+          coachList.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {c.firstName && c.lastName
+                ? `${c.firstName} ${c.lastName}`
+                : c.firstName || "Unnamed"}
             </option>
           ))
         )}

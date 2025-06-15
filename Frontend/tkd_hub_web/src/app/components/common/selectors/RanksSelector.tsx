@@ -9,6 +9,7 @@ type RanksSelectorProps = {
   ranks?: Rank[];
   filter?: "all" | "color" | "black";
   className?: string; // Allow custom className
+  label?: string;
 };
 
 const RanksSelector: React.FC<RanksSelectorProps> = ({
@@ -18,6 +19,7 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
   ranks,
   filter = "all",
   className,
+  label, // <-- Destructure label
 }) => {
   const { ranks: contextRanks, loading, fetchRanks } = useRankContext();
 
@@ -42,28 +44,40 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
   }
 
   return (
-    <select
-      className={className ? className : "form-select"}
-      value={value ?? ""}
-      onChange={onChange}
-      disabled={disabled || loading}
-      name="currentRankId"
-      title="Rank"
-      aria-label="Rank"
-    >
-      <option value="">Select Rank</option>
-      {loading ? (
-        <option disabled>Loading ranks...</option>
-      ) : displayRanks.length === 0 ? (
-        <option disabled>No ranks available</option>
-      ) : (
-        displayRanks.map((rank) => (
-          <option key={rank.id} value={rank.id}>
-            {rank.name}
-          </option>
-        ))
+    <div>
+      {label && (
+        <label className="block mb-1 font-medium" htmlFor="ranks-selector">
+          {label}
+        </label>
       )}
-    </select>
+      <select
+        id="ranks-selector"
+        className={
+          className
+            ? className
+            : "form-input px-3 py-2 border border-gray-300 rounded w-full"
+        }
+        value={value ?? ""}
+        onChange={onChange}
+        disabled={disabled || loading}
+        name="currentRankId"
+        title="Rank"
+        aria-label="Rank"
+      >
+        <option value="">Select Rank</option>
+        {loading ? (
+          <option disabled>Loading ranks...</option>
+        ) : displayRanks.length === 0 ? (
+          <option disabled>No ranks available</option>
+        ) : (
+          displayRanks.map((rank) => (
+            <option key={rank.id} value={rank.id}>
+              {rank.name}
+            </option>
+          ))
+        )}
+      </select>
+    </div>
   );
 };
 export default RanksSelector;

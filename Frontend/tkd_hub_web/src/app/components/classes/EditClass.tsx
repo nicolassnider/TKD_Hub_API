@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
 import LabeledInput from "../common/inputs/LabeledInput";
 import DojaangSelector from "../dojaangs/DojaangSelector";
 import CoachSelector from "../coaches/CoachSelector";
 import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
+
 import { TrainingClass } from "@/app/types/TrainingClass";
 import { daysOfWeek } from "@/app/const/daysOfWeek";
 import { ClassSchedule } from "@/app/types/ClassSchedule";
+import { Coach } from "@/app/types/Coach";
+import { useCoaches } from "@/app/context/CoachContext";
 
 type EditClassProps = {
     open: boolean;
@@ -28,7 +32,25 @@ const defaultForm: Omit<TrainingClass, "id"> = {
 const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialData }) => {
     const [form, setForm] = useState<Omit<TrainingClass, "id">>(defaultForm);
     const [saving, setSaving] = useState(false);
+    const [availableCoaches, setAvailableCoaches] = useState<Coach[]>([]);
+    const { getCoachesByDojaang } = useCoaches();
+    const coachesCache = useRef<{ [key: number]: Coach[] }>({});
 
+    useEffect(() => {
+        if (form.dojaangId) {
+            // Check cache first
+            if (coachesCache.current[form.dojaangId]) {
+                setAvailableCoaches(coachesCache.current[form.dojaangId]);
+            } else {
+                getCoachesByDojaang(form.dojaangId).then((coaches) => {
+                    coachesCache.current[form.dojaangId] = coaches;
+                    setAvailableCoaches(coaches);
+                });
+            }
+        } else {
+            setAvailableCoaches([]);
+        }
+    }, [form.dojaangId, getCoachesByDojaang]);
 
     useEffect(() => {
         if (initialData) {
@@ -155,6 +177,8 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                     <CoachSelector
                         value={form.coachId ? String(form.coachId) : ""}
                         onChange={handleCoachChange}
+                        disabled={saving}
+                        coaches={availableCoaches} // <-- pass filtered coaches here
                     />
 
                     {/* Schedules Section */}

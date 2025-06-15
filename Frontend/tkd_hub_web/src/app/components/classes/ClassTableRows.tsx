@@ -7,13 +7,14 @@ type Props = {
   classes: TrainingClass[];
   onEdit: (id: number) => void;
   onRequestDelete: (id: number) => void;
+  onAddStudents?: (id: number) => void; // Add this line
 };
 
-const ClassTableRows: React.FC<Props> = ({ classes, onEdit, onRequestDelete }) => {
+const ClassTableRows: React.FC<Props> = ({ classes, onEdit, onRequestDelete, onAddStudents }) => {
   // Function to get the first letter of the day
   const getDay = (day: number) => {
     const dayObject = daysOfWeek.find(d => d.value === day);
-    return dayObject ? dayObject.label: '';
+    return dayObject ? dayObject.label : '';
   };
 
   return (
@@ -31,7 +32,6 @@ const ClassTableRows: React.FC<Props> = ({ classes, onEdit, onRequestDelete }) =
                 <ul>
                   {trainingClass.schedules.map((s) => (
                     <li key={s.id}>
-                      {/* Example: Tuesday, 18:00-18:30 */}
                       {getDay(s.day)}, {s.startTime}-{s.endTime}
                     </li>
                   ))}
@@ -54,6 +54,14 @@ const ClassTableRows: React.FC<Props> = ({ classes, onEdit, onRequestDelete }) =
                   iconClass="bi bi-trash"
                   colorClass="bg-red-600 text-white hover:bg-red-700"
                 />
+                {onAddStudents && (
+                  <TableActionButton
+                    onClick={() => onAddStudents(trainingClass.id)}
+                    title="Add Students"
+                    iconClass="bi bi-person-plus"
+                    colorClass="bg-green-600 text-white hover:bg-green-700"
+                  />
+                )}
               </div>
             </td>
           </tr>

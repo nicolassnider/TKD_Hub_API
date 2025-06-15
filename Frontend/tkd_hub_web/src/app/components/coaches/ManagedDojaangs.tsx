@@ -44,7 +44,7 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
                 {
                     method: 'DELETE',
                     headers: {
-                    	...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     },
                 }
             );
@@ -104,7 +104,7 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
                         </option>
                         {availableDojaangs.map((d) => (
                             <option key={d.id} value={d.id}>
-                                {d.name} #{d.id}
+                                {d.name}
                             </option>
                         ))}
                     </select>

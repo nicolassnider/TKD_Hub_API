@@ -24,6 +24,7 @@ export const DojaangProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const { getToken } = useAuth();
     const { apiRequest } = useApiRequest();
 
+    // --- GET /Dojaang ---
     const fetchDojaangs = useCallback(async () => {
         const token = getToken();
         if (!token) {
@@ -55,6 +56,7 @@ export const DojaangProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // --- POST /Dojaang ---
     const createDojaang = async (data: Omit<Dojaang, "id">) => {
         setLoading(true);
         setError(null);
@@ -76,6 +78,7 @@ export const DojaangProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
+    // --- PUT /Dojaang/:id ---
     const updateDojaang = async (id: number, data: Omit<Dojaang, "id">) => {
         setLoading(true);
         setError(null);
@@ -97,6 +100,7 @@ export const DojaangProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
+    // --- DELETE /Dojaang/:id ---
     const deleteDojaang = async (id: number) => {
         setLoading(true);
         setError(null);
@@ -114,6 +118,7 @@ export const DojaangProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
+    // --- GET /Dojaang/:id ---
     const getDojaang = async (id: number): Promise<Dojaang | null> => {
         setLoading(true);
         setError(null);
@@ -152,3 +157,4 @@ export const useDojaangs = () => {
     if (!ctx) throw new Error("useDojaangs must be used within a DojaangProvider");
     return ctx;
 };
+

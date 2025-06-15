@@ -1,4 +1,7 @@
 "use client";
+
+import TodaysClassesFloating from "./components/classes/TodaysClassesFloating";
+
 export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-gradient-to-b from-gray-100 to-blue-100 px-4 pt-4 sm:pt-8">
@@ -21,6 +24,7 @@ export default function Home() {
         >
           Contact Us
         </a>
+        <TodaysClassesFloating />
       </div>
     </main>
   );

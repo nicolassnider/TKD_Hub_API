@@ -31,3 +31,17 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   transition: transform 0.2s;
 }
+
+.todays-classes-floating {
+  position: fixed;
+  bottom: 1.5rem; /* 6 */
+  right: 1.5rem;  /* 6 */
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.08);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  width: 18rem; /* 72 */
+  min-width: 220px;
+  z-index: 50;
+}

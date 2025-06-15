@@ -88,7 +88,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ]);
 
   // ...periodic session check can be added here if needed...
-
+  
+  // --- Auth Login Endpoint ---
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {

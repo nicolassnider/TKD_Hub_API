@@ -1,16 +1,30 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useClasses } from "@/app/context/ClassContext";
 import ClassTableRows from "@/app/components/classes/ClassTableRows";
 import { AdminListPage } from "@/app/components/AdminListPage";
 import EditClass from "@/app/components/classes/EditClass";
 import { TrainingClass } from "@/app/types/TrainingClass";
+import AddStudentToClass from "@/app/components/classes/AddStudentToClass";
 
 const ClassesAdminPage = () => {
-    const { classes, addClass, updateClass } = useClasses();
+    const { classes, addClass, updateClass, fetchClasses, loading, error } = useClasses();
 
     const [editOpen, setEditOpen] = useState(false);
     const [editInitial, setEditInitial] = useState<TrainingClass | null>(null);
+    const [addStudentsClassId, setAddStudentsClassId] = useState<number | null>(null);
+
+    const handleAddStudents = (classId: number) => {
+        setAddStudentsClassId(classId); // Open modal for this class
+    };
+
+    useEffect(() => {
+        fetchClasses();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+    }, [classes]);
 
     const handleEdit = (id: number) => {
         const found = classes.find(c => c.id === id) || null;
@@ -40,8 +54,8 @@ const ClassesAdminPage = () => {
         <>
             <AdminListPage
                 title="Classes Admin"
-                loading={false}
-                error={null}
+                loading={loading}    // Pass actual loading state
+                error={error}        // Pass actual error state
                 onCreate={handleCreate}
                 createLabel="Create Class"
                 tableHead={
@@ -57,6 +71,7 @@ const ClassesAdminPage = () => {
                         classes={classes}
                         onEdit={handleEdit}
                         onRequestDelete={handleRequestDelete}
+                        onAddStudents={handleAddStudents} // <-- Add this line
                     />
                 }
             />
@@ -65,6 +80,11 @@ const ClassesAdminPage = () => {
                 onClose={() => setEditOpen(false)}
                 onSubmit={handleEditSubmit}
                 initialData={editInitial}
+            />
+            <AddStudentToClass
+                classId={addStudentsClassId ?? 0}
+                open={addStudentsClassId !== null}
+                onClose={() => setAddStudentsClassId(null)}
             />
         </>
     );

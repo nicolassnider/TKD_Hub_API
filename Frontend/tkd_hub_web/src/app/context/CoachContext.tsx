@@ -1,22 +1,25 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { useApiRequest } from "../utils/api";
 import { useAuth } from "@/app/context/AuthContext";
 import toast from "react-hot-toast";
 import { Coach } from "@/app/types/Coach";
+import { CoachApiResponse } from "../components/coaches/EditCoach";
+import { UpsertCoachDto } from "../types/UserCoachDto";
 
 type CoachContextType = {
     coaches: Coach[];
     loading: boolean;
     error: string | null;
     fetchCoaches: () => Promise<void>;
-    getCoachById: (id: number) => Promise<Coach | null>;
+    getCoachById: (id: number) => Promise<CoachApiResponse | null>;
     createCoach: (data: Omit<Coach, "id" | "joinDate"> & { password: string; roleIds: number[] }) => Promise<void>;
     updateCoach: (id: number, data: Partial<Coach>) => Promise<void>;
     deleteCoach: (id: number) => Promise<void>;
-    upsertCoach: (data: Partial<Coach>) => Promise<void>;
+    upsertCoach: (data: UpsertCoachDto) => Promise<void>; // <-- Use DTO here
     removeCoachFromDojaang: (coachId: number, dojaangId: number) => Promise<void>;
     updateManagedDojaangs: (coachId: number, dojaangIds: number[]) => Promise<void>;
+    getCoachesByDojaang: (dojaangId: number) => Promise<Coach[]>;
 };
 
 const CoachContext = createContext<CoachContextType>({
@@ -31,6 +34,7 @@ const CoachContext = createContext<CoachContextType>({
     upsertCoach: async () => { },
     removeCoachFromDojaang: async () => { },
     updateManagedDojaangs: async () => { },
+    getCoachesByDojaang: async () => [],
 });
 
 export const useCoaches = () => useContext(CoachContext);
@@ -43,32 +47,38 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
     const { getToken } = useAuth();
     const { apiRequest } = useApiRequest();
 
-    const fetchCoaches = async () => {
+    // --- GET /Coaches ---
+    const fetchCoaches = useCallback(async () => {
+        if (coaches.length > 0) return; // Prevent refetch if already loaded
         setLoading(true);
         setError(null);
         try {
-            const res = await apiRequest<Coach[]>("/Coaches", {
-                headers: { Authorization: `Bearer ${getToken()}` },
+            const response = await apiRequest<{ data: Coach[] }>("/Coaches", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`,
+                },
             });
-            setCoaches(res);
+            setCoaches(Array.isArray(response.data) ? response.data : []);
         } catch {
-            setError("Failed to load coaches");
             setCoaches([]);
-            toast.error("Failed to load coaches");
+            setError("Failed to fetch coaches.");
+            toast.error("Failed to fetch coaches.");
         } finally {
             setLoading(false);
         }
-    };    
+    }, [apiRequest, getToken, coaches.length]);
 
-    const getCoachById = async (id: number): Promise<Coach | null> => {
+    // --- GET /Coaches/:id ---
+    const getCoachById = async (id: number): Promise<CoachApiResponse | null> => {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiRequest<Coach>(`/Coaches/${id}`, {
+            const res = await apiRequest(`/Coaches/${id}`, {
                 headers: { Authorization: `Bearer ${getToken()}` },
             });
             setLoading(false);
-            return res;
+            return res as CoachApiResponse;
         } catch {
             setError("Failed to load coach");
             setLoading(false);
@@ -77,6 +87,7 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // --- POST /Coaches ---
     const createCoach = async (data: Omit<Coach, "id" | "joinDate"> & { password: string; roleIds: number[] }) => {
         setLoading(true);
         setError(null);
@@ -99,6 +110,7 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // --- PUT /Coaches/:id ---
     const updateCoach = async (id: number, data: Partial<Coach>) => {
         setLoading(true);
         setError(null);
@@ -111,7 +123,6 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
                 },
                 body: JSON.stringify(data),
             });
-            toast.success("Coach updated");
             await fetchCoaches();
         } catch {
             setError("Failed to update coach");
@@ -121,6 +132,7 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // --- DELETE /Coaches/:id ---
     const deleteCoach = async (id: number) => {
         setLoading(true);
         setError(null);
@@ -139,7 +151,8 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const upsertCoach = async (data: Partial<Coach>) => {
+    // --- POST /Coaches/upsert ---
+    const upsertCoach = async (data: UpsertCoachDto) => {
         setLoading(true);
         setError(null);
         try {
@@ -151,7 +164,6 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
                 },
                 body: JSON.stringify(data),
             });
-            toast.success("Coach upserted");
             await fetchCoaches();
         } catch {
             setError("Failed to upsert coach");
@@ -161,6 +173,7 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // --- DELETE /Coaches/:coachId/dojaangs/:dojaangId ---
     const removeCoachFromDojaang = async (coachId: number, dojaangId: number) => {
         setLoading(true);
         setError(null);
@@ -179,6 +192,7 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // --- PUT /Coaches/:coachId/managed-dojaangs ---
     const updateManagedDojaangs = async (coachId: number, dojaangIds: number[]) => {
         setLoading(true);
         setError(null);
@@ -201,6 +215,27 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // --- GET /Coaches/by-dojaang/:dojaangId ---
+    const getCoachesByDojaang = useCallback(async (dojaangId: number): Promise<Coach[]> => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await apiRequest<{ data: Coach[] }>(`/Coaches/by-dojaang/${dojaangId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`,
+                },
+            });
+            return Array.isArray(response.data) ? response.data : [];
+        } catch {
+            setError("Failed to fetch coaches by dojaang.");
+            toast.error("Failed to fetch coaches by dojaang.");
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    }, [apiRequest, getToken]);
+
     return (
         <CoachContext.Provider
             value={{
@@ -215,6 +250,7 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
                 upsertCoach,
                 removeCoachFromDojaang,
                 updateManagedDojaangs,
+                getCoachesByDojaang,
             }}
         >
             {children}

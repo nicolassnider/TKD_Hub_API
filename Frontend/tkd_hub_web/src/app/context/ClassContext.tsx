@@ -4,6 +4,7 @@ import { TrainingClass } from "../types/TrainingClass";
 import { useApiRequest } from "../utils/api";
 import { useAuth } from "./AuthContext";
 import toast from "react-hot-toast";
+import { Student } from "../types/Student";
 
 // Define the context type
 type ClassContextType = {
@@ -16,6 +17,8 @@ type ClassContextType = {
   updateClass: (id: number, c: Omit<TrainingClass, "id">) => Promise<void>;
   deleteClass: (id: number) => Promise<void>;
   addStudentToClass: (studentId: number, classId: number) => Promise<void>;
+  getStudentsByClass: (classId: number) => Promise<Student[]>; // <-- Add this line
+  getClassesByDay: (day?: number) => Promise<TrainingClass[]>;
 };
 
 // Create and export the context
@@ -29,6 +32,8 @@ const ClassContext = createContext<ClassContextType>({
   updateClass: async () => { },
   deleteClass: async () => { },
   addStudentToClass: async () => { },
+  getStudentsByClass: async () => [],
+  getClassesByDay: async () => [],
 });
 
 // Custom hook for consuming the context
@@ -42,19 +47,19 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const { getToken } = useAuth();
   const { apiRequest } = useApiRequest();
 
-
+  // --- GET /Classes ---
   // Wrap fetchClasses in useCallback for stable reference
   const fetchClasses = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiRequest<TrainingClass[]>("/Classes", {
+      const response = await apiRequest<{ data: TrainingClass[] }>("/Classes", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${getToken()}`,
         },
       });
-      setClasses(Array.isArray(data) ? data : []);
+      setClasses(Array.isArray(response.data) ? response.data : []);
     } catch {
       setClasses([]);
       setError("Failed to fetch classes.");
@@ -62,8 +67,9 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } finally {
       setLoading(false);
     }
-  }, [apiRequest, getToken]);  
+  }, [apiRequest, getToken]);
 
+  // --- GET /Classes/:id ---
   // Implementing getClassById function
   const getClassById = useCallback(
     async (id: number): Promise<TrainingClass | null> => {
@@ -89,6 +95,7 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     [apiRequest, getToken]
   );
 
+  // --- POST /Classes ---
   // Implementing addClass function
   const addClass = async (classData: Omit<TrainingClass, "id">) => {
     setLoading(true);
@@ -123,6 +130,7 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  // --- PUT /Classes/:id ---
   // Implementing updateClass function
   const updateClass = async (id: number, classData: Omit<TrainingClass, "id">) => {
     setLoading(true);
@@ -158,6 +166,7 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  // --- POST /Students/:studentId/trainingclasses/:classId ---  
   const addStudentToClass = async (studentId: number, classId: number) => {
     setLoading(true);
     setError(null);
@@ -191,6 +200,7 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  // --- DELETE /Classes/:id ---
   // Implementing deleteClass function
   const deleteClass = async (id: number) => {
     setLoading(true);
@@ -223,6 +233,56 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  // --- GET /Classes/:classId/students ---
+  const getStudentsByClass = useCallback(
+    async (classId: number): Promise<Student[]> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiRequest<{ data: Student[] }>(
+          `/Classes/${classId}/students`,
+          {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          }
+        );
+        setLoading(false);
+        return Array.isArray(res.data) ? res.data : [];
+      } catch {
+        setError("Failed to load students for class");
+        setLoading(false);
+        toast.error("Failed to load students for class");
+        return [];
+      }
+    },
+    [apiRequest, getToken]
+  );
+
+  // --- GET /Classes/by-day?day=... ---
+  // day: 0 (Sunday) to 6 (Saturday), or undefined for today
+  const getClassesByDay = useCallback(
+    async (day?: number): Promise<TrainingClass[]> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const url = day !== undefined ? `/Classes/by-day?day=${day}` : `/Classes/by-day`;
+        const response = await apiRequest<{ data: TrainingClass[] }>(url, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${getToken()}`,
+          },
+        });
+        return Array.isArray(response.data) ? response.data : [];
+      } catch {
+        setError("Failed to fetch classes by day.");
+        toast.error("Failed to fetch classes by day.");
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiRequest, getToken]
+  );
+
   return (
     <ClassContext.Provider
       value={{
@@ -235,6 +295,8 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         updateClass,
         deleteClass,
         addStudentToClass,
+        getStudentsByClass, // <-- add here
+        getClassesByDay, // <-- add here
       }}
     >
       {children}

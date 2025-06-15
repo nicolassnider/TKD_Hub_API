@@ -29,6 +29,7 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
 
   const { apiRequest } = useApiRequest();
 
+  // --- GET /Ranks ---
   const fetchRanks = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -46,6 +47,7 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [apiRequest]);
 
+  // --- GET /Ranks/:id ---
   const getRankById = useCallback(async (id: number): Promise<Rank | null> => {
     setLoading(true);
     setError(null);

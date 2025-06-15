@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import RanksSelector from '@/app/components/common/selectors/RanksSelector';
-import { useAuth } from '@/app/context/AuthContext';
 import toast from 'react-hot-toast';
-import GenderSelector from '../common/selectors/GenderSelector';
 import equal from 'fast-deep-equal';
+
+import { Coach } from '@/app/types/Coach';
+import { ManagedDojaang } from '@/app/types/ManagedDojaang';
+
+import { useAuth } from '@/app/context/AuthContext';
+import { useApiRequest } from '@/app/utils/api';
+import { useCoaches } from '@/app/context/CoachContext';
+
+import RanksSelector from '@/app/components/common/selectors/RanksSelector';
+import GenderSelector from '../common/selectors/GenderSelector';
 import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import LabeledInput from '../common/inputs/LabeledInput';
-import { Coach } from '@/app/types/Coach';
-import { useApiRequest } from '@/app/utils/api';
+import { UpsertCoachDto } from '@/app/types/UserCoachDto';
+import ManagedDojaangs from './ManagedDojaangs';
 
 type EditCoachProps = {
     coachId: number;
     onClose: (wasCreated?: boolean) => void;
     handleRefresh?: () => void;
-};
-
-type ApiCoachResponse = {
-    data?: {
-        coach?: Coach;
-    };
 };
 
 type ApiDojaang = {
@@ -27,6 +28,13 @@ type ApiDojaang = {
 };
 
 type ApiDojaangResponse = ApiDojaang[] | { data: ApiDojaang[] };
+
+export type CoachApiResponse = {
+    data: {
+        coach: Coach;
+        managedDojaangs: ManagedDojaang[];
+    };
+};
 
 const EditCoach: React.FC<EditCoachProps> = ({
     coachId,
@@ -42,24 +50,27 @@ const EditCoach: React.FC<EditCoachProps> = ({
     const { apiRequest } = useApiRequest();
     const [saving, setSaving] = useState(false);
 
+    // Use CoachContext
+    const { getCoachById, upsertCoach } = useCoaches();
+
     useEffect(() => {
         const fetchCoachAndDojaangs = async () => {
+            setLoading(true);
+            setError(null);
             try {
                 if (coachId !== 0) {
-                    const data: ApiCoachResponse = await apiRequest<ApiCoachResponse>(
-                        `/Coaches/${coachId}`,
-                        {
-                            headers: { Authorization: `Bearer ${getToken()}` },
-                        }
-                    );
-                    const coachData: Coach = data.data?.coach || ({} as Coach);
+                    const apiResponse = await getCoachById(coachId) as CoachApiResponse;
+                    const coachData = apiResponse?.data?.coach;
+                    const managedDojaangs = apiResponse?.data?.managedDojaangs ?? [];
+
+                    if (!coachData) throw new Error('Coach not found');
                     const loadedForm = {
                         firstName: coachData.firstName,
                         lastName: coachData.lastName,
                         email: coachData.email,
                         phoneNumber: coachData.phoneNumber ?? '',
                         gender: coachData.gender,
-                        dateOfBirth: coachData.dateOfBirth ?? '',
+                        dateOfBirth: coachData.dateOfBirth?.split('T')[0] ?? '',
                         dojaangId: coachData.dojaangId ?? null,
                         currentRankId: coachData.currentRankId,
                         joinDate: coachData.joinDate ?? '',
@@ -69,6 +80,15 @@ const EditCoach: React.FC<EditCoachProps> = ({
                     };
                     setForm(loadedForm);
                     setOriginalForm(loadedForm);
+
+                    // Optionally merge managedDojaangs into allDojaangs
+                    setAllDojaangs((prev) => {
+                        const ids = new Set(prev.map(d => d.id));
+                        return [
+                            ...prev,
+                            ...managedDojaangs.filter((d: ManagedDojaang) => !ids.has(d.id))
+                        ];
+                    });
                 } else {
                     const emptyForm = {
                         firstName: '',
@@ -107,7 +127,8 @@ const EditCoach: React.FC<EditCoachProps> = ({
             }
         };
         fetchCoachAndDojaangs();
-    }, [coachId, getToken, apiRequest]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [coachId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -121,37 +142,24 @@ const EditCoach: React.FC<EditCoachProps> = ({
         if (!form) return;
         setSaving(true);
         try {
-            await apiRequest(
-                "/Coaches/upsert",
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${getToken()}`
-                    },
-                    body: JSON.stringify({
-                        id: coachId,
-                        firstName: form.firstName,
-                        lastName: form.lastName,
-                        email: form.email,
-                        phoneNumber: form.phoneNumber ?? '',
-                        gender: form.gender ?? 0,
-                        dateOfBirth: form.dateOfBirth
-                            ? new Date(form.dateOfBirth).toISOString()
-                            : null,
-                        dojaangId: form.dojaangId ?? 0,
-                        rankId: form.currentRankId ?? 0,
-                        joinDate: form.joinDate
-                            ? new Date(form.joinDate).toISOString()
-                            : null,
-                        roleIds: [2],
-                        managedDojaangIds: form.managedDojaangIds ?? [],
-                    }),
-                }
-            );
+            const payload: UpsertCoachDto = {
+                id: coachId !== 0 ? coachId : null,
+                firstName: form.firstName,
+                lastName: form.lastName,
+                email: form.email,
+                phoneNumber: form.phoneNumber || "",
+                gender: form.gender ?? null,
+                dateOfBirth: form.dateOfBirth ? form.dateOfBirth : null,
+                dojaangId: form.dojaangId ?? null,
+                rankId: form.currentRankId ?? null,
+                joinDate: form.joinDate ? form.joinDate : null,
+                roleIds: (form.roles ?? []).map(Number), // <-- convert to number[]
+                managedDojaangIds: form.managedDojaangIds ?? [],
+            };
+            await upsertCoach(payload);
             if (handleRefresh) handleRefresh();
-            toast.success('Coach updated!');
-            onClose();
+            toast.success(coachId ? 'Coach updated!' : 'Coach created!');
+            onClose(true);
         } catch (err: unknown) {
             if (err instanceof Error)
                 toast.error(err.message || 'Failed to upsert coach');
@@ -192,8 +200,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
                             onChange={handleChange}
                             disabled={saving}
                         />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
                         <LabeledInput
                             label="Email"
                             name="email"
@@ -212,8 +219,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
                             disabled={saving}
                             placeholder="Enter phone number"
                         />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
                         <div>
                             <label
                                 className="block font-medium mb-1"
@@ -236,99 +242,53 @@ const EditCoach: React.FC<EditCoachProps> = ({
                             onChange={handleChange}
                             disabled={saving}
                         />
-                    </div>
-                    <div>
+
                         <RanksSelector
+                            label="Rank"
                             value={form.currentRankId ?? 0}
                             onChange={(e) =>
                                 setForm((f) => ({
                                     ...f!,
-                                    currentRankId: e.target.value
-                                        ? Number(e.target.value)
-                                        : 0,
+                                    currentRankId: e.target.value ? Number(e.target.value) : 0,
                                 }))
                             }
                             disabled={loading}
                             filter="black"
+                            className="form-input px-3 py-2 border border-gray-300 rounded w-full"
                         />
+
+                        <LabeledInput
+                            label="Join Date"
+                            name="joinDate"
+                            type="date"
+                            value={form.joinDate || ""}
+                            onChange={handleChange}
+                            disabled={saving}
+                            placeholder="YYYY-MM-DD"
+                        />
+
+
                     </div>
                     {coachId !== 0 && (
-                        <div>
-                            <label className="block font-medium mb-1">
-                                Managed Dojaangs
-                            </label>
-                            <div className="flex gap-2 mb-2">
-                                <select
-                                    className="form-select rounded border border-gray-300 px-2 py-1"
-                                    value=""
-                                    onChange={(e) => {
-                                        const id = Number(e.target.value);
-                                        if (
-                                            id &&
-                                            !(form.managedDojaangIds ?? []).includes(id)
-                                        ) {
-                                            setForm((f) => ({
-                                                ...f!,
-                                                managedDojaangIds: [
-                                                    ...(f?.managedDojaangIds ?? []),
-                                                    id,
-                                                ],
-                                            }));
-                                        }
-                                    }}
-                                    title="Add Managed Dojaang"
-                                    aria-label="Add Managed Dojaang"
-                                >
-                                    <option value="">Add Dojaang...</option>
-                                    {allDojaangs
-                                        .filter(
-                                            (d) =>
-                                                !(form.managedDojaangIds ?? []).includes(d.id)
-                                        )
-                                        .map((d) => (
-                                            <option key={d.id} value={d.id}>
-                                                {d.name} #{d.id}
-                                            </option>
-                                        ))}
-                                </select>
-                            </div>
-                            <ul>
-                                {(form.managedDojaangIds ?? []).map((id) => {
-                                    const dojaang = allDojaangs.find(
-                                        (d) => d.id === id
-                                    );
-                                    if (!dojaang) return null;
-                                    return (
-                                        <li
-                                            key={id}
-                                            className="flex items-center gap-2 mb-1"
-                                        >
-                                            <span>
-                                                {dojaang.name}{' '}
-                                                <span className="text-xs text-gray-500">
-                                                    #{id}
-                                                </span>
-                                            </span>
-                                            <button
-                                                type="button"
-                                                className="text-red-600 hover:underline text-xs"
-                                                onClick={() => {
-                                                    setForm((f) => ({
-                                                        ...f!,
-                                                        managedDojaangIds: (
-                                                            f?.managedDojaangIds ?? []
-                                                        ).filter(
-                                                            (did) => did !== id
-                                                        ),
-                                                    }));
-                                                }}
-                                            >
-                                                Remove
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
+                        <div className="mb-4">
+                            <label className="block font-medium mb-1">Managed Dojaangs</label>
+                            <ManagedDojaangs
+                                managedDojaangIds={form.managedDojaangIds ?? []}
+                                allDojaangs={allDojaangs}
+                                coachId={coachId}
+                                onAdd={(id) =>
+                                    setForm((f) => ({
+                                        ...f!,
+                                        managedDojaangIds: [...(f?.managedDojaangIds ?? []), id],
+                                    }))
+                                }
+                                onRemove={(id) =>
+                                    setForm((f) => ({
+                                        ...f!,
+                                        managedDojaangIds: (f?.managedDojaangIds ?? []).filter((did) => did !== id),
+                                    }))
+                                }
+                            />
                         </div>
                     )}
                 </form>

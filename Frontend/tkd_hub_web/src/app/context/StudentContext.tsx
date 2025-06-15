@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { useApiRequest } from "../utils/api";
 import { useAuth } from "@/app/context/AuthContext";
 import toast from "react-hot-toast";
@@ -37,6 +37,7 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
   const { getToken } = useAuth();
   const { apiRequest } = useApiRequest();
 
+  // --- GET /Students ---
   const fetchStudents = async () => {
     setLoading(true);
     setError(null);
@@ -54,6 +55,7 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- GET /Students/:id ---
   const getStudentById = async (id: number): Promise<Student | null> => {
     setLoading(true);
     setError(null);
@@ -74,6 +76,7 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- POST /Students ---  
   const createStudent = async (data: Omit<Student, "id" | "joinDate" | "isActive">) => {
     setLoading(true);
     setError(null);
@@ -96,6 +99,7 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // --- PUT /Students/:id ---
   const updateStudent = async (id: number, data: Partial<Student>) => {
     setLoading(true);
     setError(null);
@@ -117,22 +121,36 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const getStudentsByDojaang = async (dojaangId: number): Promise<Student[]> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiRequest<Student[]>(`/Students/Dojaang/${dojaangId}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      setLoading(false);
-      return res;
-    } catch {
-      setError("Failed to load students by dojaang");
-      setLoading(false);
-      toast.error("Failed to load students by dojaang");
-      return [];
-    }
-  };
+  // --- GET /Students/Dojaang/:dojaangId ---
+  const getStudentsByDojaang = useCallback(
+    async (dojaangId: number): Promise<Student[]> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiRequest<{ data: { data: Student[] } }>(
+          `/Students/Dojaang/${dojaangId}`,
+          {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          }
+        );
+        setLoading(false);
+        // Defensive: handle both { data: Student[] } and { data: { data: Student[] } }
+        if (Array.isArray(res.data)) {
+          return res.data;
+        }
+        if (res.data && Array.isArray(res.data.data)) {
+          return res.data.data;
+        }
+        return [];
+      } catch {
+        setError("Failed to load students by dojaang");
+        setLoading(false);
+        toast.error("Failed to load students by dojaang");
+        return [];
+      }
+    },
+    [apiRequest, getToken]
+  );
 
   return (
     <StudentContext.Provider

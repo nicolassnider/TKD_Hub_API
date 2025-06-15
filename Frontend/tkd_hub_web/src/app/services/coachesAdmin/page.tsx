@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import { AdminListPage } from "../../components/AdminListPage";
 import { useApiConfig } from "@/app/context/ApiConfigContext";
 import { Coach } from "@/app/types/Coach";
+import { useUsers } from "@/app/context/UserContext";
 
 type ApiCoachResponse = Coach[] | { data: Coach[] };
 
@@ -51,7 +52,8 @@ export default function CoachesAdmin() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const { baseUrl } = useApiConfig();
-  const { apiRequest } = useApiRequest(); // <-- Use the hook
+  const { apiRequest } = useApiRequest();
+  const {reactivateUser}=useUsers()
 
   const fetchCoaches = async (): Promise<Coach[]> => {
     const data: ApiCoachResponse = await apiRequest<ApiCoachResponse>(`${baseUrl}/Coaches`, {}, getToken);
@@ -84,7 +86,7 @@ export default function CoachesAdmin() {
 
   const handleReactivate = async (coachId: number) => {
     try {
-      await apiRequest(`${baseUrl}/Coaches/${coachId}/reactivate`, { method: "POST" }, getToken);
+      await reactivateUser(coachId); // <-- Use context method
       toast.success("Coach reactivated!");
       handleRefresh();
     } catch {
@@ -99,14 +101,14 @@ export default function CoachesAdmin() {
 
   function handleEditClose(wasUpdated?: boolean) {
     setEditId(null);
-    handleRefresh();
-    if (wasUpdated !== false) toast.success("Coach updated!");
+    if (wasUpdated)
+      handleRefresh();
   }
 
   function handleAddClose(wasCreated?: boolean) {
     setShowAdd(false);
+    if (wasCreated) toast.success("Coach created!");
     handleRefresh();
-    if (wasCreated !== false) toast.success("Coach created!");
   }
 
   async function handleDelete(coachId: number) {
@@ -173,14 +175,16 @@ export default function CoachesAdmin() {
           <>
             {showAdd && (
               <EditCoach
-                coachId={0}
+                coachId={0} // 0 or undefined for create mode, depending on your EditCoach logic
                 onClose={handleAddClose}
+                handleRefresh={handleRefresh}
               />
             )}
             {editId !== null && (
               <EditCoach
                 coachId={editId}
                 onClose={handleEditClose}
+                handleRefresh={handleRefresh}
               />
             )}
             {confirmId !== null && (
