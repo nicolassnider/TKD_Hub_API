@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Rank } from "@/app/types/Rank";
-import { useRankContext } from "@/app/context/RankContext";
+import { useRanks } from "@/app/context/RankContext";
 
 type RanksSelectorProps = {
   value: number;
@@ -8,7 +8,7 @@ type RanksSelectorProps = {
   disabled?: boolean;
   ranks?: Rank[];
   filter?: "all" | "color" | "black";
-  className?: string; // Allow custom className
+  className?: string;
   label?: string;
 };
 
@@ -19,10 +19,15 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
   ranks,
   filter = "all",
   className,
-  label, // <-- Destructure label
+  label,
 }) => {
-  const { ranks: contextRanks, loading, fetchRanks } = useRankContext();
+  // 1. Context hooks
+  const { ranks: contextRanks, loading, fetchRanks } = useRanks();
 
+  // 2. State hooks
+  // (No local state)
+
+  // 3. Effects
   useEffect(() => {
     if ((!ranks || ranks.length === 0) && contextRanks.length === 0) {
       fetchRanks();
@@ -32,17 +37,23 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log("contextRanks in selector:", contextRanks);
+    // (No-op, but included for structure)
   }, [contextRanks]);
 
+  // 4. Functions
   let displayRanks = ranks ?? contextRanks;
 
   if (filter === "black") {
-    displayRanks = displayRanks.filter(r => typeof r.danLevel === "number" && r.danLevel > 0);
+    displayRanks = displayRanks.filter(
+      (r) => typeof r.danLevel === "number" && r.danLevel > 0
+    );
   } else if (filter === "color") {
-    displayRanks = displayRanks.filter(r => !r.danLevel || r.danLevel === 0);
+    displayRanks = displayRanks.filter(
+      (r) => !r.danLevel || r.danLevel === 0
+    );
   }
 
+  // 5. Render
   return (
     <div>
       {label && (
@@ -80,4 +91,5 @@ const RanksSelector: React.FC<RanksSelectorProps> = ({
     </div>
   );
 };
+
 export default RanksSelector;
