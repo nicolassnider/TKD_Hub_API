@@ -1,79 +1,101 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { usePromotions } from "@/app/context/PromotionContext";
-import { Promotion } from "@/app/types/Promotion";
-import LabeledInput from "../common/inputs/LabeledInput";
-import StudentSelector from "../students/StudentSelector";
-import { useStudents } from "@/app/context/StudentContext";
-import RanksSelector from "../common/selectors/RanksSelector";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { usePromotions } from '@/app/context/PromotionContext';
+import { Promotion } from '@/app/types/Promotion';
+import { CreatePromotionDto } from '@/app/types/CreatePromotionDto';
+import LabeledInput from '../common/inputs/LabeledInput';
+import StudentSelector from '../students/StudentSelector';
+import { useStudents } from '@/app/context/StudentContext';
+import RanksSelector from '../common/selectors/RanksSelector';
+import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
+import FormActionButtons from '../common/actionButtons/FormActionButtons';
+import toast from 'react-hot-toast';
+import CoachSelector from '../coaches/CoachSelector';
+import { useCoaches } from '@/app/context/CoachContext';
+import { useRanks } from '@/app/context/RankContext';
 
 type EditPromotionProps = {
-	promotionId?: number; // If undefined, create mode
+	promotion?: Promotion; // If undefined, create mode
 	onClose: (refresh?: boolean) => void;
-	studentId?: number; // <-- Add this line
+	studentId?: number;
 };
 
-export default function EditPromotion({ promotionId, onClose }: EditPromotionProps) {
+export default function EditPromotion({
+	promotion,
+	onClose,
+}: EditPromotionProps) {
+	// 1. Context hooks
 	const {
-		getPromotionById,
 		createPromotion,
 		updatePromotion,
 		fetchPromotions,
-		loading,
-		error,
+		loading: loadingPromotions,
+		error: promotionsError,
 	} = usePromotions();
+	const { students, loading: loadingStudents } = useStudents();
+	const { coaches, fetchCoaches, loading: loadingCoaches } = useCoaches();
+	const { ranks } = useRanks();
 
-	const [promotion, setPromotion] = useState<Partial<Promotion>>({
-		studentId: undefined,
-		rankId: undefined,
-		promotionDate: "",
-		notes: "",
-	});
-	const [originalPromotion, setOriginalPromotion] = useState<Partial<Promotion> | null>(null);
+	// 2. State hooks
+	const [formState, setFormState] = useState<Partial<Promotion>>(
+		promotion
+			? { ...promotion }
+			: {
+					studentId: undefined,
+					rankId: undefined,
+					promotionDate: '',
+					notes: '',
+			  }
+	);
+	const [originalPromotion, setOriginalPromotion] =
+		useState<Partial<Promotion> | null>(
+			promotion ? { ...promotion } : null
+		);
 	const [saving, setSaving] = useState(false);
-	const [localError, setLocalError] = useState<string | null>(null);
-	const { students, loading: studentsLoading } = useStudents(); // Get students from context/provider
 
-
-	// Fetch promotion for edit mode, or set empty for create mode
+	// 3. Effects
 	useEffect(() => {
-		let ignore = false;
-		async function fetchPromotion() {
-			setLocalError(null);
-			if (!promotionId) {
-				setPromotion({
-					studentId: undefined,
-					rankId: undefined,
-					promotionDate: "",
-					notes: "",
-				});
-				setOriginalPromotion({
-					studentId: undefined,
-					rankId: undefined,
-					promotionDate: "",
-					notes: "",
-				});
-				return;
-			}
-			try {
-				const data = await getPromotionById(promotionId);
-				if (!ignore && data) {
-					setPromotion(data);
-					setOriginalPromotion(data);
-				}
-			} catch {
-				if (!ignore) setLocalError("Failed to fetch promotion");
-			}
-		}
-		fetchPromotion();
-		return () => {
-			ignore = true;
-		};
-	}, [promotionId, getPromotionById]);
+		fetchCoaches();
+	}, [fetchCoaches]);
 
-	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+	useEffect(() => {
+		if (promotion) {
+			setFormState({ ...promotion });
+			setOriginalPromotion({ ...promotion });
+		} else {
+			setFormState({
+				studentId: undefined,
+				rankId: undefined,
+				promotionDate: '',
+				notes: '',
+			});
+			setOriginalPromotion(null);
+		}
+	}, [promotion]);
+
+	// 4. Functions
+	function getNextRankIdForStudent(
+		studentId: number | undefined
+	): number | undefined {
+		if (!studentId || !ranks?.length) return undefined;
+		const student = students.find((s) => s.id === studentId);
+		const currentRankId = student?.currentRankId;
+		if (!currentRankId) return ranks[0]?.id;
+		const currentIndex = ranks.findIndex(
+			(r: { id: number }) => r.id === currentRankId
+		);
+		if (currentIndex === -1 || currentIndex === ranks.length - 1)
+			return currentRankId;
+		return ranks[currentIndex + 1]?.id;
+	}
+
+	function handleChange(
+		e: React.ChangeEvent<
+			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+		>
+	) {
 		const { name, value } = e.target;
-		setPromotion(prev => ({
+		setFormState((prev) => ({
 			...prev,
 			[name]: value,
 		}));
@@ -82,110 +104,149 @@ export default function EditPromotion({ promotionId, onClose }: EditPromotionPro
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setSaving(true);
-		setLocalError(null);
 
 		try {
-			if (promotionId) {
-				await updatePromotion(promotionId, promotion);
+			if (promotion && promotion.id) {
+				await updatePromotion(promotion.id, formState);
 			} else {
-				const { ...createData } = promotion as Promotion; // Removed unused variables
+				const createData: CreatePromotionDto = {
+					studentId: Number(formState.studentId),
+					rankId: Number(formState.rankId),
+					promotionDate: formState.promotionDate ?? '',
+					coachId: Number(formState.coachId),
+					notes: formState.notes,
+					dojaangId: Number(formState.dojaangId),
+				};
 				await createPromotion(createData);
 			}
-			fetchPromotions();
+			await fetchPromotions();
+			setSaving(false);
 			onClose(true);
 		} catch {
-			setLocalError("Failed to save promotion");
-		} finally {
+			toast.error('Failed to save promotion');
 			setSaving(false);
 		}
 	}
+
+	// 5. Render
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-			<div className="bg-white rounded-lg shadow-lg w-full max-w-lg mx-auto relative max-h-[90vh] flex flex-col">
-				<button
-					type="button"
-					className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
-					aria-label="Close"
+		<div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+			<div className="bg-white rounded shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col">
+				<ModalCloseButton
 					onClick={() => onClose(false)}
-					disabled={saving}
-				>
-					&times;
-				</button>
-				<div className="px-4 pt-8 pb-2 flex-1 overflow-y-auto">
-					<h2 className="text-xl font-semibold mb-6 text-center">
-						{promotionId ? "Edit Promotion" : "Create Promotion"}
-					</h2>
-					{(loading || saving || studentsLoading) && <div className="text-center text-gray-600">Loading...</div>}
-					{(error || localError) && <div className="text-red-600 text-center">{error || localError}</div>}
-					{!loading && !saving && !studentsLoading && (
-						<form onSubmit={handleSubmit} className="flex flex-col gap-4">
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<StudentSelector
-									students={students}
-									value={promotion.studentId ?? null}
-									onChange={id =>
-										setPromotion(prev => ({
-											...prev,
-											studentId: id ?? undefined,
-										}))
-									}
-									disabled={saving}
-									label="Student"
-								/>
-								<RanksSelector
-									value={promotion.rankId ?? 0}
-									onChange={e =>
-										setPromotion(prev => ({
-											...prev,
-											rankId: e.target.value ? Number(e.target.value) : undefined,
-										}))
-									}
-									disabled={saving}
-								/>
-								<LabeledInput
-									label="Promotion Date"
-									name="promotionDate"
-									type="date"
-									value={promotion.promotionDate ?? ""}
+					disabled={saving || loadingPromotions}
+				/>
+
+				{promotionsError && (
+					<div className="text-red-600 text-center mb-2">
+						{promotionsError}
+					</div>
+				)}
+
+				{loadingPromotions || loadingStudents || loadingCoaches ? (
+					<div className="flex-1 flex items-center justify-center text-lg text-blue-600">
+						Loading...
+					</div>
+				) : (
+					<form
+						className="flex-1 overflow-y-auto pr-2 space-y-3"
+						onSubmit={handleSubmit}
+					>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+							<StudentSelector
+								students={students}
+								value={formState.studentId ?? null}
+								onChange={(id) => {
+									const nextRankId = getNextRankIdForStudent(
+										id ?? undefined
+									);
+									setFormState((prev) => ({
+										...prev,
+										studentId: id ?? undefined,
+										rankId: nextRankId,
+									}));
+								}}
+								disabled={saving}
+								label="Student"
+							/>
+							<RanksSelector
+								label="Rank"
+								value={formState.rankId ?? 0}
+								onChange={(e) =>
+									setFormState((prev) => ({
+										...prev,
+										rankId: e.target.value
+											? Number(e.target.value)
+											: undefined,
+									}))
+								}
+								disabled={saving}
+							/>
+							<CoachSelector
+								coaches={coaches}
+								value={
+									formState.coachId !== undefined &&
+									formState.coachId !== null
+										? String(formState.coachId)
+										: ''
+								}
+								onChange={(e) =>
+									setFormState((prev) => ({
+										...prev,
+										coachId: e.target.value
+											? Number(e.target.value)
+											: undefined,
+									}))
+								}
+								disabled={saving}
+								label="Coach"
+							/>
+							<LabeledInput
+								label="Promotion Date"
+								name="promotionDate"
+								type="date"
+								value={formState.promotionDate ?? ''}
+								onChange={handleChange}
+								required
+								disabled={saving}
+							/>
+							<div className="col-span-2">
+								<label
+									htmlFor="notes"
+									className="block mb-1 font-medium"
+								>
+									Notes
+								</label>
+								<textarea
+									id="notes"
+									name="notes"
+									value={formState.notes ?? ''}
 									onChange={handleChange}
-									required
+									placeholder="Notes"
 									disabled={saving}
+									className="w-full border rounded px-3 py-2"
 								/>
-								<div className="col-span-2">
-									<label htmlFor="notes" className="block mb-1 font-medium">
-										Notes
-									</label>
-									<textarea
-										id="notes"
-										name="notes"
-										value={promotion.notes ?? ""}
-										onChange={handleChange}
-										placeholder="Notes"
-										disabled={saving}
-										className="w-full border rounded px-3 py-2"
-									/>
-								</div>
 							</div>
-							<div className="flex gap-2 justify-end mt-4">
-								<button
-									type="button"
-									onClick={() => onClose(false)}
-									className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-									disabled={saving}
-								>
-									Cancel
-								</button>
-								<button
-									type="submit"
-									className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-									disabled={saving || JSON.stringify(promotion) === JSON.stringify(originalPromotion)}
-								>
-									{promotionId ? (saving ? "Saving..." : "Save") : (saving ? "Creating..." : "Create")}
-								</button>
-							</div>
-						</form>
-					)}
-				</div>
+						</div>
+						<FormActionButtons
+							onCancel={() => onClose(false)}
+							onSubmitLabel={
+								promotion
+									? saving
+										? 'Saving...'
+										: 'Save'
+									: saving
+									? 'Creating...'
+									: 'Create'
+							}
+							loading={saving}
+							disabled={
+								JSON.stringify(formState) ===
+								JSON.stringify(originalPromotion)
+							}
+						/>
+					</form>
+				)}
 			</div>
 		</div>
 	);

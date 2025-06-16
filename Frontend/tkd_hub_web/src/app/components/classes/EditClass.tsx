@@ -30,12 +30,16 @@ const defaultForm: Omit<TrainingClass, "id"> = {
 };
 
 const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialData }) => {
+    // 1. Context hooks
+    const { getCoachesByDojaang } = useCoaches();
+
+    // 2. State hooks
     const [form, setForm] = useState<Omit<TrainingClass, "id">>(defaultForm);
     const [saving, setSaving] = useState(false);
     const [availableCoaches, setAvailableCoaches] = useState<Coach[]>([]);
-    const { getCoachesByDojaang } = useCoaches();
     const coachesCache = useRef<{ [key: number]: Coach[] }>({});
 
+    // 3. Effects
     useEffect(() => {
         if (form.dojaangId) {
             // Check cache first
@@ -61,6 +65,7 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
         }
     }, [initialData, open]);
 
+    // 4. Functions
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -73,11 +78,9 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
         }));
     };
 
-    // Schedules handlers
     const handleScheduleChange = (idx: number, field: keyof ClassSchedule, value: string | number) => {
         if (field === "day") {
             const dayValue = Number(value);
-            // Validate day input
             if (dayValue < 0 || dayValue > 6) {
                 alert("Please enter a valid day (0 for Sunday to 6 for Saturday).");
                 return;
@@ -90,6 +93,7 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
             ),
         }));
     };
+
     const handleAddSchedule = () => {
         setForm((prev) => ({
             ...prev,
@@ -115,14 +119,12 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
         e.preventDefault();
         setSaving(true);
         try {
-            // Prepare the data for submission
             const schedules = form.schedules.map(s =>
                 s.id !== undefined
                     ? { id: s.id, day: s.day, startTime: s.startTime, endTime: s.endTime }
                     : { day: s.day, startTime: s.startTime, endTime: s.endTime }
             );
 
-            // For update, include id; for create, do not
             const submitData: Omit<TrainingClass, "id"> | TrainingClass = initialData
                 ? {
                     id: initialData.id,
@@ -152,6 +154,7 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
         }
     };
 
+    // 5. Render
     if (!open) return null;
 
     return (
@@ -178,7 +181,7 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                         value={form.coachId ? String(form.coachId) : ""}
                         onChange={handleCoachChange}
                         disabled={saving}
-                        coaches={availableCoaches} // <-- pass filtered coaches here
+                        coaches={availableCoaches}
                     />
 
                     {/* Schedules Section */}
@@ -220,7 +223,6 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                                                 ))}
                                             </select>
                                         </div>
-                                        {/* Start/End/Remove in a row on small screens */}
                                         <div className="flex flex-row gap-2 w-full md:flex-col md:w-2/4 items-end">
                                             <div className="flex flex-col min-w-[80px] w-1/2 md:w-full">
                                                 <LabeledInput

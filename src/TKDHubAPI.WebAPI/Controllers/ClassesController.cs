@@ -151,4 +151,17 @@ public class ClassesController : BaseApiController
         var dtos = _mapper.Map<List<TrainingClassDto>>(filtered);
         return SuccessResponse(dtos);
     }
+
+    /// <summary>
+    /// Retrieves all training classes given by a specific coach.
+    /// </summary>
+    /// <param name="coachId">The unique identifier of the coach.</param>
+    /// <returns>A list of <see cref="TrainingClassDto"/> objects representing the classes given by the coach.</returns>
+    [HttpGet("coach/{coachId}")]
+    public async Task<IActionResult> GetByCoachId(int coachId)
+    {
+        var classes = await _trainingClassService.GetByCoachIdAsync(coachId);
+        var dtos = _mapper.Map<List<TrainingClassDto>>(classes);
+        return SuccessResponse(dtos);
+    }
 }
