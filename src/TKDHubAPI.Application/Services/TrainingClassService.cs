@@ -115,4 +115,9 @@ public class TrainingClassService : ITrainingClassService
 
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId)
+    {
+        return await _trainingClassRepository.GetByCoachIdAsync(coachId);
+    }
 }

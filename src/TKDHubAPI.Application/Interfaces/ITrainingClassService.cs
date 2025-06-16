@@ -64,4 +64,12 @@ public interface ITrainingClassService
     /// <exception cref="KeyNotFoundException">Thrown if the training class or student does not exist.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the student is already enrolled in the class.</exception>
     Task AddStudentToClassAsync(int trainingClassId, int studentId);
+
+    /// <summary>
+    /// Retrieves all <see cref="TrainingClass"/> entities given by a specific coach.
+    /// </summary>
+    /// <param name="coachId">The unique identifier of the coach.</param>
+    /// <returns>An enumerable collection of <see cref="TrainingClass"/> given by the coach.</returns>
+    Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId);
+
 }
