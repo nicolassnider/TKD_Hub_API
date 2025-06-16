@@ -1,13 +1,10 @@
-"use client";
+import { useState, useEffect } from "react";
 import { useClasses } from "@/app/context/ClassContext";
 import { useStudents } from "@/app/context/StudentContext";
-import { useState, useEffect } from "react";
-
 import StudentSelector from "../students/StudentSelector";
-import { Student } from "@/app/types/Student";
 import ClassDetails from "./ClassDetails";
 import StudentsInClass from "./StudentsInClass";
-
+import { Student } from "@/app/types/Student";
 
 type Props = {
   classId: number;
@@ -17,20 +14,23 @@ type Props = {
 };
 
 const AddStudentToClass: React.FC<Props> = ({ classId, open, onClose, defaultStudentId }) => {
-  const { addStudentToClass, classes } = useClasses();
+  // 1. Context hooks
+  const { addStudentToClass, classes, getStudentsByClass } = useClasses();
   const { getStudentsByDojaang } = useStudents();
 
+  // 2. State hooks
   const [studentId, setStudentId] = useState<number | "">(defaultStudentId ?? "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [dojaangId, setDojaangId] = useState<number | null>(null);
+  const [studentsInClassKey, setStudentsInClassKey] = useState(0);
 
+  // 3. Effects
   // Find dojaangId for the class when modal opens or classes/classId change
   useEffect(() => {
     if (open && classId && classes.length > 0) {
       const foundClass = classes.find(c => c.id === classId);
-      console.log("classId:", classId, "classes:", classes, "foundClass:", foundClass);
       setDojaangId(foundClass?.dojaangId ?? null);
     } else if (!open) {
       setDojaangId(null);
@@ -40,22 +40,35 @@ const AddStudentToClass: React.FC<Props> = ({ classId, open, onClose, defaultStu
     }
   }, [open, classId, classes, defaultStudentId]);
 
-  // Fetch students for the dojaang when dojaangId changes and modal is open
+  // Fetch students for the dojaang and filter out those already in class
   useEffect(() => {
-    if (open && dojaangId) {
-      setLoading(true);
-      getStudentsByDojaang(dojaangId)
-        .then(students => {
-          setStudents(students);
-        })
-        .finally(() => setLoading(false));
-    } else if (!open) {
-      setStudents([]);
-    }
-    // Only depend on open and dojaangId, NOT getStudentsByDojaang
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, dojaangId]);
+    const fetchAndFilterStudents = async () => {
+      if (open && dojaangId) {
+        setLoading(true);
+        try {
+          // Fetch all students in the dojaang
+          const allStudents = await getStudentsByDojaang(dojaangId);
+          // Fetch students already in the class using context/API
+          const studentsInClassList = await getStudentsByClass(classId);
 
+          // Filter out students already in the class
+          const filtered = allStudents.filter(
+            s => !studentsInClassList.some((inClass: Student) => inClass.id === s.id)
+          );
+          setStudents(filtered);
+        } finally {
+          setLoading(false);
+        }
+      } else if (!open) {
+        setStudents([]);
+      }
+    };
+    fetchAndFilterStudents();
+    // Only depend on open, dojaangId, classId, NOT getStudentsByDojaang/getStudentsByClass
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, dojaangId, classId, classes]);
+
+  // 4. Functions
   const handleAdd = async () => {
     if (!studentId || !classId) return;
     setLoading(true);
@@ -63,7 +76,9 @@ const AddStudentToClass: React.FC<Props> = ({ classId, open, onClose, defaultStu
     try {
       await addStudentToClass(Number(studentId), Number(classId));
       setMessage("Student added!");
+      setStudents(prev => prev.filter(s => s.id !== Number(studentId)));
       setStudentId(defaultStudentId ?? "");
+      setStudentsInClassKey(prev => prev + 1); // update key to force StudentsInClass refresh
     } catch (e) {
       setMessage((e as Error).message || "Failed to add student.");
     } finally {
@@ -71,10 +86,10 @@ const AddStudentToClass: React.FC<Props> = ({ classId, open, onClose, defaultStu
     }
   };
 
+  // 5. Render
   if (!open) return null;
 
   const classDetails = classes.find(c => c.id === classId);
-
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -112,7 +127,7 @@ const AddStudentToClass: React.FC<Props> = ({ classId, open, onClose, defaultStu
         </div>
         {/* Show students already in the class */}
         <div className="mb-4">
-          <StudentsInClass classId={classId} />
+          <StudentsInClass classId={classId} key={studentsInClassKey} />
         </div>
         <div className="flex justify-end">
           <button
