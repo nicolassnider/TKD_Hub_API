@@ -151,4 +151,19 @@ public class PromotionsController : BaseApiController
         await _promotionService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets all promotions for a specific student by their ID.
+    /// </summary>
+    /// <param name="studentId">The ID of the student.</param>
+    /// <returns>A list of promotions as <see cref="PromotionDto"/> objects.</returns>
+    [HttpGet("student/{studentId}")]
+    [ProducesResponseType(typeof(IEnumerable<PromotionDto>), 200)]
+    public async Task<IActionResult> GetPromotionsByStudentId(int studentId)
+    {
+        var promotions = await _promotionService.GetPromotionsByStudentIdAsync(studentId);
+        var result = promotions.Select(_mapper.Map<PromotionDto>);
+        return SuccessResponse(result);
+    }
+
 }
