@@ -33,18 +33,37 @@ body {
 
 .todays-classes-floating {
 	position: fixed;
-	bottom: 1.5rem; /* 6 */
-	right: 1.5rem; /* 6 */
+	bottom: 1.5rem;
+	/* 6 */
+	right: 1.5rem;
+	/* 6 */
 	background: #fff;
 	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1.5px 4px rgba(0, 0, 0, 0.08);
 	border-radius: 0.5rem;
 	padding: 1rem;
 	border: 1px solid #e5e7eb;
-	width: 18rem; /* 72 */
+	width: 18rem;
+	/* 72 */
 	min-width: 220px;
 	z-index: 50;
 }
 
 .promotions-clear-student-btn {
 	min-width: 120px;
+}
+
+.custom-blog-content h2 {
+	color: #2563eb;
+	/* Example: Tailwind blue-600 */
+	margin-top: 1.5rem;
+}
+
+.custom-blog-content ul {
+	list-style-type: disc;
+	margin-left: 2rem;
+}
+
+.custom-blog-content p {
+	font-size: 1.1rem;
+	line-height: 1.7;
 }

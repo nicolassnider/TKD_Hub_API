@@ -19,6 +19,7 @@ import { StudentProvider } from "./StudentContext";
 import { PromotionProvider } from "./PromotionContext";
 import { RankProvider } from "./RankContext";
 import { TulProvider } from "./TulContext";
+import { BlogPostProvider } from "./BlogPostContext";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -33,7 +34,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
                     <PromotionProvider>
                       <RankProvider>
                         <TulProvider>
-                          {children}
+                          <BlogPostProvider>
+                            {children}
+                          </BlogPostProvider>
                         </TulProvider>
                       </RankProvider>
                     </PromotionProvider>

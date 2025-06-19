@@ -3,21 +3,19 @@ import { useAuth } from "../context/AuthContext";
 
 type GetTokenFn = () => string | null;
 
-/**
- * React hook to get an apiRequest function that uses the current ApiConfigProvider baseUrl.
- */
 export function useApiRequest() {
   const { baseUrl } = useApiConfig();
-  const { getToken } = useAuth(); // Get the token function
+  const { getToken } = useAuth();
 
   const apiRequest = async <T>(
     url: string,
     options: RequestInit = {},
     customGetToken?: GetTokenFn
   ): Promise<T> => {
-    // Always get the token, prefer customGetToken if provided
     const token = customGetToken ? customGetToken() : getToken ? getToken() : null;
-    const fullUrl = url.startsWith("http") ? url : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
+    const fullUrl = url.startsWith("http")
+      ? url
+      : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;    
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
