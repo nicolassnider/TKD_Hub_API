@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TKDHubAPI.Application.Interfaces;
+using TKDHubAPI.Infrastructure.External;
 using TKDHubAPI.Infrastructure.Repositories;
+using TKDHubAPI.Infrastructure.Settings;
 
 namespace TKDHubAPI.Infrastructure;
 public static class DependencyInjection
@@ -10,6 +13,8 @@ public static class DependencyInjection
         // 1. Register the DbContext
         services.AddDbContext<TkdHubDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+        services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
 
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -24,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<EventAttendance>, GenericRepository<EventAttendance>>();
         services.AddScoped<IGenericRepository<UserRole>, GenericRepository<UserRole>>();
         services.AddScoped<IGenericRepository<Promotion>, GenericRepository<Promotion>>();
+
+        services.AddScoped<IMercadoPagoService, MercadoPagoService>();
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();
