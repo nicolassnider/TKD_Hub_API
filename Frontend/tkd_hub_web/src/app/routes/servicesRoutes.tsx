@@ -36,6 +36,12 @@ const servicesRoutes: ServiceRoute[] = [
     icon: "bi bi-calendar-week",
     label: "Classes",
     roles: ["Coach", "Admin"],
+  },
+  {
+    href: "/services/dashboardAdmin",
+    icon: "bi bi-speedometer2",
+    label: "Dashboards",
+    roles: ["Coach", "Admin"],
   }
 ];
 
