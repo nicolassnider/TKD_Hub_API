@@ -14,6 +14,7 @@ import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import LabeledInput from '../common/inputs/LabeledInput';
 import ManagedDojaangs from './ManagedDojaangs';
 import { UpsertCoachDto } from '@/app/types/UpsertCoachDto';
+import { CoachApiResponse } from '@/app/types/CoachApiResponse';
 
 type EditCoachProps = {
 	coachId: number;
@@ -28,12 +29,7 @@ type ApiDojaang = {
 
 type ApiDojaangResponse = ApiDojaang[] | { data: ApiDojaang[] };
 
-export type CoachApiResponse = {
-	data: {
-		coach: Coach;
-		managedDojaangs: ManagedDojaang[];
-	};
-};
+
 
 const EditCoach: React.FC<EditCoachProps> = ({
 	coachId,
