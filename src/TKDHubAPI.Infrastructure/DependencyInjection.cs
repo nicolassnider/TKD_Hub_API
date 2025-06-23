@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// Make sure this is TKDHubAPI.Application.Settings for your ServiceBusSettings
+// using TKDHubAPI.Infrastructure.Settings; // This was in your original, ensure paths are correct for your structure
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Application.Settings;
@@ -7,6 +9,7 @@ using TKDHubAPI.Infrastructure.Repositories;
 using TKDHubAPI.Infrastructure.Settings;
 
 namespace TKDHubAPI.Infrastructure;
+
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
@@ -17,19 +20,22 @@ public static class DependencyInjection
 
         services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
 
-        services.Configure<ServiceBusSettings>(configuration.GetSection("AzureServiceBus"));
-
-        // Ensure Service Bus queue exists (run at startup)
-        var sbSettings = configuration.GetSection("AzureServiceBus").Get<ServiceBusSettings>();
-        if (sbSettings is not null)
+        // Bind and register ServiceBusSettings as a singleton
+        var serviceBusSettings = configuration.GetSection("AzureServiceBus").Get<ServiceBusSettings>();
+        if (serviceBusSettings == null)
         {
-            var queueManager = new ServiceBusQueueManager(
-                sbSettings.SubscriptionId,
-                sbSettings.ResourceGroup,
-                sbSettings.Namespace
-            );
-            queueManager.EnsureQueueExistsAsync(sbSettings.PaymentQueue).GetAwaiter().GetResult();
+            throw new InvalidOperationException("AzureServiceBus section not found or could not be bound to ServiceBusSettings.");
         }
+        services.AddSingleton(serviceBusSettings); // Register the instance
+
+        // Register ServiceBusQueueManager for DI
+        // It now correctly receives ServiceBusSettings through its constructor
+        services.AddScoped<ServiceBusQueueManager>();
+
+        // Register ServiceBusInitializer as an IHostedService
+        // This will ensure EnsureQueueExistsAsync is called asynchronously during startup
+        services.AddHostedService<ServiceBusInitializer>();
+
 
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -44,9 +50,14 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<EventAttendance>, GenericRepository<EventAttendance>>();
         services.AddScoped<IGenericRepository<UserRole>, GenericRepository<UserRole>>();
         services.AddScoped<IGenericRepository<Promotion>, GenericRepository<Promotion>>();
+        services.AddScoped<IGenericRepository<TrainingClass>, GenericRepository<TrainingClass>>(); // Added TrainingClass
+        services.AddScoped<IGenericRepository<ClassSchedule>, GenericRepository<ClassSchedule>>(); // Added ClassSchedule
+        services.AddScoped<IGenericRepository<StudentClass>, GenericRepository<StudentClass>>(); // Added StudentClass
+        services.AddScoped<IGenericRepository<BlogPost>, GenericRepository<BlogPost>>(); // Added BlogPost
+
 
         services.AddScoped<IMercadoPagoService, MercadoPagoService>();
-        services.AddSingleton<IServiceBusService, ServiceBusService>();
+        services.AddSingleton<IServiceBusService, ServiceBusService>(); // Assuming IServiceBusService is for data plane operations
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -63,20 +74,6 @@ public static class DependencyInjection
         services.AddScoped<IClassScheduleRepository, ClassScheduleRepository>();
         services.AddScoped<IStudentClassRepository, StudentClassRepository>();
         services.AddScoped<IBlogPostRepository, BlogPostRepository>();
-
-        // 4. Add Logging (Optional, but highly recommended) - Already handled by default, but configure if needed
-        //   If you are using the default ASP.NET Core logging, you don't need to do anything here.
-        //   If you're using a custom logging provider (like Serilog), configure it here.
-        //   For example, with Serilog:
-        // services.AddSingleton<ILoggerFactory>(provider =>
-        // {
-        //     var configuration = provider.GetRequiredService<IConfiguration>();
-        //     Log.Logger = new LoggerConfiguration()
-        //         .ReadFrom.Configuration(configuration)
-        //         .CreateLogger();
-        //     return new SerilogLoggerFactory(Log.Logger);
-        // });
-        // services.AddLogging(); // Make sure the Logging service is registered.
 
         return services;
     }
