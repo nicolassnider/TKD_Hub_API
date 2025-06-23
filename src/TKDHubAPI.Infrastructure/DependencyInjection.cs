@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TKDHubAPI.Application.Interfaces;
+using TKDHubAPI.Application.Settings;
 using TKDHubAPI.Infrastructure.External;
 using TKDHubAPI.Infrastructure.Repositories;
 using TKDHubAPI.Infrastructure.Settings;
@@ -15,6 +16,20 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
+
+        services.Configure<ServiceBusSettings>(configuration.GetSection("AzureServiceBus"));
+
+        // Ensure Service Bus queue exists (run at startup)
+        var sbSettings = configuration.GetSection("AzureServiceBus").Get<ServiceBusSettings>();
+        if (sbSettings is not null)
+        {
+            var queueManager = new ServiceBusQueueManager(
+                sbSettings.SubscriptionId,
+                sbSettings.ResourceGroup,
+                sbSettings.Namespace
+            );
+            queueManager.EnsureQueueExistsAsync(sbSettings.PaymentQueue).GetAwaiter().GetResult();
+        }
 
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -31,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<Promotion>, GenericRepository<Promotion>>();
 
         services.AddScoped<IMercadoPagoService, MercadoPagoService>();
+        services.AddSingleton<IServiceBusService, ServiceBusService>();
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();
