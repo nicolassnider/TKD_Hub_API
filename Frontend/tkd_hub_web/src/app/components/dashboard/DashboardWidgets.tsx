@@ -9,7 +9,7 @@ type DashboardWidgetsProps = {
 const DashboardWidgets = ({ data }: DashboardWidgetsProps) => {
   // Prepare chart data for widgets that are numeric
   const chartData = Object.entries(data)
-    .filter(([_, value]) => typeof value === "number")
+    .filter(([, value]) => typeof value === "number")
     .map(([key, value]) => ({
       name: key,
       value: value as number,

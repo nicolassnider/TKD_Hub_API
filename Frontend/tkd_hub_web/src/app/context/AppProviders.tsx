@@ -21,6 +21,7 @@ import { RankProvider } from "./RankContext";
 import { TulProvider } from "./TulContext";
 import { BlogPostProvider } from "./BlogPostContext";
 import { DashboardProvider } from "./DashboardContext";
+import { PaymentProvider } from "./PaymentContext";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -37,7 +38,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
                         <TulProvider>
                           <BlogPostProvider>
                             <DashboardProvider>
-                              {children}
+                              <PaymentProvider>
+                                {children}
+                              </PaymentProvider>
                             </DashboardProvider>
                           </BlogPostProvider>
                         </TulProvider>

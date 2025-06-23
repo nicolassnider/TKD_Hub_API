@@ -1,38 +1,72 @@
 'use client';
 
-// 1. External imports
-import { useEffect, useState } from 'react';
-
-// 2. App/context/component imports
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useClasses } from '../context/ClassContext';
 import ProfileInfo from '../components/profiles/ProfileInfo';
 import CoachClasses from '../components/profiles/CoachClasses';
-import TodaysClassesFloating from '../components/classes/TodaysClassesFloating';
 import type { TrainingClass } from '../types/TrainingClass';
+import { usePayment } from '../context/PaymentContext';
 
 export default function ProfilePage() {
 	// 1. Context hooks
 	const { user, loading: authLoading } = useAuth();
 	const { loading, getClassesByCoachId } = useClasses();
+	const { createPreference, loading: paymentLoading, error: paymentError } = usePayment();
 
 	// 2. State hooks
 	const [coachClasses, setCoachClasses] = useState<TrainingClass[]>([]);
+	const fetchedCoachId = useRef<string | null>(null);
 
-	// 3. Effects
-	useEffect(() => {
-		// Only fetch if user is a Coach and has an id
-		if (user?.roles?.includes('Coach') && user.id) {
-			getClassesByCoachId(user.id).then(setCoachClasses);
-		} else {
-			setCoachClasses([]);
-		}
-	}, [user?.id, user?.roles, getClassesByCoachId]);
+	// Payment iframe state
+	const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
-	// 4. Functions
-	// (No custom functions needed)
+	// 3. Effect to fetch coach classes only when user.id or roles change and only once per coach id
+	    useEffect(() => {
+        if (
+            user?.roles?.includes('Coach') &&
+            user.id &&
+            fetchedCoachId.current !== String(user.id)
+        ) {
+            fetchedCoachId.current = String(user.id);
+            getClassesByCoachId(user.id).then(setCoachClasses);
+        } else if (!user?.roles?.includes('Coach')) {
+            setCoachClasses([]);
+            fetchedCoachId.current = null;
+        }
+    }, [user?.id, user?.roles, getClassesByCoachId]);
 
-	// 5. Render
+
+	// 4. Payment DTO as expected by backend
+	const paymentRequest = {
+		amount: 100,
+		description: "Membership Fee",
+		payerEmail: "nicolas@gmail.com",
+	};
+
+	// 5. Functions
+	const handlePayment = async () => {
+        try {
+            const result = await createPreference(paymentRequest);
+            if (result && result.init_point) {
+                setPaymentUrl(result.init_point);
+            } else if (result && result.sandbox_init_point) {
+                setPaymentUrl(result.sandbox_init_point);
+            } else if (result && result.paymentUrl) {
+                setPaymentUrl(result.paymentUrl);
+            } else {
+                alert("Payment URL not received from server.");
+            }
+        } catch {
+            // Error is handled by context
+        }
+    };
+
+	const handleCloseIframe = () => {
+		setPaymentUrl(null);
+	};
+
+	// 6. Render
 	if (authLoading) {
 		return <div className="p-8 text-center">Loading...</div>;
 	}
@@ -54,8 +88,39 @@ export default function ProfilePage() {
 						coachClasses={coachClasses}
 					/>
 				)}
+				{/* Payment Button Example */}
+				<button
+					onClick={handlePayment}
+					disabled={paymentLoading}
+					className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+				>
+					{paymentLoading ? "Processing..." : "Pay Membership"}
+				</button>
+				{paymentError && (
+					<div className="text-red-500 mt-2">{paymentError}</div>
+				)}
+
+				{/* Payment Iframe Modal */}
+				{paymentUrl && (
+					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+						<div className="bg-white rounded-lg shadow-lg p-4 relative w-full max-w-2xl">
+							<button
+								onClick={handleCloseIframe}
+								className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl"
+								aria-label="Close"
+							>
+								&times;
+							</button>
+							<iframe
+								src={paymentUrl}
+								title="MercadoPago Payment"
+								className="w-full h-[600px] border-0 rounded"
+								allow="payment"
+							/>
+						</div>
+					</div>
+				)}
 			</div>
-			<TodaysClassesFloating />
 		</div>
 	);
 }

@@ -1,5 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using MercadoPago.Client.Preference;
+using MercadoPago.Config;
+using MercadoPago.Resource.Preference;
+using Microsoft.Extensions.Options;
 using TKDHubAPI.Application.Interfaces;
+using TKDHubAPI.Infrastructure.Settings;
 
 namespace TKDHubAPI.Infrastructure.External;
 public class MercadoPagoService : IMercadoPagoService
@@ -8,11 +12,13 @@ public class MercadoPagoService : IMercadoPagoService
     public MercadoPagoService(IOptions<MercadoPagoSettings> options)
     {
         _settings = options.Value;
-        MercadoPagoConfig.AccessToken = _settings.AccessToken;
     }
 
     public async Task<string> CreatePreferenceAsync(decimal amount, string description, string payerEmail)
     {
+        // Set the access token before making any API call
+        MercadoPagoConfig.AccessToken = _settings.AccessToken;
+
         var request = new PreferenceRequest
         {
             Items = new List<PreferenceItemRequest>
