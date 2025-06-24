@@ -40,9 +40,10 @@ public static class DependencyInjection
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins(corsSettings.AllowedOrigins)
+                policy.WithOrigins(corsSettings.AllowedOrigins ?? Array.Empty<string>())
                       .AllowAnyHeader()
-                      .AllowAnyMethod();
+                      .AllowAnyMethod()
+                      .AllowCredentials();
             });
         });
 
@@ -87,7 +88,10 @@ public static class DependencyInjection
         // 8. Register WebAPI-specific Services or Middleware
         // Example: services.AddScoped<ExceptionHandlingMiddleware>();
 
-        // 9. Register Azure Service Bus Client
+        // 9. Add SignalR
+        services.AddSignalR();
+
+
 
         return services;
     }

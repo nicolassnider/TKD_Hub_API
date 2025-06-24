@@ -3,6 +3,7 @@ using TKDHubAPI.Application;
 using TKDHubAPI.Infrastructure;
 using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
+using TKDHubAPI.WebAPI.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
+
 // Configure the HTTP request pipeline.
 
 app.UseMiddleware<CustomErrorResponseMiddleware>();
@@ -45,6 +48,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<PaymentHub>("/paymentHub");
 app.MapControllers();
 
 app.Run();
