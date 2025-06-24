@@ -7,22 +7,25 @@ import ProfileInfo from '../components/profiles/ProfileInfo';
 import CoachClasses from '../components/profiles/CoachClasses';
 import type { TrainingClass } from '../types/TrainingClass';
 import { usePayment } from '../context/PaymentContext';
+import { initializeSignalR, onPaymentReceived, stopSignalR } from '../externalServices/signalrService';
+import toast from 'react-hot-toast';
+import PaymentIframeModal from '../components/payment/PaymentIframeModal';
 
 export default function ProfilePage() {
-	// 1. Context hooks
-	const { user, loading: authLoading } = useAuth();
-	const { loading, getClassesByCoachId } = useClasses();
-	const { createPreference, loading: paymentLoading, error: paymentError } = usePayment();
+    // 1. Context hooks
+    const { user, loading: authLoading } = useAuth();
+    const { loading, getClassesByCoachId } = useClasses();
+    const { createPreference, loading: paymentLoading, error: paymentError } = usePayment();
 
-	// 2. State hooks
-	const [coachClasses, setCoachClasses] = useState<TrainingClass[]>([]);
-	const fetchedCoachId = useRef<string | null>(null);
+    // 2. State hooks
+    const [coachClasses, setCoachClasses] = useState<TrainingClass[]>([]);
+    const fetchedCoachId = useRef<string | null>(null);
 
-	// Payment iframe state
-	const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+    // Payment iframe state
+    const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
-	// 3. Effect to fetch coach classes only when user.id or roles change and only once per coach id
-	    useEffect(() => {
+    // 3. Effect to fetch coach classes only when user.id or roles change and only once per coach id
+    useEffect(() => {
         if (
             user?.roles?.includes('Coach') &&
             user.id &&
@@ -36,17 +39,24 @@ export default function ProfilePage() {
         }
     }, [user?.id, user?.roles, getClassesByCoachId]);
 
+    // 5. Payment DTO as expected by backend
+    const paymentRequest = {
+        amount: 100,
+        description: "Membership Fee",
+        payerEmail: "nicolas@gmail.com",
+    };
 
-	// 4. Payment DTO as expected by backend
-	const paymentRequest = {
-		amount: 100,
-		description: "Membership Fee",
-		payerEmail: "nicolas@gmail.com",
-	};
-
-	// 5. Functions
-	const handlePayment = async () => {
+    // 6. Functions
+    const handlePayment = async () => {
         try {
+            // Initialize SignalR only when starting payment
+            await initializeSignalR();
+            onPaymentReceived((data) => {
+                setPaymentUrl(null);
+                toast.success("Payment received! ID: " + data);
+                stopSignalR();
+            });
+
             const result = await createPreference(paymentRequest);
             if (result && result.init_point) {
                 setPaymentUrl(result.init_point);
@@ -62,65 +72,50 @@ export default function ProfilePage() {
         }
     };
 
-	const handleCloseIframe = () => {
-		setPaymentUrl(null);
-	};
+    const handleCloseIframe = () => {
+        setPaymentUrl(null);
+        stopSignalR();
+    };
 
-	// 6. Render
-	if (authLoading) {
-		return <div className="p-8 text-center">Loading...</div>;
-	}
+    // 7. Render
+    if (authLoading) {
+        return <div className="p-8 text-center">Loading...</div>;
+    }
 
-	if (!user) {
-		return <div className="p-8 text-center">Not logged in.</div>;
-	}
+    if (!user) {
+        return <div className="p-8 text-center">Not logged in.</div>;
+    }
 
-	return (
-		<div className="flex justify-center items-center my-10">
-			<div className="w-full max-w-6xl bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-10 flex flex-col gap-10 mx-auto text-center">
-				<h2 className="text-3xl font-bold mb-4 self-center">
-					My Profile
-				</h2>
-				<ProfileInfo user={user} />
-				{user.roles?.includes('Coach') && (
-					<CoachClasses
-						loading={loading}
-						coachClasses={coachClasses}
-					/>
-				)}
-				{/* Payment Button Example */}
-				<button
-					onClick={handlePayment}
-					disabled={paymentLoading}
-					className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-				>
-					{paymentLoading ? "Processing..." : "Pay Membership"}
-				</button>
-				{paymentError && (
-					<div className="text-red-500 mt-2">{paymentError}</div>
-				)}
+    return (
+        <div className="flex justify-center items-center my-10">
+            <div className="w-full max-w-6xl bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-10 flex flex-col gap-10 mx-auto text-center">
+                <h2 className="text-3xl font-bold mb-4 self-center">
+                    My Profile
+                </h2>
+                <ProfileInfo user={user} />
+                {user.roles?.includes('Coach') && (
+                    <CoachClasses
+                        loading={loading}
+                        coachClasses={coachClasses}
+                    />
+                )}
+                {/* Payment Button Example */}
+                <button
+                    onClick={handlePayment}
+                    disabled={paymentLoading}
+                    className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                    {paymentLoading ? "Processing..." : "Pay Membership"}
+                </button>
+                {paymentError && (
+                    <div className="text-red-500 mt-2">{paymentError}</div>
+                )}
 
-				{/* Payment Iframe Modal */}
-				{paymentUrl && (
-					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-						<div className="bg-white rounded-lg shadow-lg p-4 relative w-full max-w-2xl">
-							<button
-								onClick={handleCloseIframe}
-								className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl"
-								aria-label="Close"
-							>
-								&times;
-							</button>
-							<iframe
-								src={paymentUrl}
-								title="MercadoPago Payment"
-								className="w-full h-[600px] border-0 rounded"
-								allow="payment"
-							/>
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+                {/* Payment Iframe Modal */}
+                {paymentUrl && (
+                    <PaymentIframeModal paymentUrl={paymentUrl} onClose={handleCloseIframe} />
+                )}
+            </div>
+        </div>
+    );
 }

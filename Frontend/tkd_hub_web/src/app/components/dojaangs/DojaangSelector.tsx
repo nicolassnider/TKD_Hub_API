@@ -32,7 +32,7 @@ const DojaangSelector: React.FC<DojaangSelectorProps> = ({
       fetchDojaangs();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDojaangs]);
+  }, []);
 
   return (
     <div className="mb-4">

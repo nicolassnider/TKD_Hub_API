@@ -15,7 +15,7 @@ export function useApiRequest() {
     const token = customGetToken ? customGetToken() : getToken ? getToken() : null;
     const fullUrl = url.startsWith("http")
       ? url
-      : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;    
+      : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export function useApiRequest() {
         return undefined;
       }
 
-      return response.json();
+      return await response.json();
     } catch (error) {
       console.error('API Error:', error);
       throw error;
