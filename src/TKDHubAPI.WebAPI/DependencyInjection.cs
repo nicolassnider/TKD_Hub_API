@@ -42,8 +42,8 @@ public static class DependencyInjection
             {
                 policy.WithOrigins(corsSettings.AllowedOrigins ?? Array.Empty<string>())
                       .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials();
+                      .AllowAnyMethod();
+                //.AllowCredentials();
             });
         });
 
@@ -89,8 +89,8 @@ public static class DependencyInjection
         // Example: services.AddScoped<ExceptionHandlingMiddleware>();
 
         // 9. Add SignalR
-        services.AddSignalR();
-
+        services.AddSignalR()
+        .AddAzureSignalR();
 
 
         return services;

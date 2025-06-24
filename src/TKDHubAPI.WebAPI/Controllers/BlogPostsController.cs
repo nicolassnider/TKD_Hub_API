@@ -6,8 +6,6 @@ namespace TKDHubAPI.WebAPI.Controllers
     /// API controller for managing blog posts.
     /// Provides endpoints for creating, retrieving, updating, and deleting blog posts.
     /// </summary>
-    [ApiController]
-    [Route("api/[controller]")]
     public class BlogPostsController : BaseApiController
     {
         private readonly IBlogPostService _blogPostService;

@@ -17,9 +17,7 @@ public class MercadoLibreWebhookController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> Receive([FromBody] MercadoLibreWebhookDto payload)
     {
-        Logger.LogInformation("Enviando señal PaymentReceived con ID: {PaymentId}", payload.Data.Id);
         await _hubContext.Clients.All.SendAsync("PaymentReceived", payload.Data.Id);
-        Logger.LogInformation("Señal PaymentReceived enviada.");
         return Ok();
     }
 }

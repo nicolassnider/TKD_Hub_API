@@ -28,8 +28,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-
 // Configure the HTTP request pipeline.
 
 app.UseMiddleware<CustomErrorResponseMiddleware>();
@@ -43,12 +41,19 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHub<PaymentHub>("/paymentHub");
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<PaymentHub>("/paymentHub");
+});
+
 app.MapControllers();
 
 app.Run();
