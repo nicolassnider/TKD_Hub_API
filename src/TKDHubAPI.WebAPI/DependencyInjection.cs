@@ -1,5 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -89,8 +88,6 @@ public static class DependencyInjection
         // Example: services.AddScoped<ExceptionHandlingMiddleware>();
 
         // 9. Register Azure Service Bus Client
-        var serviceBusConnectionString = configuration.GetSection("AzureServiceBus")["ConnectionString"];
-        services.AddSingleton(new ServiceBusClient(serviceBusConnectionString));
 
         return services;
     }

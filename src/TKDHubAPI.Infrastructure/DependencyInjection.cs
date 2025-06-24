@@ -3,7 +3,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Application.Settings;
 using TKDHubAPI.Infrastructure.External;
 using TKDHubAPI.Infrastructure.Repositories;
 using TKDHubAPI.Infrastructure.Settings;
@@ -19,23 +18,6 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
-
-        // Bind and register ServiceBusSettings as a singleton
-        var serviceBusSettings = configuration.GetSection("AzureServiceBus").Get<ServiceBusSettings>();
-        if (serviceBusSettings == null)
-        {
-            throw new InvalidOperationException("AzureServiceBus section not found or could not be bound to ServiceBusSettings.");
-        }
-        services.AddSingleton(serviceBusSettings); // Register the instance
-
-        // Register ServiceBusQueueManager for DI
-        // It now correctly receives ServiceBusSettings through its constructor
-        services.AddScoped<ServiceBusQueueManager>();
-
-        // Register ServiceBusInitializer as an IHostedService
-        // This will ensure EnsureQueueExistsAsync is called asynchronously during startup
-        services.AddHostedService<ServiceBusInitializer>();
-
 
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -57,7 +39,6 @@ public static class DependencyInjection
 
 
         services.AddScoped<IMercadoPagoService, MercadoPagoService>();
-        services.AddSingleton<IServiceBusService, ServiceBusService>(); // Assuming IServiceBusService is for data plane operations
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();

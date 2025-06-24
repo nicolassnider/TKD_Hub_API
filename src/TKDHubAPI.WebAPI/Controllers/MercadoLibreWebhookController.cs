@@ -1,21 +1,20 @@
-﻿using TKDHubAPI.WebAPI.Controllers;
+﻿using TKDHubAPI.Application.DTOs.Payment;
+using TKDHubAPI.WebAPI.Controllers;
 
 public class MercadoLibreWebhookController : BaseApiController
 {
-    private readonly IServiceBusService _serviceBusService;
+
 
     public MercadoLibreWebhookController(
-        IServiceBusService serviceBusService,
         ILogger<MercadoLibreWebhookController> logger)
         : base(logger)
     {
-        _serviceBusService = serviceBusService;
+
     }
 
     [HttpPost]
-    public async Task<IActionResult> Receive([FromBody] object payload)
+    public async Task<IActionResult> Receive([FromBody] MercadoLibreWebhookDto payload)
     {
-        await _serviceBusService.SendPaymentMessageAsync(payload.ToString());
         return Ok();
     }
 }
