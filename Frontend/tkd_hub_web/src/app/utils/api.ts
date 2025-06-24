@@ -3,16 +3,28 @@ import { useAuth } from "../context/AuthContext";
 
 type GetTokenFn = () => string | null;
 
+type ApiRequestOptions = RequestInit & {
+  allowAnonymous?: boolean;
+};
+
 export function useApiRequest() {
   const { baseUrl } = useApiConfig();
   const { getToken } = useAuth();
 
   const apiRequest = async <T>(
     url: string,
-    options: RequestInit = {},
+    options: ApiRequestOptions = {},
     customGetToken?: GetTokenFn
   ): Promise<T> => {
-    const token = customGetToken ? customGetToken() : getToken ? getToken() : null;
+    const token =
+      options.allowAnonymous
+        ? null
+        : customGetToken
+          ? customGetToken()
+          : getToken
+            ? getToken()
+            : null;
+
     const fullUrl = url.startsWith("http")
       ? url
       : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
@@ -57,3 +69,4 @@ export function useApiRequest() {
 
   return { apiRequest };
 }
+

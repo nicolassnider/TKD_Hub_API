@@ -27,7 +27,7 @@ export default function BlogPostList({ posts }: BlogPostListProps) {
               __html:
                 post.content.length > 300
                   ? decodeHtml(post.content).slice(0, 300) + "..."
-                  : post.content,
+                  : decodeHtml(post.content),
             }}
           />
           <Link

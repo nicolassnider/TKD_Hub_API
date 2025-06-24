@@ -68,27 +68,12 @@ export const BlogPostProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(true);
         setError(null);
         try {
-            const token = getToken();
-            if (!token) {
-                setError('Authentication token not found. Please log in.');
-                setLoading(false);
-                return;
-            }
-
-            // Optional: Check postsListCache first if you want fetchPosts to also be memoized
-            // if (postsListCache.current) {
-            //     setPosts(postsListCache.current);
-            //     setLoading(false);
-            //     return; // Return early if cached
-            // }
-
+            // Remove token check for anonymous access
             const response = await apiRequest<{ data: BlogPost[] }>(
                 "/BlogPosts",
                 {
                     method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    allowAnonymous: true
                 }
             );
             const fetchedPosts = Array.isArray(response.data) ? response.data : [];
@@ -97,7 +82,7 @@ export const BlogPostProvider: React.FC<{ children: ReactNode }> = ({
 
             // Populate individual post cache only if ID exists
             fetchedPosts.forEach(p => {
-                if (p.id !== undefined && p.id !== null) { // <--- FIX IS HERE
+                if (p.id !== undefined && p.id !== null) {
                     postByIdCache.current.set(p.id, p);
                 }
             });
@@ -111,7 +96,7 @@ export const BlogPostProvider: React.FC<{ children: ReactNode }> = ({
         } finally {
             setLoading(false);
         }
-    }, [apiRequest, getToken]);
+    }, [apiRequest]);
 
     // Initial fetch of all posts on component mount
     useEffect(() => {
@@ -130,25 +115,20 @@ export const BlogPostProvider: React.FC<{ children: ReactNode }> = ({
             if (postByIdCache.current.has(id)) {
                 console.log(`Returning blog post ${id} from cache.`);
                 const cachedPost = postByIdCache.current.get(id)!;
-                setPost(cachedPost); // Update the `post` state with cached data
+                setPost(cachedPost);
                 return cachedPost;
             }
 
             setLoading(true);
             setError(null);
             try {
-                const token = getToken(); // Use getToken() for consistency
-                if (!token) {
-                    throw new Error('Authentication token not found.');
-                }
+                // Remove token check for anonymous access
                 const response = await apiRequest<{ data: BlogPost }>(`/BlogPosts/${id}`, {
                     method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    allowAnonymous: true,
                 });
-                postByIdCache.current.set(id, response.data); // Cache the fetched post
-                setPost(response.data); // Update the `post` state with fetched data
+                postByIdCache.current.set(id, response.data);
+                setPost(response.data);
                 return response.data;
             } catch (e: unknown) {
                 const message = (e instanceof Error) ? e.message : 'Failed to fetch blog post by ID.';
@@ -161,7 +141,7 @@ export const BlogPostProvider: React.FC<{ children: ReactNode }> = ({
                 setLoading(false);
             }
         },
-        [apiRequest, getToken] // Add getToken to dependencies
+        [apiRequest]
     );
 
     // --- POST /BlogPosts ---
