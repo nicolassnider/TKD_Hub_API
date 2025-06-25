@@ -13,6 +13,10 @@ public class TrainingClassMappingProfile : Profile
 
         CreateMap<ClassSchedule, ClassScheduleDto>();
 
+        // StudentClass to StudentClassDto
+        CreateMap<StudentClass, StudentClassDto>()
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FirstName + " " + src.Student.LastName : null));
+
         // DTO to Entity
         CreateMap<TrainingClassDto, TrainingClass>()
             .ForMember(dest => dest.Dojaang, opt => opt.Ignore())
@@ -36,4 +40,3 @@ public class TrainingClassMappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore());
     }
 }
-

@@ -8,7 +8,8 @@ import React, {
     ReactNode,
     useCallback,
     useRef, // Import useRef for caching
-    useEffect // Import useEffect for initial data fetch
+    useEffect, // Import useEffect for initial data fetch
+    useMemo
 } from 'react';
 import toast from 'react-hot-toast';
 
@@ -17,6 +18,8 @@ import { TrainingClass } from '../types/TrainingClass';
 import { Student } from '../types/Student';
 import { useApiRequest } from '../utils/api';
 import { useAuth } from './AuthContext';
+import { StudentAttendance } from '../types/StudentAttendance';
+
 
 // Define the context type
 type ClassContextType = {
@@ -32,6 +35,7 @@ type ClassContextType = {
     getStudentsByClass: (classId: number) => Promise<Student[]>;
     getClassesByDay: (day?: number) => Promise<TrainingClass[]>;
     getClassesByCoachId: (coachId: number) => Promise<TrainingClass[]>;
+    getStudentAttendance: (studentId: number) => Promise<StudentAttendance[]>;
 };
 
 // Create and export the context
@@ -39,15 +43,17 @@ const ClassContext = createContext<ClassContextType>({
     classes: [],
     loading: false,
     error: null,
-    fetchClasses: async () => {},
+    fetchClasses: async () => { },
     getClassById: async () => null,
-    addClass: async () => {},
-    updateClass: async () => {},
-    deleteClass: async () => {},
-    addStudentToClass: async () => {},
+    addClass: async () => { },
+    updateClass: async () => { },
+    deleteClass: async () => { },
+    addStudentToClass: async () => { },
     getStudentsByClass: async () => [],
     getClassesByDay: async () => [],
     getClassesByCoachId: async () => [],
+    getStudentAttendance: async () => [],
+
 });
 
 // Custom hook for consuming the context
@@ -476,24 +482,60 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
             }
         }, [apiRequest, getToken]); // Removed setClasses from dependencies as it's optional
 
+    // --- GET /Classes/student/{studentId}/attendance ---
+    const getStudentAttendance = useCallback(
+        async (studentId: number): Promise<StudentAttendance[]> => {
+            setLoading(true);
+            setError(null);
+            try {
+                const token = getToken();
+                if (!token) throw new Error('Authentication token not found.');
+                const response = await apiRequest<{ data: StudentAttendance[] }>(
+                    `/Classes/student/${studentId}/attendance`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                return Array.isArray(response.data) ? response.data : [];
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch attendance.';
+                setError(message);
+                toast.error(message);
+                console.error('Failed to fetch attendance:', err);
+                return [];
+            } finally {
+                setLoading(false);
+            }
+        },
+        [apiRequest, getToken]
+    );
+
     // 5. Render
+    const contextValue = useMemo(() => ({
+        classes,
+        loading,
+        error,
+        fetchClasses,
+        getClassById,
+        addClass,
+        updateClass,
+        deleteClass,
+        addStudentToClass,
+        getStudentsByClass,
+        getClassesByDay,
+        getClassesByCoachId,
+        getStudentAttendance,
+    }), [
+        classes, loading, error, fetchClasses, getClassById, addClass, updateClass,
+        deleteClass, addStudentToClass, getStudentsByClass, getClassesByDay,
+        getClassesByCoachId, getStudentAttendance
+    ]);
+
     return (
-        <ClassContext.Provider
-            value={{
-                classes,
-                loading,
-                error,
-                fetchClasses,
-                getClassById,
-                addClass,
-                updateClass,
-                deleteClass,
-                addStudentToClass,
-                getStudentsByClass,
-                getClassesByDay,
-                getClassesByCoachId,
-            }}
-        >
+        <ClassContext.Provider value={contextValue}>
             {children}
         </ClassContext.Provider>
     );

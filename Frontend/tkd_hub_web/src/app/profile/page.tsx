@@ -10,16 +10,21 @@ import { usePayment } from '../context/PaymentContext';
 import { initializeSignalR, onPaymentReceived, stopSignalR } from '../externalServices/signalrService';
 import toast from 'react-hot-toast';
 import PaymentIframeModal from '../components/payment/PaymentIframeModal';
+import StudentAttendanceList from '../components/classes/StudentAttendanceList';
+import { StudentAttendance } from '../types/StudentAttendance';
 
 export default function ProfilePage() {
     // 1. Context hooks
     const { user, loading: authLoading } = useAuth();
-    const { loading, getClassesByCoachId } = useClasses();
+    const { loading, getClassesByCoachId, getStudentAttendance } = useClasses();
     const { createPreference, loading: paymentLoading, error: paymentError } = usePayment();
 
     // 2. State hooks
     const [coachClasses, setCoachClasses] = useState<TrainingClass[]>([]);
     const fetchedCoachId = useRef<string | null>(null);
+    const [attendance, setAttendance] = useState<StudentAttendance[]>([]);
+    const [attendanceLoading, setAttendanceLoading] = useState(false);
+
 
     // Payment iframe state
     const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
@@ -38,6 +43,19 @@ export default function ProfilePage() {
             fetchedCoachId.current = null;
         }
     }, [user?.id, user?.roles, getClassesByCoachId]);
+
+    // Fetch attendance for students
+    useEffect(() => {
+        if (user?.roles?.includes('Student') && user.id) {
+            setAttendanceLoading(true);
+            getStudentAttendance(user.id)
+                .then(setAttendance)
+                .finally(() => setAttendanceLoading(false));
+        } else {
+            setAttendance([]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id, user?.roles]);
 
     // 5. Payment DTO as expected by backend
     const paymentRequest = {
@@ -97,6 +115,13 @@ export default function ProfilePage() {
                     <CoachClasses
                         loading={loading}
                         coachClasses={coachClasses}
+                    />
+                )}
+                {/* Student Attendance */}
+                {user.roles?.includes('Student') && (
+                    <StudentAttendanceList
+                        attendance={attendance}
+                        loading={attendanceLoading}
                     />
                 )}
                 {/* Payment Button Example */}

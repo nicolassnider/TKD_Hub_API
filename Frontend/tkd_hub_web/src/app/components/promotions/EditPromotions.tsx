@@ -41,11 +41,11 @@ export default function EditPromotion({
 		promotion
 			? { ...promotion }
 			: {
-					studentId: undefined,
-					rankId: undefined,
-					promotionDate: '',
-					notes: '',
-			  }
+				studentId: undefined,
+				rankId: undefined,
+				promotionDate: '',
+				notes: '',
+			}
 	);
 	const [originalPromotion, setOriginalPromotion] =
 		useState<Partial<Promotion> | null>(
@@ -56,7 +56,8 @@ export default function EditPromotion({
 	// 3. Effects
 	useEffect(() => {
 		fetchCoaches();
-	}, [fetchCoaches]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
 		if (promotion) {
@@ -186,7 +187,7 @@ export default function EditPromotion({
 								coaches={coaches}
 								value={
 									formState.coachId !== undefined &&
-									formState.coachId !== null
+										formState.coachId !== null
 										? String(formState.coachId)
 										: ''
 								}
@@ -236,8 +237,8 @@ export default function EditPromotion({
 										? 'Saving...'
 										: 'Save'
 									: saving
-									? 'Creating...'
-									: 'Create'
+										? 'Creating...'
+										: 'Create'
 							}
 							loading={saving}
 							disabled={
