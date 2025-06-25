@@ -164,4 +164,18 @@ public class ClassesController : BaseApiController
         var dtos = _mapper.Map<List<TrainingClassDto>>(classes);
         return SuccessResponse(dtos);
     }
+
+    /// <summary>
+    /// Retrieves all class attendance records for a specific student.
+    /// </summary>
+    /// <param name="studentId">The unique identifier of the student.</param>
+    /// <returns>A list of <see cref="StudentClassDto"/> records for the student.</returns>
+    [HttpGet("student/{studentId}/attendance")]
+    [Authorize]
+    public async Task<IActionResult> GetAttendanceByStudentId(int studentId)
+    {
+        var records = await _studentClassService.GetByStudentIdAsync(studentId);
+        var dtos = _mapper.Map<List<StudentClassDto>>(records);
+        return SuccessResponse(dtos);
+    }
 }
