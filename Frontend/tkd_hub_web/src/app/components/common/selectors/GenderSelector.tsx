@@ -1,3 +1,4 @@
+import { Gender } from "@/app/enums/Gender";
 import React from "react";
 
 type GenderSelectorProps = {
@@ -26,9 +27,9 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({
         onChange={onChange}
         disabled={disabled}
     >
-        <option value={0}>Not specified</option>
-        <option value={1}>Male</option>
-        <option value={2}>Female</option>
+        <option value={Gender.OTHER}>Not specified</option>
+        <option value={Gender.MALE}>Male</option>
+        <option value={Gender.FEMALE}>Female</option>
     </select>
 );
 
