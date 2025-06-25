@@ -6,6 +6,7 @@ public class TrainingClassServiceTests : BaseServiceTest<TrainingClassService, I
     private static Mock<IMapper> _mapperMock = new();
     private static Mock<IUserRepository> _userRepositoryMock = new();
     private static Mock<IUnitOfWork> _unitOfWorkMock = new();
+    private static Mock<IStudentClassAttendanceRepository> _StudentClassAttendanceRepositoryMock = new();
 
     public TrainingClassServiceTests()
         : base(repoMock =>
@@ -14,7 +15,8 @@ public class TrainingClassServiceTests : BaseServiceTest<TrainingClassService, I
                 _currentUserServiceMock.Object,
                 _mapperMock.Object,
                 _userRepositoryMock.Object,
-                _unitOfWorkMock.Object))
+                _unitOfWorkMock.Object,
+                _StudentClassAttendanceRepositoryMock.Object))
     {
     }
 

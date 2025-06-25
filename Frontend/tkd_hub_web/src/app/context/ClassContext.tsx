@@ -19,7 +19,7 @@ import { Student } from '../types/Student';
 import { useApiRequest } from '../utils/api';
 import { useAuth } from './AuthContext';
 import { StudentAttendance } from '../types/StudentAttendance';
-
+import { StudentClassAttendance } from '../types/StudentClassAttendance';
 
 // Define the context type
 type ClassContextType = {
@@ -40,6 +40,11 @@ type ClassContextType = {
         studentClassId: number,
         attendance: { attendedAt: string; status: number; notes: string }
     ) => Promise<void>;
+    getStudentAttendanceHistory: (
+        studentClassId: number,
+        from?: string,
+        to?: string
+    ) => Promise<StudentClassAttendance[]>;
 };
 
 // Create and export the context
@@ -58,6 +63,7 @@ const ClassContext = createContext<ClassContextType>({
     getClassesByCoachId: async () => [],
     getStudentAttendance: async () => [],
     addStudentAttendance: async () => { },
+    getStudentAttendanceHistory: async () => []
 });
 
 // Custom hook for consuming the context
@@ -552,27 +558,68 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
         [apiRequest, getToken]
     );
 
+    // --- GET /api/Classes/student-class/{studentClassId}/attendance-history ---
+    const getStudentAttendanceHistory = useCallback(
+        async (
+            studentClassId: number,
+            from?: string,
+            to?: string
+        ): Promise<StudentClassAttendance[]> => {
+            setLoading(true);
+            setError(null);
+            try {
+                const token = getToken();
+                if (!token) throw new Error('Authentication token not found.');
+                let url = `/api/Classes/student-class/${studentClassId}/attendance-history`;
+                const params: string[] = [];
+                if (from) params.push(`from=${encodeURIComponent(from)}`);
+                if (to) params.push(`to=${encodeURIComponent(to)}`);
+                if (params.length) url += `?${params.join('&')}`;
+                const response = await apiRequest<{ data: StudentClassAttendance[] }>(
+                    url,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                return Array.isArray(response.data) ? response.data : [];
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch attendance history.';
+                setError(message);
+                toast.error(message);
+                console.error('Failed to fetch attendance history:', err);
+                return [];
+            } finally {
+                setLoading(false);
+            }
+        },
+        [apiRequest, getToken]
+    );
+
     // 5. Render
     const contextValue = useMemo(() => ({
-    classes,
-    loading,
-    error,
-    fetchClasses,
-    getClassById,
-    addClass,
-    updateClass,
-    deleteClass,
-    addStudentToClass,
-    getStudentsByClass,
-    getClassesByDay,
-    getClassesByCoachId,
-    getStudentAttendance,
-    addStudentAttendance, // <-- Add here
-}), [
-    classes, loading, error, fetchClasses, getClassById, addClass, updateClass,
-    deleteClass, addStudentToClass, getStudentsByClass, getClassesByDay,
-    getClassesByCoachId, getStudentAttendance, addStudentAttendance
-]);
+        classes,
+        loading,
+        error,
+        fetchClasses,
+        getClassById,
+        addClass,
+        updateClass,
+        deleteClass,
+        addStudentToClass,
+        getStudentsByClass,
+        getClassesByDay,
+        getClassesByCoachId,
+        getStudentAttendance,
+        addStudentAttendance,
+        getStudentAttendanceHistory
+    }), [
+        classes, loading, error, fetchClasses, getClassById, addClass, updateClass,
+        deleteClass, addStudentToClass, getStudentsByClass, getClassesByDay,
+        getClassesByCoachId, getStudentAttendance, addStudentAttendance, getStudentAttendanceHistory
+    ]);
 
     return (
         <ClassContext.Provider value={contextValue}>
