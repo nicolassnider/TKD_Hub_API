@@ -21,6 +21,16 @@ public interface IUnitOfWork
     /// </summary>
     IUserRoleRepository UserRoles { get; }
 
+    /// <summary>
+    /// Gets the repository for student class attendance entities.
+    /// </summary>
+    IStudentClassAttendanceRepository StudentClassAttendances { get; }
+
+    /// <summary>
+    /// Gets the repository for student class entities.
+    /// </summary>
+    IStudentClassRepository StudentClasses { get; }
+
     // Add other repositories as needed, e.g. IRankRepository Ranks { get; }
 
     /// <summary>
@@ -28,4 +38,6 @@ public interface IUnitOfWork
     /// </summary>
     /// <returns>The number of state entries written to the database.</returns>
     Task<int> SaveChangesAsync();
+
+
 }

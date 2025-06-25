@@ -70,6 +70,23 @@ public interface ITrainingClassService
     /// </summary>
     /// <param name="coachId">The unique identifier of the coach.</param>
     /// <returns>An enumerable collection of <see cref="TrainingClass"/> given by the coach.</returns>
-    Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId);
 
+    Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId);
+    /// <summary>
+    /// Registers an attendance event for a student in a class.
+    /// </summary>
+    /// <param name="studentClassId">The StudentClass relationship ID.</param>
+    /// <param name="attendedAt">The date and time of attendance.</param>
+    /// <param name="status">The attendance status (Present, Absent, etc.).</param>
+    /// <param name="notes">Optional notes.</param>
+    Task RegisterAttendanceAsync(int studentClassId, DateTime attendedAt, AttendanceStatus status, string? notes = null);
+
+    /// <summary>
+    /// Gets attendance records for a student in a class, optionally filtered by date range.
+    /// </summary>
+    /// <param name="studentClassId">The StudentClass relationship ID.</param>
+    /// <param name="from">Start date (optional).</param>
+    /// <param name="to">End date (optional).</param>
+    /// <returns>Enumerable of <see cref="StudentClassAttendance"/>.</returns>
+    Task<IEnumerable<StudentClassAttendance>> GetAttendanceHistoryAsync(int studentClassId, DateTime? from = null, DateTime? to = null);
 }

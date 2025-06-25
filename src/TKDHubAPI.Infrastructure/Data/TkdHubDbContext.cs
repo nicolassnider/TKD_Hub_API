@@ -33,6 +33,7 @@ public class TkdHubDbContext : DbContext
     public DbSet<ClassSchedule> ClassSchedules { get; set; }
     public DbSet<StudentClass> StudentClasses { get; set; }
     public DbSet<BlogPost> BlogPosts { get; set; }
+    public DbSet<StudentClassAttendance> StudentClassAttendances { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

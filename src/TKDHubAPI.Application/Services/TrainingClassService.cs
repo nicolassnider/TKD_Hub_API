@@ -9,19 +9,22 @@ public class TrainingClassService : ITrainingClassService
     private readonly ICurrentUserService _currentUserService;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStudentClassAttendanceRepository _attendanceRepository;
 
     public TrainingClassService(
         ITrainingClassRepository trainingClassRepository,
         ICurrentUserService currentUserService,
         IMapper mapper,
         IUserRepository userRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IStudentClassAttendanceRepository attendanceRepository)
     {
         _trainingClassRepository = trainingClassRepository;
         _currentUserService = currentUserService;
         _mapper = mapper;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _attendanceRepository = attendanceRepository;
     }
 
     public async Task<TrainingClass> CreateAsync(TrainingClass trainingClass)
@@ -119,5 +122,35 @@ public class TrainingClassService : ITrainingClassService
     public async Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId)
     {
         return await _trainingClassRepository.GetByCoachIdAsync(coachId);
+    }
+
+    public async Task RegisterAttendanceAsync(int studentClassId, DateTime attendedAt, AttendanceStatus status, string? notes = null)
+    {
+        // Optionally, validate that the studentClassId exists
+        var studentClass = await _unitOfWork
+            .StudentClasses
+            .GetByIdAsync(studentClassId);
+
+        if (studentClass == null)
+            throw new Exception("StudentClass relationship not found.");
+
+        var attendance = new StudentClassAttendance
+        {
+            StudentClassId = studentClassId,
+            AttendedAt = attendedAt,
+            Status = status,
+            Notes = notes
+        };
+
+        await _attendanceRepository.AddAsync(attendance);
+    }
+
+    public async Task<IEnumerable<StudentClassAttendance>> GetAttendanceHistoryAsync(int studentClassId, DateTime? from = null, DateTime? to = null)
+    {
+        if (from.HasValue && to.HasValue)
+        {
+            return await _attendanceRepository.GetByDateRangeAsync(from.Value, to.Value, studentClassId);
+        }
+        return await _attendanceRepository.GetByStudentClassIdAsync(studentClassId);
     }
 }
