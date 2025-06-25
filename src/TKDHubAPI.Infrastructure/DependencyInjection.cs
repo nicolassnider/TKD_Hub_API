@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<BlogPost>, GenericRepository<BlogPost>>(); // Added BlogPost
 
 
+
         services.AddScoped<IMercadoPagoService, MercadoPagoService>();
 
         // Register specific repositories
@@ -55,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IClassScheduleRepository, ClassScheduleRepository>();
         services.AddScoped<IStudentClassRepository, StudentClassRepository>();
         services.AddScoped<IBlogPostRepository, BlogPostRepository>();
+        services.AddScoped<IStudentClassAttendanceRepository, StudentClassAttendanceRepository>();
 
         return services;
     }

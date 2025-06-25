@@ -8,12 +8,18 @@ public class UnitOfWork : IUnitOfWork
 
     public IBlogPostRepository BlogPosts { get; } // Added for BlogPostRepository  
 
+    public IStudentClassAttendanceRepository StudentClassAttendances { get; }
+
+    public IStudentClassRepository StudentClasses { get; }
+
     public UnitOfWork(
         TkdHubDbContext context,
         IUserRepository userRepository,
         IRankRepository ranks,
         IUserRoleRepository userRoleRepository, // Added
-        IBlogPostRepository blogPostRepository // Added for BlogPostRepository
+        IBlogPostRepository blogPostRepository, // Added for BlogPostRepository
+        IStudentClassAttendanceRepository studentClassAttendanceRepository,
+        IStudentClassRepository studentClassRepository
     )
     {
         _context = context;
@@ -21,6 +27,8 @@ public class UnitOfWork : IUnitOfWork
         Ranks = ranks;
         UserRoles = userRoleRepository; // Added
         BlogPosts = blogPostRepository;
+        StudentClassAttendances = studentClassAttendanceRepository;
+        StudentClasses = studentClassRepository;
     }
 
     public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();

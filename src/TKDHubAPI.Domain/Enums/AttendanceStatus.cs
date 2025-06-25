@@ -1,2 +1,8 @@
 ﻿namespace TKDHubAPI.Domain.Enums;
-public enum AttendanceStatus { Attended, Absent, Late }
+public enum AttendanceStatus
+{
+    Present,
+    Absent,
+    Late,
+    Excused
+}

@@ -10,7 +10,6 @@ namespace TKDHubAPI.WebAPI.Controllers;
 public class DojaangController : BaseApiController
 {
     private readonly IDojaangService _dojaangService;
-    private readonly ILogger<DojaangController> _logger;
     private readonly IUserService _userService;
 
     /// <summary>
