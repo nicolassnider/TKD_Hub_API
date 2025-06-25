@@ -38,5 +38,24 @@ public class TrainingClassMappingProfile : Profile
             .ForMember(dest => dest.TrainingClass, opt => opt.Ignore())
             .ForMember(dest => dest.TrainingClassId, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore());
+        // RegisterAttendanceRequest to StudentClassAttendance
+        CreateMap<RegisterAttendanceRequest, StudentClassAttendance>()
+            .ForMember(dest => dest.AttendedAt, opt => opt.MapFrom(src => src.AttendedAt))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes));
+
+        // StudentClassAttendance to AttendanceHistoryDto
+        CreateMap<StudentClassAttendance, AttendanceHistoryDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.AttendedAt, opt => opt.MapFrom(src => src.AttendedAt))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+            .ForMember(dest => dest.StudentClassId, opt => opt.MapFrom(src => src.StudentClassId))
+            .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.StudentClass != null && src.StudentClass.Student != null
+                ? src.StudentClass.Student.FirstName + " " + src.StudentClass.Student.LastName
+                : null))
+            .ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.StudentClass != null && src.StudentClass.TrainingClass != null
+                ? src.StudentClass.TrainingClass.Name
+                : null));
     }
 }

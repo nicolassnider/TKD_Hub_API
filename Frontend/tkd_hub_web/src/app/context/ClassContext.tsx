@@ -36,6 +36,10 @@ type ClassContextType = {
     getClassesByDay: (day?: number) => Promise<TrainingClass[]>;
     getClassesByCoachId: (coachId: number) => Promise<TrainingClass[]>;
     getStudentAttendance: (studentId: number) => Promise<StudentAttendance[]>;
+    addStudentAttendance: (
+        studentClassId: number,
+        attendance: { attendedAt: string; status: number; notes: string }
+    ) => Promise<void>;
 };
 
 // Create and export the context
@@ -53,7 +57,7 @@ const ClassContext = createContext<ClassContextType>({
     getClassesByDay: async () => [],
     getClassesByCoachId: async () => [],
     getStudentAttendance: async () => [],
-
+    addStudentAttendance: async () => { },
 });
 
 // Custom hook for consuming the context
@@ -513,26 +517,62 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
         [apiRequest, getToken]
     );
 
+    // --- POST /api/Classes/student-class/{studentClassId}/attendance ---
+    const addStudentAttendance = useCallback(
+        async (
+            studentClassId: number,
+            attendance: { attendedAt: string; status: number; notes: string }
+        ): Promise<void> => {
+            setLoading(true);
+            setError(null);
+            try {
+                const token = getToken();
+                if (!token) throw new Error('Authentication token not found.');
+                await apiRequest(
+                    `/api/Classes/student-class/${studentClassId}/attendance`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(attendance),
+                    }
+                );
+                toast.success('Attendance recorded.');
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Failed to add attendance.';
+                setError(message);
+                toast.error(message);
+                console.error('Failed to add attendance:', err);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [apiRequest, getToken]
+    );
+
     // 5. Render
     const contextValue = useMemo(() => ({
-        classes,
-        loading,
-        error,
-        fetchClasses,
-        getClassById,
-        addClass,
-        updateClass,
-        deleteClass,
-        addStudentToClass,
-        getStudentsByClass,
-        getClassesByDay,
-        getClassesByCoachId,
-        getStudentAttendance,
-    }), [
-        classes, loading, error, fetchClasses, getClassById, addClass, updateClass,
-        deleteClass, addStudentToClass, getStudentsByClass, getClassesByDay,
-        getClassesByCoachId, getStudentAttendance
-    ]);
+    classes,
+    loading,
+    error,
+    fetchClasses,
+    getClassById,
+    addClass,
+    updateClass,
+    deleteClass,
+    addStudentToClass,
+    getStudentsByClass,
+    getClassesByDay,
+    getClassesByCoachId,
+    getStudentAttendance,
+    addStudentAttendance, // <-- Add here
+}), [
+    classes, loading, error, fetchClasses, getClassById, addClass, updateClass,
+    deleteClass, addStudentToClass, getStudentsByClass, getClassesByDay,
+    getClassesByCoachId, getStudentAttendance, addStudentAttendance
+]);
 
     return (
         <ClassContext.Provider value={contextValue}>

@@ -178,4 +178,40 @@ public class ClassesController : BaseApiController
         var dtos = _mapper.Map<List<StudentClassDto>>(records);
         return SuccessResponse(dtos);
     }
+
+    /// <summary>
+    /// Registers an attendance event for a student in a class.
+    /// </summary>
+    /// <param name="studentClassId">The StudentClass relationship ID.</param>
+    /// <param name="request">The attendance registration request.</param>
+    /// <returns>Success or error response.</returns>
+    [HttpPost("student-class/{studentClassId}/attendance")]
+    [Authorize]
+    public async Task<IActionResult> RegisterAttendance(int studentClassId, [FromBody] RegisterAttendanceRequest request)
+    {
+        await _trainingClassService.RegisterAttendanceAsync(
+            studentClassId,
+            request.AttendedAt,
+            request.Status,
+            request.Notes
+        );
+        return SuccessResponse("Attendance registered successfully.");
+    }
+
+    /// <summary>
+    /// Gets attendance history for a student in a class, optionally filtered by date range.
+    /// </summary>
+    /// <param name="studentClassId">The StudentClass relationship ID.</param>
+    /// <param name="request">The attendance history filter request.</param>
+    /// <returns>List of attendance records as DTOs.</returns>
+    [HttpGet("student-class/{studentClassId}/attendance-history")]
+    [Authorize]
+    public async Task<IActionResult> GetAttendanceHistory(
+        int studentClassId,
+        [FromQuery] GetAttendanceHistoryRequest request)
+    {
+        var records = await _trainingClassService.GetAttendanceHistoryAsync(studentClassId, request.From, request.To);
+        var dtos = _mapper.Map<List<AttendanceHistoryDto>>(records);
+        return SuccessResponse(dtos);
+    }
 }
