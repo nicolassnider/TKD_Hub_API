@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useClasses } from "@/app/context/ClassContext";
 import { useStudents } from "@/app/context/StudentContext";
-import StudentSelector from "../students/StudentSelector";
 import ClassDetails from "./ClassDetails";
 import StudentsInClass from "./StudentsInClass";
 import { Student } from "@/app/types/Student";
+import { GenericSelector } from "../common/selectors/GenericSelector";
 
 type Props = {
   classId: number;
@@ -117,12 +117,15 @@ const AddStudentToClass: React.FC<Props> = ({ classId, open, onClose, defaultStu
 
         <div className="flex flex-col gap-3 mb-4">
           {/* Student Selector */}
-          <StudentSelector
-            students={students}
+          <GenericSelector
+            items={students}
             value={studentId === "" ? null : Number(studentId)}
             onChange={id => setStudentId(id ?? "")}
+            getLabel={s => `${s.firstName} ${s.lastName}${s.email ? ` (${s.email})` : ""}`}
+            getId={s => s.id!}
             disabled={!!defaultStudentId || loading}
             label="Student"
+            placeholder="Select a student"
           />
         </div>
         {/* Show students already in the class */}

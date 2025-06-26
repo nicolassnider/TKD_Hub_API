@@ -6,13 +6,13 @@ import { toast } from 'react-hot-toast';
 
 // 2. App/context/component imports
 import PromotionTableRows from '@/app/components/promotions/PromotionsTableRows';
-import StudentSelector from '@/app/components/students/StudentSelector';
 import { AdminListPage } from '../components/AdminListPage';
 import { useApiConfig } from '@/app/context/ApiConfigContext';
 import { useStudents } from '../context/StudentContext';
 import { usePromotions } from '../context/PromotionContext';
 import { Promotion } from '../types/Promotion';
 import EditPromotion from '../components/promotions/EditPromotions';
+import { GenericSelector } from '../components/common/selectors/GenericSelector';
 
 export default function PromotionsAdminContent() {
 	// 2. State hooks
@@ -139,10 +139,14 @@ export default function PromotionsAdminContent() {
 				<div className="mb-4">
 					<div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full max-w-2xl">
 						<div className="flex-1">
-							<StudentSelector
-								students={students}
+							<GenericSelector
+								items={students}
 								value={studentIdFilter ?? null}
 								onChange={handleStudentSelect}
+								getLabel={s => `${s.firstName} ${s.lastName}${s.email ? ` (${s.email})` : ""}`}
+								getId={s => s.id!}
+								label="Student"
+								placeholder="Select a student"
 							/>
 						</div>
 						{studentIdFilter !== undefined && (

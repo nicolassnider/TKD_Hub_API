@@ -1,7 +1,7 @@
 'use client';
 
 // 1. External imports
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import toast from 'react-hot-toast';
 
 // 2. App/context/component imports
@@ -164,17 +164,17 @@ export const TulProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // 5. Render
     // Provides the context values to all child components via the Provider.
+    const contextValue = useMemo(() => ({
+        tuls,
+        loading,
+        error,
+        fetchTuls,
+        getTulById,
+        getTulsByRank,
+    }), [tuls, loading, error, fetchTuls, getTulById, getTulsByRank]);
+
     return (
-        <TulContext.Provider
-            value={{
-                tuls,
-                loading,
-                error,
-                fetchTuls,
-                getTulById,
-                getTulsByRank,
-            }}
-        >
+        <TulContext.Provider value={contextValue}>
             {children}
         </TulContext.Provider>
     );

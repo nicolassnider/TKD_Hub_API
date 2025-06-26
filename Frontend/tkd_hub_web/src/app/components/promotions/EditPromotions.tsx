@@ -4,15 +4,14 @@ import { usePromotions } from '@/app/context/PromotionContext';
 import { Promotion } from '@/app/types/Promotion';
 import { CreatePromotionDto } from '@/app/types/CreatePromotionDto';
 import LabeledInput from '../common/inputs/LabeledInput';
-import StudentSelector from '../students/StudentSelector';
 import { useStudents } from '@/app/context/StudentContext';
-import RanksSelector from '../common/selectors/RanksSelector';
 import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import FormActionButtons from '../common/actionButtons/FormActionButtons';
 import toast from 'react-hot-toast';
-import CoachSelector from '../coaches/CoachSelector';
 import { useCoaches } from '@/app/context/CoachContext';
 import { useRanks } from '@/app/context/RankContext';
+import { useDojaangs } from '@/app/context/DojaangContext';
+import { GenericSelector } from '../common/selectors/GenericSelector';
 
 type EditPromotionProps = {
 	promotion?: Promotion; // If undefined, create mode
@@ -34,7 +33,8 @@ export default function EditPromotion({
 	} = usePromotions();
 	const { students, loading: loadingStudents } = useStudents();
 	const { coaches, fetchCoaches, loading: loadingCoaches } = useCoaches();
-	const { ranks } = useRanks();
+	const { ranks, fetchRanks, loading: loadingRanks } = useRanks();
+	const { dojaangs, loading: loadingDojaangs } = useDojaangs();
 
 	// 2. State hooks
 	const [formState, setFormState] = useState<Partial<Promotion>>(
@@ -56,6 +56,12 @@ export default function EditPromotion({
 	// 3. Effects
 	useEffect(() => {
 		fetchCoaches();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+
+	useEffect(() => {
+		fetchRanks();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -154,63 +160,93 @@ export default function EditPromotion({
 						onSubmit={handleSubmit}
 					>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-							<StudentSelector
-								students={students}
+							{/*Student selector*/}
+							<GenericSelector
+								items={students}
 								value={formState.studentId ?? null}
 								onChange={(id) => {
-									const nextRankId = getNextRankIdForStudent(
-										id ?? undefined
-									);
+									const nextRankId = getNextRankIdForStudent(id ?? undefined);
 									setFormState((prev) => ({
 										...prev,
 										studentId: id ?? undefined,
 										rankId: nextRankId,
 									}));
 								}}
+								getLabel={s => `${s.firstName} ${s.lastName}${s.email ? ` (${s.email})` : ""}`}
+								getId={s => s.id!}
 								disabled={saving}
+								required
 								label="Student"
+								placeholder="Select a student"
 							/>
-							<RanksSelector
+							{/*Ranks selector*/}
+							<GenericSelector
+								items={ranks}
+								value={formState.rankId ?? null}
+								onChange={id =>
+									setFormState(prev => ({
+										...prev,
+										rankId: id ?? undefined,
+									}))
+								}
+								getLabel={r => r.name}
+								getId={r => r.id}
+								disabled={saving || loadingRanks}
+								required
 								label="Rank"
-								value={formState.rankId ?? 0}
-								onChange={(e) =>
-									setFormState((prev) => ({
-										...prev,
-										rankId: e.target.value
-											? Number(e.target.value)
-											: undefined,
-									}))
-								}
-								disabled={saving}
+								placeholder={loadingRanks ? "Loading ranks..." : "Select a rank"}
 							/>
-							<CoachSelector
-								coaches={coaches}
-								value={
-									formState.coachId !== undefined &&
-										formState.coachId !== null
-										? String(formState.coachId)
-										: ''
-								}
-								onChange={(e) =>
-									setFormState((prev) => ({
+							{/*Coach selector*/}
+							<GenericSelector
+								items={coaches}
+								value={formState.coachId ?? null}
+								onChange={id =>
+									setFormState(prev => ({
 										...prev,
-										coachId: e.target.value
-											? Number(e.target.value)
-											: undefined,
+										coachId: id ?? undefined,
 									}))
 								}
+								getLabel={c => `${c.firstName} ${c.lastName}${c.email ? ` (${c.email})` : ""}`}
+								getId={c => c.id}
 								disabled={saving}
+								required
 								label="Coach"
+								placeholder="Select a coach"
 							/>
+							{/*Dojaang selector*/}
+							<GenericSelector
+								items={dojaangs}
+								value={formState.dojaangId ?? null}
+								onChange={id =>
+									setFormState(prev => ({
+										...prev,
+										dojaangId: id ?? undefined,
+									}))
+								}
+								getLabel={d => d.name}
+								getId={d => d.id}
+								disabled={saving || loadingDojaangs}
+								required
+								label="Dojaang"
+								placeholder="Select a dojaang"
+							/>
+							{/* Promotion Date */}
 							<LabeledInput
 								label="Promotion Date"
 								name="promotionDate"
-								type="date"
-								value={formState.promotionDate ?? ''}
-								onChange={handleChange}
+								datepicker
+								selectedDate={formState.promotionDate ? new Date(formState.promotionDate) : null}
+								onDateChange={date =>
+									setFormState(prev => ({
+										...prev,
+										promotionDate: date ? date.toISOString().slice(0, 10) : "",
+									}))
+								}
 								required
 								disabled={saving}
+								placeholder='YYYY-MM-DD'
 							/>
+							{/* Notes */}
 							<div className="col-span-2">
 								<label
 									htmlFor="notes"

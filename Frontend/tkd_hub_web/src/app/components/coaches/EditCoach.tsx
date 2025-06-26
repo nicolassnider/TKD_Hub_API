@@ -8,13 +8,14 @@ import { ManagedDojaang } from '@/app/types/ManagedDojaang';
 import { useCoaches } from '@/app/context/CoachContext';
 import { useDojaangs } from '@/app/context/DojaangContext';
 
-import RanksSelector from '@/app/components/common/selectors/RanksSelector';
-import GenderSelector from '../common/selectors/GenderSelector';
 import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import LabeledInput from '../common/inputs/LabeledInput';
 import ManagedDojaangs from './ManagedDojaangs';
 import { UpsertCoachDto } from '@/app/types/UpsertCoachDto';
 import { CoachApiResponse } from '@/app/types/CoachApiResponse';
+import { GenericSelector } from '../common/selectors/GenericSelector';
+import { Gender } from '@/app/enums/Gender';
+import { useRanks } from '@/app/context/RankContext';
 
 type EditCoachProps = {
 	coachId: number;
@@ -39,6 +40,8 @@ const EditCoach: React.FC<EditCoachProps> = ({
 	// 1. Context hooks
 	const { fetchDojaangs } = useDojaangs();
 	const { getCoachById, upsertCoach } = useCoaches();
+	const { ranks = [], loading: ranksLoading, fetchRanks } = useRanks();
+
 
 	// 2. State hooks
 	const [loading, setLoading] = useState(true);
@@ -67,6 +70,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						apiResponse?.data?.managedDojaangs ?? [];
 
 					if (!coachData) throw new Error('Coach not found');
+					console.log("Fetched coach:", coachData); // <-- Log fetched coach here
 					const loadedForm = {
 						firstName: coachData.firstName,
 						lastName: coachData.lastName,
@@ -119,10 +123,10 @@ const EditCoach: React.FC<EditCoachProps> = ({
 					Array.isArray(dojaangsData)
 						? dojaangsData
 						: typeof dojaangsData === 'object' &&
-						  dojaangsData !== null &&
-						  'data' in dojaangsData
-						? (dojaangsData as { data: ApiDojaang[] }).data
-						: []
+							dojaangsData !== null &&
+							'data' in dojaangsData
+							? (dojaangsData as { data: ApiDojaang[] }).data
+							: []
 				);
 			} catch (err: unknown) {
 				if (err instanceof Error)
@@ -135,6 +139,22 @@ const EditCoach: React.FC<EditCoachProps> = ({
 		fetchCoachAndDojaangs();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [coachId]);
+
+	useEffect(() => {
+		if (
+			form &&
+			ranks.length > 0 &&
+			(form.currentRankId === undefined || form.currentRankId === null)
+		) {
+			const firstBlackBelt = ranks.find(r => r.danLevel !== null);
+			if (firstBlackBelt) {
+				setForm(prev => ({
+					...prev!,
+					currentRankId: firstBlackBelt.id,
+				}));
+			}
+		}
+	}, [form, ranks]);
 
 	// 4. Functions
 	const handleChange = (
@@ -199,6 +219,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 					}}
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+						{/* Coach Name */}
 						<LabeledInput
 							label="First Name"
 							name="firstName"
@@ -206,6 +227,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							onChange={handleChange}
 							disabled={saving}
 						/>
+						{/* Last Name */}
 						<LabeledInput
 							label="Last Name"
 							name="lastName"
@@ -213,6 +235,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							onChange={handleChange}
 							disabled={saving}
 						/>
+						{/* Email */}
 						<LabeledInput
 							label="Email"
 							name="email"
@@ -238,11 +261,27 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							>
 								Gender
 							</label>
-							<GenderSelector
-								value={form.gender}
-								onChange={handleChange}
+							<GenericSelector
+								items={[
+									{ id: Gender.MALE, label: "Male" },
+									{ id: Gender.FEMALE, label: "Female" },
+									{ id: Gender.OTHER, label: "Other" }
+								]}
+								value={form.gender ?? null}
+								onChange={id =>
+									setForm(prev => ({
+										...prev!,
+										gender: id ?? Gender.MALE,
+									}))
+								}
+								getLabel={g => g.label}
+								getId={g => g.id}
 								disabled={loading}
+								required
+								id="gender"
+								label=""
 								className="px-3 py-2"
+								placeholder="Select gender"
 							/>
 						</div>
 						<LabeledInput
@@ -253,19 +292,22 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							onChange={handleChange}
 							disabled={saving}
 						/>
-						<RanksSelector
-							label="Rank"
-							value={form.currentRankId ?? 0}
-							onChange={(e) =>
-								setForm((f) => ({
-									...f!,
-									currentRankId: e.target.value
-										? Number(e.target.value)
-										: 0,
+						<GenericSelector
+							items={ranks}
+							value={form.currentRankId ?? null}
+							onChange={id =>
+								setForm(prev => ({
+									...prev!,
+									currentRankId: id ?? undefined,
 								}))
 							}
-							disabled={loading}
-							filter="black"
+							getLabel={r => r.name}
+							getId={r => r.id}
+							filter={r => r.danLevel !== null} // Only show black belts
+							disabled={loading || ranksLoading}
+							required
+							label="Rank"
+							placeholder="Select a black belt rank"
 							className="form-input px-3 py-2 border border-gray-300 rounded w-full"
 						/>
 						<LabeledInput

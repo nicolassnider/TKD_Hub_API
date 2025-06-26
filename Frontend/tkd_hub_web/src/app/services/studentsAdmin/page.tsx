@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useDojaangs } from "@/app/context/DojaangContext";
 import StudentTableRows from "@/app/components/students/StudentTableRows";
 import EditStudent from "@/app/components/students/EditStudent";
-import DojaangSelector from "@/app/components/dojaangs/DojaangSelector";
 import { AdminListPage } from "@/app/components/AdminListPage";
 import { Student } from "@/app/types/Student";
 import { useStudents } from "@/app/context/StudentContext";
+import { GenericSelector } from "@/app/components/common/selectors/GenericSelector";
 
 export default function StudentsAdmin() {
   const { students: studentsRaw = [], loading, error, fetchStudents } = useStudents();
@@ -111,11 +111,15 @@ export default function StudentsAdmin() {
         error={error}
         filters={
           <div className="flex items-center gap-4">
-            <DojaangSelector
+            <GenericSelector
+              items={dojaangs}
               value={filterDojaangId}
               onChange={id => setFilterDojaangId(id)}
-              allDojaangs={dojaangs}
+              getLabel={d => d.name}
+              getId={d => d.id}
               disabled={loading || dojaangsLoading}
+              label="Dojaang"
+              placeholder="All dojaangs"
             />
           </div>
         }

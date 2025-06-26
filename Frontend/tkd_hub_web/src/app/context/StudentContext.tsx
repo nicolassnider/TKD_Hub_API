@@ -7,7 +7,8 @@ import React, {
     useState,
     ReactNode,
     useCallback,
-    useRef, // Import useRef for creating mutable references for caches
+    useRef,
+    useMemo, // Import useRef for creating mutable references for caches
 } from 'react';
 import toast from 'react-hot-toast';
 
@@ -35,10 +36,10 @@ const StudentContext = createContext<StudentContextType>({
     students: [],
     loading: false,
     error: null,
-    fetchStudents: async () => {},
+    fetchStudents: async () => { },
     getStudentById: async () => null,
-    createStudent: async () => {},
-    updateStudent: async () => {},
+    createStudent: async () => { },
+    updateStudent: async () => { },
     getStudentsByDojaang: async () => [],
 });
 
@@ -313,19 +314,28 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
      * Renders the StudentContext.Provider, making the student data and functions available
      * to all components wrapped by this provider.
      */
+    const contextValue = useMemo(() => ({
+        students,
+        loading,
+        error,
+        fetchStudents,
+        getStudentById,
+        createStudent,
+        updateStudent,
+        getStudentsByDojaang,
+    }), [
+        students,
+        loading,
+        error,
+        fetchStudents,
+        getStudentById,
+        createStudent,
+        updateStudent,
+        getStudentsByDojaang,
+    ]);
+
     return (
-        <StudentContext.Provider
-            value={{
-                students,
-                loading,
-                error,
-                fetchStudents,
-                getStudentById,
-                createStudent,
-                updateStudent,
-                getStudentsByDojaang,
-            }}
-        >
+        <StudentContext.Provider value={contextValue}>
             {children}
         </StudentContext.Provider>
     );

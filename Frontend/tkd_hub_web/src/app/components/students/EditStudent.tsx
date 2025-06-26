@@ -6,14 +6,13 @@ import equal from 'fast-deep-equal';
 import { useDojaangs } from '@/app/context/DojaangContext';
 import { Student } from '@/app/types/Student';
 
-import DojaangSelector from '../dojaangs/DojaangSelector';
-import RanksSelector from '../common/selectors/RanksSelector';
-import GenderSelector from '../common/selectors/GenderSelector';
 import FormActionButtons from '../common/actionButtons/FormActionButtons';
 import ModalCloseButton from '../common/actionButtons/ModalCloseButton';
 import LabeledInput from '../common/inputs/LabeledInput';
 import { useRanks } from '@/app/context/RankContext';
 import { useStudents } from '@/app/context/StudentContext';
+import { GenericSelector } from '../common/selectors/GenericSelector';
+import { Gender } from '@/app/enums/Gender';
 
 type EditStudentProps = {
 	studentId?: number;
@@ -49,21 +48,22 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 			try {
 				if (studentId) {
 					const apiResponse = await getStudentById(studentId);
-					// Type-safe extraction of data
 					const data: Omit<Student, 'id'> | null =
 						apiResponse &&
-						typeof apiResponse === 'object' &&
-						'id' in apiResponse
+							typeof apiResponse === 'object' &&
+							'id' in apiResponse
 							? (() => {
-									// eslint-disable-next-line @typescript-eslint/no-unused-vars
-									const { id: _id, ...rest } =
-										apiResponse as Student;
-									return rest;
-							  })()
+								const { id: _id, ...rest } = apiResponse as Student;
+								return rest;
+							})()
 							: null;
 					if (data) {
+						console.log("Fetched student:", data);
 						setForm(data);
 						setOriginalForm(data);
+						// Set isBlackBelt based on the loaded student's rank
+						const studentRank = ranks.find(r => r.id === data.currentRankId);
+						setIsBlackBelt(studentRank ? studentRank.danLevel !== null : false);
 					} else {
 						setError('Student not found');
 					}
@@ -80,6 +80,7 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 					};
 					setForm(emptyForm);
 					setOriginalForm(emptyForm);
+					setIsBlackBelt(false);
 				}
 			} catch (err: unknown) {
 				if (err instanceof Error)
@@ -91,7 +92,7 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 		};
 		fetchStudent();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [studentId]);
+	}, [studentId, ranks]);
 
 	// 4. Functions
 	const handleChange = (
@@ -111,14 +112,6 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 		}));
 	};
 
-	const handleRankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		setForm((prev) => ({
-			...prev!,
-			currentRankId:
-				e.target.value === '' ? null : Number(e.target.value),
-		}));
-	};
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!form) return;
@@ -126,6 +119,7 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 		try {
 			const payload = {
 				...form,
+				RankId: form.currentRankId ?? undefined, // <-- Use RankId
 				dateOfBirth: form.dateOfBirth
 					? new Date(form.dateOfBirth).toISOString()
 					: undefined,
@@ -135,6 +129,7 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 				await updateStudent(studentId, payload);
 				toast.success('Student updated successfully!');
 			} else {
+				console.log("Creating student with form state:", form); // <-- Log previous form state
 				await createStudent(
 					payload as Omit<Student, 'id' | 'joinDate' | 'isActive'>
 				);
@@ -208,52 +203,61 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 							placeholder="Enter phone number"
 						/>
 						{/* Gender */}
-						<div>
-							<label
-								className="block font-medium mb-1"
-								htmlFor="gender"
-							>
-								Gender
-							</label>
-							<GenderSelector
-								value={form.gender}
-								onChange={(e) =>
-									setForm((prev) => ({
-										...prev!,
-										gender: Number(e.target.value),
-									}))
-								}
-								disabled={loading}
-								className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
-							/>
-						</div>
+						<GenericSelector
+							items={[
+								{ id: Gender.MALE, label: "Male" },
+								{ id: Gender.FEMALE, label: "Female" },
+								{ id: Gender.OTHER, label: "Other" }
+							]}
+							value={form.gender ?? null}
+							onChange={id =>
+								setForm(prev => ({
+									...prev!,
+									gender: id ?? Gender.MALE,
+								}))
+							}
+							getLabel={g => g.label}
+							getId={g => g.id}
+							disabled={loading}
+							required
+							label="Gender"
+							className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+						/>
 						{/* Date of Birth */}
 						<LabeledInput
 							label="Date of Birth"
 							name="dateOfBirth"
-							type="date"
-							value={
-								form.dateOfBirth
-									? form.dateOfBirth.substring(0, 10)
-									: ''
+							datepicker
+							selectedDate={form.dateOfBirth ? new Date(form.dateOfBirth) : null}
+							onDateChange={date =>
+								setForm(prev => ({
+									...prev!,
+									dateOfBirth: date ? date.toISOString().slice(0, 10) : "",
+								}))
 							}
-							onChange={handleChange}
+							required
 							disabled={saving}
+							maxDate={new Date()} // <-- Prevents future dates
 						/>
-						{/* Rank */}
+						{/* Rank Selector*/}
 						<div className="flex-1">
-							<label
-								className="block font-medium mb-1"
-								htmlFor="currentRankId"
-							>
-								Rank
-							</label>
-							<RanksSelector
-								value={form.currentRankId ?? 0}
-								onChange={handleRankChange}
+
+							<GenericSelector
+								items={ranks}
+								value={form.currentRankId ?? null}
+								onChange={id =>
+									setForm(prev => ({
+										...prev!,
+										currentRankId: id ?? null,
+									}))
+								}
+								getLabel={r => r.name}
+								getId={r => r.id}
+								filter={r => isBlackBelt ? r.danLevel !== null : r.danLevel === null}
 								disabled={loading || ranksLoading}
-								filter={isBlackBelt ? 'black' : 'color'}
-								ranks={ranks}
+								required
+								label="Rank"
+								placeholder="Select a rank"
 								className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
 							/>
 							<div className="flex items-center gap-2 mt-2">
@@ -275,23 +279,23 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 								</label>
 							</div>
 						</div>
-						{/* Dojaang */}
-						<div className="flex-1">
-							<label
-								className="block font-medium mb-1"
-								htmlFor="dojaang-selector"
-							>
-								Select Dojaang
-							</label>
-							<DojaangSelector
-								value={form.dojaangId ?? null}
-								onChange={handleDojaangChange}
-								disabled={loading || dojaangsLoading}
-								allDojaangs={dojaangs}
-								label=""
-								className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
-							/>
-						</div>
+						{/* Dojaang Selector*/}
+
+
+						<GenericSelector
+							items={dojaangs}
+							value={form.dojaangId ?? null}
+							onChange={handleDojaangChange}
+							getLabel={d => d.name}
+							getId={d => d.id}
+							disabled={loading || dojaangsLoading}
+							required
+							label=""
+							id="dojaang-selector"
+							placeholder="Select a dojaang"
+							className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+						/>
+
 					</div>
 
 					<FormActionButtons

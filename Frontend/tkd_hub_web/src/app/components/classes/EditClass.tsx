@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 
 import LabeledInput from "../common/inputs/LabeledInput";
-import DojaangSelector from "../dojaangs/DojaangSelector";
-import CoachSelector from "../coaches/CoachSelector";
 import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 
@@ -11,6 +9,8 @@ import { daysOfWeek } from "@/app/const/daysOfWeek";
 import { ClassSchedule } from "@/app/types/ClassSchedule";
 import { Coach } from "@/app/types/Coach";
 import { useCoaches } from "@/app/context/CoachContext";
+import { useDojaangs } from "@/app/context/DojaangContext";
+import { GenericSelector } from "../common/selectors/GenericSelector";
 
 type EditClassProps = {
     open: boolean;
@@ -32,6 +32,7 @@ const defaultForm: Omit<TrainingClass, "id"> = {
 const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialData }) => {
     // 1. Context hooks
     const { getCoachesByDojaang } = useCoaches();
+    const { dojaangs, loading: loadingDojaangs } = useDojaangs();
 
     // 2. State hooks
     const [form, setForm] = useState<Omit<TrainingClass, "id">>(defaultForm);
@@ -68,14 +69,6 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
     // 4. Functions
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    const handleCoachChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const coachId = e.target.value ? Number(e.target.value) : 0;
-        setForm((prev) => ({
-            ...prev,
-            coachId,
-        }));
     };
 
     const handleScheduleChange = (idx: number, field: keyof ClassSchedule, value: string | number) => {
@@ -165,6 +158,7 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                     {initialData ? "Edit Class" : "Create Class"}
                 </h2>
                 <form onSubmit={handleSubmit}>
+                    {/*Class name*/}
                     <LabeledInput
                         label="Class Name"
                         name="name"
@@ -173,15 +167,29 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                         required
                         placeholder="Enter class name"
                     />
-                    <DojaangSelector
+                    {/* Dojaang Selector */}
+                    <GenericSelector
+                        items={dojaangs}
                         value={form.dojaangId === 0 ? null : form.dojaangId}
-                        onChange={id => setForm({ ...form, dojaangId: id ?? 0 })}
+                        onChange={(id: number | null) => setForm({ ...form, dojaangId: id ?? 0 })}
+                        getLabel={d => d.name}
+                        getId={d => d.id}
+                        required
+                        disabled={saving || loadingDojaangs}
+                        label="Dojaang"
+                        placeholder="Select a dojaang"
                     />
-                    <CoachSelector
-                        value={form.coachId ? String(form.coachId) : ""}
-                        onChange={handleCoachChange}
+                    {/* Coach Selector */}
+                    <GenericSelector
+                        items={availableCoaches}
+                        value={form.coachId === 0 ? null : form.coachId}
+                        onChange={(id: number | null) => setForm({ ...form, coachId: id ?? 0 })}
+                        getLabel={c => `${c.firstName} ${c.lastName}${c.email ? ` (${c.email})` : ""}`}
+                        getId={c => c.id}
+                        required
                         disabled={saving}
-                        coaches={availableCoaches}
+                        label="Coach"
+                        placeholder="Select a coach"
                     />
 
                     {/* Schedules Section */}
