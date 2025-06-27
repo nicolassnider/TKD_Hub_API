@@ -52,7 +52,7 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
 								iconClass="bi bi-pencil-square"
 								colorClass="bg-blue-600 text-white hover:bg-blue-700"
 							/>
-							{role === 'Admin' && (
+							{Array.isArray(role) && role.includes('Admin') && (
 								<TableActionButton
 									onClick={() => handleDelete(dojaang.id)}
 									title="Delete"

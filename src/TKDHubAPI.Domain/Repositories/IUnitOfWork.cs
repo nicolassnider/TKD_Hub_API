@@ -31,6 +31,11 @@ public interface IUnitOfWork
     /// </summary>
     IStudentClassRepository StudentClasses { get; }
 
+    /// <summary>
+    /// Gets the repository for user-user role entities.
+    /// </summary>
+    IUserUserRoleRepository UserUserRoles { get; }
+
     // Add other repositories as needed, e.g. IRankRepository Ranks { get; }
 
     /// <summary>

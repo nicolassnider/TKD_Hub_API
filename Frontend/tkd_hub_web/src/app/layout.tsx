@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./components/Header";
 import { Toaster } from "react-hot-toast";
 import { AppProviders } from "./context/AppProviders";
+import Footer from "./components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             
             <main className="flex-1 flex flex-col">{children}</main>
+            <Footer />
           </div>
         </AppProviders>
       </body>

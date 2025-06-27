@@ -11,7 +11,8 @@ import { useRanks } from './RankContext';
 import { useTuls } from './TulContext';
 import { useCoaches } from './CoachContext';
 import { LoginResponse } from '../types/LoginResponse';
-import { useRoles, UserRole } from './RoleContext';
+import { useRoles } from './RoleContext';
+import { UserRole } from '../types/UserRole';
 
 type AuthContextType = {
     isLoggedIn: boolean;
@@ -58,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.removeItem('role');
             localStorage.removeItem('user');
             setIsLoggedIn(false);
-            setRole('Guest'); // Always update RoleContext
+            setRole(['Guest']); // Always update RoleContext
             setUser(null);
             setLoading(false);
             router.push('/login');
@@ -66,7 +67,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoggedIn(true);
             // Only set valid roles
             const validRoles: UserRole[] = ['Guest', 'Student', 'Coach', 'Admin'];
-            setRole(validRoles.includes(storedRole as UserRole) ? (storedRole as UserRole) : 'Guest');
+            setRole(
+                validRoles.includes(storedRole as UserRole)
+                    ? [(storedRole as UserRole)]
+                    : ['Guest']
+            );
             if (storedUser) {
                 try {
                     setUser(JSON.parse(storedUser));
@@ -112,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             localStorage.setItem('role', roleValue);
             localStorage.setItem('user', JSON.stringify(data.user));
-            setRole(roleValue); // Always update RoleContext
+            setRole([roleValue]); // Always update RoleContext
             setUser(data.user);
             setIsLoggedIn(true);
             toast.success('Login successful!');
@@ -122,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const errorMsg = err instanceof Error ? err.message : 'Login failed';
             toast.error(errorMsg);
             setIsLoggedIn(false);
-            setRole('Guest'); // Always update RoleContext
+            setRole(['Guest']); // Always update RoleContext
             setUser(null);
             setLoading(false);
         }
@@ -134,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('role');
         localStorage.removeItem('user');
         setIsLoggedIn(false);
-        setRole('Guest'); // Always update RoleContext
+        setRole(['Guest']); // Always update RoleContext
         setUser(null);
         toast.success('Logout successful!');
         router.push('/login');

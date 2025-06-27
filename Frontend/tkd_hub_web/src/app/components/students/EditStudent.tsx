@@ -53,12 +53,11 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 							typeof apiResponse === 'object' &&
 							'id' in apiResponse
 							? (() => {
-								const { id: _id, ...rest } = apiResponse as Student;
+								const { ...rest } = apiResponse as Student; // Updated line
 								return rest;
 							})()
 							: null;
 					if (data) {
-						console.log("Fetched student:", data);
 						setForm(data);
 						setOriginalForm(data);
 						// Set isBlackBelt based on the loaded student's rank
@@ -129,7 +128,6 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
 				await updateStudent(studentId, payload);
 				toast.success('Student updated successfully!');
 			} else {
-				console.log("Creating student with form state:", form); // <-- Log previous form state
 				await createStudent(
 					payload as Omit<Student, 'id' | 'joinDate' | 'isActive'>
 				);

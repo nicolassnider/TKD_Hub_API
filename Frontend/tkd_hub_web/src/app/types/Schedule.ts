@@ -1,5 +1,5 @@
 export type Schedule = {
-    id: number;
+    id: number | null | undefined;
     day: number;
     startTime: string;
     endTime: string;

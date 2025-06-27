@@ -45,11 +45,11 @@ const PromotionContext = createContext<PromotionContextType>({
     promotions: [],
     loading: false,
     error: null,
-    fetchPromotions: async () => {},
+    fetchPromotions: async () => { },
     getPromotionById: async () => null,
-    createPromotion: async () => {},
-    updatePromotion: async () => {},
-    deletePromotion: async () => {},
+    createPromotion: async () => { },
+    updatePromotion: async () => { },
+    deletePromotion: async () => { },
     fetchPromotionsByStudentId: async () => [],
 });
 
@@ -146,17 +146,13 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
         async (id: number): Promise<Promotion | null> => {
             // Check if the promotion is already in the cache.
             if (promotionByIdCache.current.has(id)) {
-                console.log(
-                    `[PromotionContext] Returning promotion ${id} from cache.`
-                );
+
                 return promotionByIdCache.current.get(id) || null;
             }
 
             setLoading(true);
             setError(null);
-            console.log(
-                `[PromotionContext] Fetching promotion ${id} from API.`
-            );
+
             try {
                 const res = await apiRequest<Promotion>(`/Promotions/${id}`, {
                     headers: { Authorization: `Bearer ${getToken()}` },
@@ -193,17 +189,13 @@ export const PromotionProvider = ({ children }: { children: ReactNode }) => {
         async (studentId: number): Promise<Promotion[]> => {
             // Check if the promotions for this student are already in the cache.
             if (promotionsByStudentIdCache.current.has(studentId)) {
-                console.log(
-                    `[PromotionContext] Returning promotions for student ${studentId} from cache.`
-                );
+
                 return promotionsByStudentIdCache.current.get(studentId) || [];
             }
 
             setLoading(true);
             setError(null);
-            console.log(
-                `[PromotionContext] Fetching promotions for student ${studentId} from API.`
-            );
+
             try {
                 const res = await apiRequest<{ data: Promotion[] }>(
                     `/Promotions/student/${studentId}`,

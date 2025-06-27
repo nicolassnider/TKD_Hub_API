@@ -191,10 +191,27 @@ public class DojaangService : IDojaangService
         if (!currentUser.HasRole("Admin"))
             throw new UnauthorizedAccessException("Only admins can create Dojaangs.");
 
-
         var dojaang = _mapper.Map<Dojaang>(dto);
         await _dojaangRepository.AddAsync(dojaang);
         await _unitOfWork.SaveChangesAsync();
+
+        // Add UserDojaang relation if CoachId is present
+        if (dto.CoachId.HasValue)
+        {
+            var coach = await _userRepository.GetByIdAsync(dto.CoachId.Value);
+            if (coach != null)
+            {
+                var userDojaang = new UserDojaang
+                {
+                    UserId = coach.Id,
+                    DojaangId = dojaang.Id,
+                    Role = "Coach"
+                };
+                await _userDojaangRepository.AddAsync(userDojaang);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
         return _mapper.Map<DojaangDto>(dojaang);
     }
 

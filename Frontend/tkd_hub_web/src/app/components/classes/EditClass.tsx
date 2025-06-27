@@ -11,6 +11,7 @@ import { Coach } from "@/app/types/Coach";
 import { useCoaches } from "@/app/context/CoachContext";
 import { useDojaangs } from "@/app/context/DojaangContext";
 import { GenericSelector } from "../common/selectors/GenericSelector";
+import { DayOfWeek } from "@/app/types/DayOfWeek";
 
 type EditClassProps = {
     open: boolean;
@@ -93,7 +94,7 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
             schedules: [
                 ...prev.schedules,
                 {
-                    day: 0,
+                    day: 0 as unknown as DayOfWeek,
                     startTime: "",
                     endTime: ""
                 } as ClassSchedule
@@ -212,24 +213,17 @@ const EditClass: React.FC<EditClassProps> = ({ open, onClose, onSubmit, initialD
                                         className="flex flex-col gap-2 bg-gray-50 rounded p-2 md:flex-row md:items-stretch flex-wrap"
                                     >
                                         <div className="flex flex-col min-w-[120px] w-full md:w-1/4">
-                                            <label htmlFor={`day-${idx}`} className="font-medium mb-1">
-                                                Day
-                                            </label>
-                                            <select
-                                                id={`day-${idx}`}
-                                                name={`day-${idx}`}
-                                                value={schedule.day}
-                                                onChange={e => handleScheduleChange(idx, "day", Number(e.target.value))}
+                                            <GenericSelector
+                                                items={daysOfWeek}
+                                                value={Number(schedule.day)}
+                                                onChange={(val: number | null) => handleScheduleChange(idx, "day", val ?? 0)}
+                                                getLabel={d => d.label}
+                                                getId={d => d.value}
                                                 required
-                                                title="Day of the week"
-                                                className="rounded border border-gray-300 px-2 py-1 bg-white w-full"
-                                            >
-                                                {daysOfWeek.map(day => (
-                                                    <option key={day.value} value={day.value}>
-                                                        {day.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                label="Day"
+                                                placeholder="Select day"
+                                                className="w-full"
+                                            />
                                         </div>
                                         <div className="flex flex-row gap-2 w-full md:flex-col md:w-2/4 items-end">
                                             <div className="flex flex-col min-w-[80px] w-1/2 md:w-full">

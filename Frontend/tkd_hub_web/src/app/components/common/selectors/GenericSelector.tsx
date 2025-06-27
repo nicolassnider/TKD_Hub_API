@@ -12,7 +12,8 @@ type GenericSelectorProps<T> = {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
-  filter?: (item: T) => boolean; // <-- Add this line
+  filter?: (item: T) => boolean;
+  errorMessage?: string;
 };
 
 export function GenericSelector<T>({
@@ -27,18 +28,29 @@ export function GenericSelector<T>({
   disabled = false,
   placeholder = "Select an option",
   className = "",
-  filter, // <-- Add this line
+  filter,
+  errorMessage,
 }: GenericSelectorProps<T>) {
+  const [touched, setTouched] = React.useState(false);
   const filteredItems = filter ? items.filter(filter) : items;
+
+  const showError =
+    required &&
+    touched &&
+    (value === null || value === undefined);
 
   return (
     <div>
       {label && <label htmlFor={id} className="form-label">{label}</label>}
       <select
         id={id}
-        className={`form-control ${className}`}
+        className={`form-control ${className} ${showError ? "border-red-500" : ""}`}
         value={value !== null && value !== undefined ? String(value) : ""}
-        onChange={e => onChange(e.target.value ? Number(e.target.value) : null)}
+        onChange={e => {
+          setTouched(true);
+          onChange(e.target.value ? Number(e.target.value) : null);
+        }}
+        onBlur={() => setTouched(true)}
         required={required}
         disabled={disabled}
       >
@@ -49,6 +61,11 @@ export function GenericSelector<T>({
           </option>
         ))}
       </select>
+      {showError && (
+        <span className="text-red-600 text-xs">
+          {errorMessage || "This field is required."}
+        </span>
+      )}
     </div>
   );
 }

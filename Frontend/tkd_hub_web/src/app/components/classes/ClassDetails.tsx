@@ -1,6 +1,7 @@
 import React from "react";
 import { ClassSchedule } from "@/app/types/ClassSchedule";
 import { daysOfWeek } from "@/app/const/daysOfWeek";
+import { DayOfWeek } from "@/app/types/DayOfWeek";
 
 type ClassDetailsProps = {
     name: string;
@@ -27,12 +28,10 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
     // (none needed)
 
     // 4. Functions
-    const getDayLabel = (day: number | string) => {
-        if (typeof day === "number") {
-            const found = daysOfWeek.find(d => d.value === day);
-            return found ? found.label : day;
-        }
-        return day;
+    const getDayLabel = (day: number | string | DayOfWeek): string => {
+        const dayNumber = typeof day === "string" ? Number(day) : day;
+        const found = daysOfWeek.find(d => d.value === dayNumber);
+        return found ? found.label : String(day);
     };
 
     // 5. Render

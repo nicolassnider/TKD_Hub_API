@@ -8,9 +8,13 @@ public class UserMappingProfile : Profile
 
         CreateMap<User, UserDto>()
             .ForMember(dest => dest.ManagedDojaangIds,
-                opt => opt.MapFrom(src => src.UserDojaangs != null
-                    ? src.UserDojaangs.Select(ud => ud.DojaangId).ToList()
-                    : new List<int>()));
+            opt => opt.MapFrom(src => src.UserDojaangs.Select(ud => ud.DojaangId).ToList()))
+            .ForMember(dest => dest.Roles,
+            opt => opt.MapFrom(src => src.UserUserRoles
+            .Where(uur => uur.UserRole != null && !string.IsNullOrEmpty(uur.UserRole.Name))
+            .Select(uur => uur.UserRole.Name)
+            .ToList()
+        ));
 
         CreateMap<UpdateUserDto, User>()
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())

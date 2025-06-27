@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<ClassSchedule>, GenericRepository<ClassSchedule>>(); // Added ClassSchedule
         services.AddScoped<IGenericRepository<StudentClass>, GenericRepository<StudentClass>>(); // Added StudentClass
         services.AddScoped<IGenericRepository<BlogPost>, GenericRepository<BlogPost>>(); // Added BlogPost
+        services.AddScoped<IGenericRepository<UserUserRole>, GenericRepository<UserUserRole>>();
 
 
 
@@ -57,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IStudentClassRepository, StudentClassRepository>();
         services.AddScoped<IBlogPostRepository, BlogPostRepository>();
         services.AddScoped<IStudentClassAttendanceRepository, StudentClassAttendanceRepository>();
+        services.AddScoped<IUserUserRoleRepository, UserUserRoleRepository>();
 
         return services;
     }

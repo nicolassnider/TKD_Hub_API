@@ -113,7 +113,6 @@ export const BlogPostProvider: React.FC<{ children: ReactNode }> = ({
         async (id: number): Promise<BlogPost | null> => {
             // Check cache first
             if (postByIdCache.current.has(id)) {
-                console.log(`Returning blog post ${id} from cache.`);
                 const cachedPost = postByIdCache.current.get(id)!;
                 setPost(cachedPost);
                 return cachedPost;

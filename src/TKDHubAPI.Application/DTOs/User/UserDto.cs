@@ -11,7 +11,7 @@ public class UserDto
     public int? DojaangId { get; set; }
     public int? CurrentRankId { get; set; }
     public DateTime? JoinDate { get; set; }
-    public List<string> Roles { get; set; }
+    public List<string> Roles { get; set; } = new List<string>();
     public List<int> ManagedDojaangIds { get; set; }
     public bool IsActive { get; set; } = true;
 }

@@ -164,4 +164,24 @@ public interface IUserService : ICrudService<User>
     /// <param name="coachId">The ID of the coach to reactivate.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task ReactivateAsync(int coachId);
+
+    /// <summary>
+    /// Gets all UserUserRoles for a user.
+    /// </summary>
+    Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId);
+
+    /// <summary>
+    /// Adds a UserUserRole association.
+    /// </summary>
+    Task AddUserUserRoleAsync(UserUserRole userUserRole);
+
+    /// <summary>
+    /// Removes a UserUserRole association.
+    /// </summary>
+    Task RemoveUserUserRoleAsync(int userId, int userRoleId);
+
+    /// <summary>
+    /// Gets all users as DTOs with their roles.
+    /// </summary>
+    Task<IEnumerable<UserDto>> GetAllWithRolesAsync();
 }

@@ -36,14 +36,13 @@ public partial class UsersController : BaseApiController
     }
 
     /// <summary>
-    /// Retrieves all users.
+    /// Retrieves all users as UserDto using mapping and returns a standardized success response.
     /// </summary>
-    /// <returns>A list of all users.</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> Get()
+    public async Task<IActionResult> Get()
     {
-        var users = await _userService.GetAllAsync();
-        return Ok(users);
+        var userDtos = await _userService.GetAllWithRolesAsync();
+        return SuccessResponse(userDtos);
     }
 
     /// <summary>

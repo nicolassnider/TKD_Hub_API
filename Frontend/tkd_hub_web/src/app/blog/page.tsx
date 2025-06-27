@@ -21,7 +21,8 @@ export default function BlogPage() {
   }, []);
 
   // 4. Functions
-  const canCreatePost = role === "Admin" || role === "Coach";
+  const canCreatePost =
+  Array.isArray(role) && (role.includes("Admin") || role.includes("Coach"));
 
   // 5. Render
   return (

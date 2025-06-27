@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Domain.Repositories;
+
 /// <summary>
 /// Repository interface for User entity with user-specific queries.
 /// </summary>
@@ -28,4 +29,19 @@ public interface IUserRepository : IGenericRepository<User>
     /// Gets all users by dojaag.
     /// </summary>
     Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId);
+
+    /// <summary>
+    /// Gets all UserUserRoles for a user.
+    /// </summary>
+    Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId);
+
+    /// <summary>
+    /// Adds a UserUserRole association.
+    /// </summary>
+    Task AddUserUserRoleAsync(UserUserRole userUserRole);
+
+    /// <summary>
+    /// Removes a UserUserRole association.
+    /// </summary>
+    Task RemoveUserUserRoleAsync(int userId, int userRoleId);
 }

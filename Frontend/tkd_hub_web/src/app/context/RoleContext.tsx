@@ -1,77 +1,90 @@
 'use client';
 
-// 1. External imports
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-// 2. App/context/component imports
 import { isTokenExpired } from '../utils/auth';
 import { useAuth } from './AuthContext';
-
-export type UserRole = 'Guest' | 'Student' | 'Coach' | 'Admin';
+import { UserRole } from '../types/UserRole';
 
 type RoleContextType = {
-	role: UserRole;
-	setRole: (role: UserRole) => void;
-	getRole: () => UserRole;
+    role: UserRole[];
+    setRole: (role: UserRole[]) => void;
+    getRole: () => UserRole[];
+    roleLoading: boolean;
 };
 
 const RoleContext = createContext<RoleContextType>({
-	role: 'Guest',
-	setRole: () => { },
-	getRole: () => 'Guest',
+    role: ['Guest'],
+    setRole: () => { },
+    getRole: () => ['Guest'],
+    roleLoading: true,
 });
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
-	children,
+    children,
 }) => {
-	// 1. Context hooks
-	const { getToken, user } = useAuth();
+    const { getToken, user } = useAuth();
+    const [role, setRoleState] = useState<UserRole[]>(['Guest']);
+    const [roleLoading, setRoleLoading] = useState(true);
 
-	// 2. State hooks
-	const [role, setRoleState] = useState<UserRole>('Guest');
+    const setRole = (newRole: UserRole | UserRole[]) => {
+        const rolesArray = Array.isArray(newRole) ? newRole : [newRole];
+        setRoleState(rolesArray);
+        if (typeof window !== 'undefined') {
+            if (rolesArray.includes('Guest')) {
+                localStorage.removeItem('role');
+            } else {
+                localStorage.setItem('role', JSON.stringify(rolesArray));
+            }
+        }
+    };
 
-	// 3. Functions
-	const setRole = (newRole: UserRole) => {
-		setRoleState(newRole);
-		if (typeof window !== 'undefined') {
-			if (newRole === 'Guest') {
-				localStorage.removeItem('role');
-			} else {
-				localStorage.setItem('role', newRole);
-			}
-		}
-	};
+    const getRole = () => role;
 
-	const getRole = () => role;
+    useEffect(() => {
+        const token = getToken();
+        const validRoles: UserRole[] = ['Guest', 'Student', 'Coach', 'Admin'];
 
-	// 4. Effects
-	useEffect(() => {
-		// Sync role with AuthContext user and token
-		const token = getToken();
-		if (!token || isTokenExpired(token)) {
-			setRole('Guest');
-			return;
-		}
+        // If no token or expired, use Guest or localStorage
+        if (!token || isTokenExpired(token)) {
+            let storedRole: UserRole[] | null = null;
+            if (typeof window !== 'undefined') {
+                const raw = localStorage.getItem('role');
+                try {
+                    const parsed = raw ? JSON.parse(raw) : null;
+                    storedRole = Array.isArray(parsed)
+                        ? parsed.filter((r) => validRoles.includes(r as UserRole))
+                        : validRoles.includes(parsed as UserRole)
+                            ? [parsed as UserRole]
+                            : null;
+                } catch {
+                    storedRole = null;
+                }
+            }
+            setRole(storedRole && storedRole.length > 0 ? storedRole : ['Guest']);
+            setRoleLoading(false);
+            return;
+        }
 
-		// If user exists and has roles, use the first valid role
-		if (user && Array.isArray(user.roles) && user.roles.length > 0) {
-			const validRoles: UserRole[] = ['Guest', 'Student', 'Coach', 'Admin'];
-			const userRole = user.roles.find((r: string) => validRoles.includes(r as UserRole));
-			setRole((userRole as UserRole) || 'Student');
-		} else {
-			// Fallback to localStorage or Guest
-			const storedRole = (typeof window !== 'undefined' ? localStorage.getItem('role') : null) as UserRole | null;
-			const validRoles: UserRole[] = ['Guest', 'Student', 'Coach', 'Admin'];
-			setRole(storedRole && validRoles.includes(storedRole as UserRole) ? (storedRole as UserRole) : 'Guest');
-		}
-	}, [getToken, user]);
+        // If user is not loaded yet, wait
+        if (!user) {
+            return;
+        }
 
-	// 5. Render
-	return (
-		<RoleContext.Provider value={{ role, setRole, getRole }}>
-			{children}
-		</RoleContext.Provider>
-	);
+        // If user is logged in, use user.roles
+        if (Array.isArray(user.roles) && user.roles.length > 0) {
+            const userRoles = user.roles.filter((r: string) =>
+                validRoles.includes(r as UserRole)
+            ) as UserRole[];
+            setRole(userRoles.length > 0 ? userRoles : ['Student']);
+        }
+        setRoleLoading(false);
+    }, [getToken, user]);
+
+    return (
+        <RoleContext.Provider value={{ role, setRole, getRole, roleLoading }}>
+            {children}
+        </RoleContext.Provider>
+    );
 };
 
 export const useRoles = () => useContext(RoleContext);

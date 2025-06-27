@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import equal from 'fast-deep-equal';
+import { parseISO, isValid, subYears } from 'date-fns';
 
 import { Coach } from '@/app/types/Coach';
 import { ManagedDojaang } from '@/app/types/ManagedDojaang';
@@ -16,6 +17,7 @@ import { CoachApiResponse } from '@/app/types/CoachApiResponse';
 import { GenericSelector } from '../common/selectors/GenericSelector';
 import { Gender } from '@/app/enums/Gender';
 import { useRanks } from '@/app/context/RankContext';
+import FormActionButtons from '../common/actionButtons/FormActionButtons';
 
 type EditCoachProps = {
 	coachId: number;
@@ -40,8 +42,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 	// 1. Context hooks
 	const { fetchDojaangs } = useDojaangs();
 	const { getCoachById, upsertCoach } = useCoaches();
-	const { ranks = [], loading: ranksLoading, fetchRanks } = useRanks();
-
+	const { ranks = [], loading: ranksLoading } = useRanks();	
 
 	// 2. State hooks
 	const [loading, setLoading] = useState(true);
@@ -54,6 +55,18 @@ const EditCoach: React.FC<EditCoachProps> = ({
 		null
 	);
 	const [saving, setSaving] = useState(false);
+
+	// Manual validation for required fields (including date pickers)
+	const isFormValid =
+		form &&
+		form.firstName &&
+		form.lastName &&
+		form.email &&
+		form.phoneNumber &&
+		form.gender !== undefined &&
+		form.dateOfBirth &&
+		form.currentRankId &&
+		form.joinDate;
 
 	// 3. Effects
 	useEffect(() => {
@@ -70,7 +83,6 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						apiResponse?.data?.managedDojaangs ?? [];
 
 					if (!coachData) throw new Error('Coach not found');
-					console.log("Fetched coach:", coachData); // <-- Log fetched coach here
 					const loadedForm = {
 						firstName: coachData.firstName,
 						lastName: coachData.lastName,
@@ -88,7 +100,6 @@ const EditCoach: React.FC<EditCoachProps> = ({
 					setForm(loadedForm);
 					setOriginalForm(loadedForm);
 
-					// Optionally merge managedDojaangs into allDojaangs
 					setAllDojaangs((prev) => {
 						const ids = new Set(prev.map((d) => d.id));
 						return [
@@ -104,10 +115,10 @@ const EditCoach: React.FC<EditCoachProps> = ({
 						lastName: '',
 						email: '',
 						phoneNumber: '',
-						gender: 0,
+						gender: undefined, // default to undefined for placeholder
 						dateOfBirth: '',
 						dojaangId: null,
-						currentRankId: 0,
+						currentRankId: undefined,
 						joinDate: '',
 						roles: [],
 						managedDojaangIds: [],
@@ -116,7 +127,6 @@ const EditCoach: React.FC<EditCoachProps> = ({
 					setForm(emptyForm);
 					setOriginalForm(emptyForm);
 				}
-				// Use fetchDojaangs from DojaangContext
 				const dojaangsData: ApiDojaangResponse =
 					(await fetchDojaangs?.()) ?? [];
 				setAllDojaangs(
@@ -213,29 +223,32 @@ const EditCoach: React.FC<EditCoachProps> = ({
 
 				<form
 					className="flex-1 overflow-y-auto pr-2 space-y-3"
-					onSubmit={(e) => {
+					onSubmit={e => {
 						e.preventDefault();
+						if (!isFormValid) {
+							toast.error('Please fill in all required fields.');
+							return;
+						}
 						handleUpdate();
 					}}
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						{/* Coach Name */}
 						<LabeledInput
 							label="First Name"
 							name="firstName"
 							value={form.firstName}
 							onChange={handleChange}
 							disabled={saving}
+							required
 						/>
-						{/* Last Name */}
 						<LabeledInput
 							label="Last Name"
 							name="lastName"
 							value={form.lastName}
 							onChange={handleChange}
 							disabled={saving}
+							required
 						/>
-						{/* Email */}
 						<LabeledInput
 							label="Email"
 							name="email"
@@ -244,6 +257,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							onChange={handleChange}
 							disabled={saving}
 							placeholder="Enter email address"
+							required
 						/>
 						<LabeledInput
 							label="Phone Number"
@@ -253,6 +267,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							onChange={handleChange}
 							disabled={saving}
 							placeholder="Enter phone number"
+							required
 						/>
 						<div>
 							<label
@@ -271,7 +286,7 @@ const EditCoach: React.FC<EditCoachProps> = ({
 								onChange={id =>
 									setForm(prev => ({
 										...prev!,
-										gender: id ?? Gender.MALE,
+										gender: typeof id === "number" ? id : undefined,
 									}))
 								}
 								getLabel={g => g.label}
@@ -282,15 +297,28 @@ const EditCoach: React.FC<EditCoachProps> = ({
 								label=""
 								className="px-3 py-2"
 								placeholder="Select gender"
+								errorMessage="Gender is required"
 							/>
 						</div>
 						<LabeledInput
 							label="Date of Birth"
 							name="dateOfBirth"
-							type="date"
-							value={form.dateOfBirth || ''}
-							onChange={handleChange}
+							datepicker
+							selectedDate={
+								form.dateOfBirth && isValid(parseISO(form.dateOfBirth))
+									? parseISO(form.dateOfBirth)
+									: null
+							}
+							onDateChange={date =>
+								setForm(prev => ({
+									...prev!,
+									dateOfBirth: date ? date.toISOString().split('T')[0] : '',
+								}))
+							}
 							disabled={saving}
+							maxDate={subYears(new Date(), 12)}
+							required
+							errorMessage="Date of birth is required"
 						/>
 						<GenericSelector
 							items={ranks}
@@ -303,21 +331,34 @@ const EditCoach: React.FC<EditCoachProps> = ({
 							}
 							getLabel={r => r.name}
 							getId={r => r.id}
-							filter={r => r.danLevel !== null} // Only show black belts
+							filter={r => r.danLevel !== null}
 							disabled={loading || ranksLoading}
 							required
 							label="Rank"
 							placeholder="Select a black belt rank"
 							className="form-input px-3 py-2 border border-gray-300 rounded w-full"
+							errorMessage="Rank is required"
 						/>
 						<LabeledInput
 							label="Join Date"
 							name="joinDate"
-							type="date"
-							value={form.joinDate || ''}
-							onChange={handleChange}
+							datepicker
+							selectedDate={
+								form.joinDate && isValid(parseISO(form.joinDate))
+									? parseISO(form.joinDate)
+									: new Date()
+							}
+							onDateChange={date =>
+								setForm(prev => ({
+									...prev!,
+									joinDate: date ? date.toISOString().split('T')[0] : '',
+								}))
+							}
 							disabled={saving}
+							maxDate={new Date()}
 							placeholder="YYYY-MM-DD"
+							required
+							errorMessage="Join date is required"
 						/>
 					</div>
 					{coachId !== 0 && (
@@ -329,8 +370,8 @@ const EditCoach: React.FC<EditCoachProps> = ({
 								managedDojaangIds={form.managedDojaangIds ?? []}
 								allDojaangs={allDojaangs}
 								coachId={coachId}
-								onAdd={(id) =>
-									setForm((f) => ({
+								onAdd={id =>
+									setForm(f => ({
 										...f!,
 										managedDojaangIds: [
 											...(f?.managedDojaangIds ?? []),
@@ -338,39 +379,24 @@ const EditCoach: React.FC<EditCoachProps> = ({
 										],
 									}))
 								}
-								onRemove={(id) =>
-									setForm((f) => ({
+								onRemove={id =>
+									setForm(f => ({
 										...f!,
 										managedDojaangIds: (
 											f?.managedDojaangIds ?? []
-										).filter((did) => did !== id),
+										).filter(did => did !== id),
 									}))
 								}
 							/>
 						</div>
 					)}
+					<FormActionButtons
+						onCancel={() => onClose(false)}
+						onSubmitLabel={coachId ? 'Update' : 'Create'}
+						loading={saving}
+						disabled={loading || !isFormValid || equal(form, originalForm)}
+					/>
 				</form>
-				<div className="flex justify-center gap-2 mt-4">
-					<button
-						type="button"
-						className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400 flex items-center justify-center"
-						onClick={() => onClose(false)}
-					>
-						<i className="bi bi-x-lg md:hidden text-lg"></i>
-						<span className="hidden md:inline">Cancel</span>
-					</button>
-					<button
-						type="submit"
-						className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
-						disabled={loading || equal(form, originalForm)}
-						onClick={handleUpdate}
-					>
-						<i className="bi bi-check-lg md:hidden text-lg"></i>
-						<span className="hidden md:inline">
-							{coachId ? 'Update' : 'Create'}
-						</span>
-					</button>
-				</div>
 			</div>
 		</div>
 	);

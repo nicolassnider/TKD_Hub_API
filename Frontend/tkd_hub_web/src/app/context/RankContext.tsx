@@ -7,7 +7,8 @@ import React, {
     useState,
     ReactNode,
     useCallback,
-    useRef, // Import useRef for creating mutable references for caches
+    useRef,
+    useEffect, // Import useRef for creating mutable references for caches
 } from 'react';
 import toast from 'react-hot-toast';
 
@@ -39,7 +40,7 @@ const RankContext = createContext<RankContextType>({
     ranks: [],
     loading: false,
     error: null,
-    fetchRanks: async () => {},
+    fetchRanks: async () => { },
     getRankById: async () => null,
 });
 
@@ -63,51 +64,37 @@ export const useRanks = () => useContext(RankContext);
  */
 export const RankProvider = ({ children }: { children: ReactNode }) => {
     // 1. Context hooks
-    // Custom hook for making API requests.
     const { apiRequest } = useApiRequest();
 
     // 2. State Hooks
-    // State to hold the list of all ranks.
     const [ranks, setRanks] = useState<Rank[]>([]);
-    // State to indicate if an API request is currently in progress.
     const [loading, setLoading] = useState(false);
-    // State to store any error messages from API requests.
     const [error, setError] = useState<string | null>(null);
 
-    // Caches for memoizing API responses to avoid redundant calls.
-    // `rankByIdCache`: Stores individual rank objects fetched by their ID.
-    // Using `useRef` ensures the cache persists across renders without causing re-renders.
     const rankByIdCache = useRef<Map<number, Rank>>(new Map());
 
-    // 3. Effects
-    // (No specific useEffects are typically needed here for memoization itself,
-    // as memoization is handled within the useCallback functions and useRef caches.)
+    // --- Automatically fetch ranks on mount ---
+    useEffect(() => {
+        fetchRanks();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // 4. Functions (memoized with useCallback)
-
-    /**
-     * Fetches all ranks from the API.
-     * Updates the 'ranks' state and populates the `rankByIdCache` with fetched ranks
-     * to optimize subsequent `getRankById` calls.
-     * This function is memoized using `useCallback` to prevent unnecessary re-creations.
-     */
     const fetchRanks = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
             const res = await apiRequest<{ data: Rank[] }>('/Ranks');
-            // Ensure `res.data` is an array; default to empty array if not.
             const ranksArray = Array.isArray(res.data) ? res.data : [];
             setRanks(ranksArray);
 
             // Populate rankByIdCache for quick lookup of individual ranks.
             ranksArray.forEach(rank => {
-                if (rank.id != null) { // Ensure id is not null or undefined
+                if (rank.id != null) {
                     rankByIdCache.current.set(rank.id, rank);
                 }
             });
         } catch (err) {
-            // Handle and display error message using react-hot-toast.
             setError('Failed to load ranks');
             setRanks([]);
             toast.error(
@@ -117,7 +104,7 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    }, [apiRequest]); // Dependency: `apiRequest` to ensure the function is stable.
+    }, [apiRequest]);
 
     /**
      * Fetches a single rank by its ID.
@@ -131,13 +118,11 @@ export const RankProvider = ({ children }: { children: ReactNode }) => {
         async (id: number): Promise<Rank | null> => {
             // Check if the rank is already in the cache.
             if (rankByIdCache.current.has(id)) {
-                console.log(`[RankContext] Returning rank ${id} from cache.`);
                 return rankByIdCache.current.get(id) || null;
             }
 
             setLoading(true);
             setError(null);
-            console.log(`[RankContext] Fetching rank ${id} from API.`);
             try {
                 const res = await apiRequest<Rank>(`/Ranks/${id}`);
                 // If the API call is successful, store the fetched rank in the cache.
