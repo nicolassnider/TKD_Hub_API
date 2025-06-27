@@ -59,15 +59,11 @@ const TodaysClassesFloating: React.FC = () => {
                             <ul className="ml-4 text-xs text-gray-600">
                                 {cls.schedules
                                     ?.filter(
-                                        (s: ClassSchedule) => s.day === today
+                                        (s: ClassSchedule) => Number(s.day) === today
                                     )
                                     .map((s: ClassSchedule, idx: number) => (
                                         <li key={idx}>
-                                            {
-                                                daysOfWeek.find(
-                                                    (d) => d.value === s.day
-                                                )?.label
-                                            }
+                                            {daysOfWeek.find((d) => d.value === Number(s.day))?.label}
                                             : {s.startTime} - {s.endTime}
                                         </li>
                                     ))}

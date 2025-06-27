@@ -128,19 +128,13 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
         async (id: number): Promise<Student | null> => {
             // Check cache first for existing student data.
             if (studentByIdCache.current.has(id)) {
-                console.log(
-                    '[StudentContext] Returning student from cache:',
-                    id
-                );
+                
                 return studentByIdCache.current.get(id) || null;
             }
 
             setLoading(true);
             setError(null);
-            console.log(
-                '[StudentContext] getStudentById making API call for id:',
-                id
-            );
+            
             try {
                 const res = await apiRequest<{ data: Student }>(
                     `/Students/${id}`,
@@ -152,10 +146,7 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
                 if (fetchedStudent) {
                     studentByIdCache.current.set(id, fetchedStudent); // Store in cache if successfully fetched.
                 }
-                console.log(
-                    '[StudentContext] getStudentById API response:',
-                    fetchedStudent
-                );
+                
                 return fetchedStudent;
             } catch (err) {
                 setError('Failed to load student');
@@ -261,19 +252,13 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
         async (dojaangId: number): Promise<Student[]> => {
             // Check cache first for existing students by dojaang.
             if (studentsByDojaangCache.current.has(dojaangId)) {
-                console.log(
-                    '[StudentContext] Returning students by dojaang from cache:',
-                    dojaangId
-                );
+                
                 return studentsByDojaangCache.current.get(dojaangId) || [];
             }
 
             setLoading(true);
             setError(null);
-            console.log(
-                '[StudentContext] getStudentsByDojaang making API call for dojaangId:',
-                dojaangId
-            );
+            
             try {
                 const res = await apiRequest<{ data: { data: Student[] } }>(
                     `/Students/Dojaang/${dojaangId}`,

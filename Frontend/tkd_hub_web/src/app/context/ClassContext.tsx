@@ -5,7 +5,6 @@ import React, {
     createContext,
     useContext,
     useState,
-    ReactNode,
     useCallback,
     useRef, // Import useRef for caching
     useEffect, // Import useEffect for initial data fetch
@@ -69,7 +68,7 @@ const ClassContext = createContext<ClassContextType>({
 // Custom hook for consuming the context
 export const useClasses = () => useContext(ClassContext);
 
-export const ClassProvider: React.FC<{ children: ReactNode }> = ({
+export const ClassProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
     // 1. Context hooks
@@ -116,7 +115,6 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
 
             // Populate classByIdCache for individual class lookups
             fetchedClasses.forEach(c => {
-                // Ensure id exists before setting in Map
                 if (c.id !== undefined && c.id !== null) {
                     classByIdCache.current.set(c.id, c);
                 }
@@ -133,20 +131,16 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
         }
     }, [apiRequest, getToken]);
 
-    // Initial fetch of all classes on component mount
     useEffect(() => {
-        // Only fetch if classes are not already loaded to prevent unnecessary calls
-        if (classes.length === 0 && !loading && !error) {
-            fetchClasses();
-        }
-    }, [fetchClasses, classes.length, loading, error]);
+        fetchClasses();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // --- GET /Classes/:id ---
     const getClassById = useCallback(
         async (id: number): Promise<TrainingClass | null> => {
             // Check cache first
             if (classByIdCache.current.has(id)) {
-                console.log(`Returning class ${id} from cache.`);
                 return classByIdCache.current.get(id)!; // We know it exists if has() returns true
             }
 
@@ -366,7 +360,6 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
         async (classId: number): Promise<Student[]> => {
             // Check cache first
             if (studentsByClassCache.current.has(classId)) {
-                console.log(`Returning students for class ${classId} from cache.`);
                 return studentsByClassCache.current.get(classId)!;
             }
 
@@ -405,7 +398,6 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
 
             // Check cache first
             if (classesByDayCache.current.has(cacheKey)) { // No 'as any' needed
-                console.log(`Returning classes for day ${String(cacheKey)} from cache.`);
                 return classesByDayCache.current.get(cacheKey)!;
             }
 
@@ -448,7 +440,6 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
         async (coachId: number): Promise<TrainingClass[]> => {
             // Check cache first
             if (classesByCoachIdCache.current.has(coachId)) {
-                console.log(`Returning classes for coach ${coachId} from cache.`);
                 return classesByCoachIdCache.current.get(coachId)!;
             }
 
@@ -620,6 +611,12 @@ export const ClassProvider: React.FC<{ children: ReactNode }> = ({
         deleteClass, addStudentToClass, getStudentsByClass, getClassesByDay,
         getClassesByCoachId, getStudentAttendance, addStudentAttendance, getStudentAttendanceHistory
     ]);
+
+    // Initial fetch of all classes on component mount (fix infinite loop)
+    useEffect(() => {
+        fetchClasses();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <ClassContext.Provider value={contextValue}>

@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import servicesRoutes from '../routes/servicesRoutes';
 import { usePathname } from 'next/navigation';
 import { useRoles } from '../context/RoleContext';
+import { UserRole } from '../types/UserRole';
 
 export const Header = () => {
 	// 1. Context hooks
-	const { isLoggedIn, logout  } = useAuth();
+	const { isLoggedIn, logout } = useAuth();
 	const router = useRouter();
 	const pathname = usePathname();
-	const { role } = useRoles();
+	const { role } = useRoles(); // role is now an array
 
 	// 2. State hooks
 	const [isOpen, setIsOpen] = useState(false);
@@ -38,43 +39,7 @@ export const Header = () => {
 	// 4. Functions
 	const renderMenuItems = (isMobile = false) => (
 		<>
-			<Link
-				href="/"
-				className={`block ${isMobile
-					? 'px-4 py-2 hover:bg-purple-700 hover:text-white rounded transition-colors duration-200'
-					: 'hover:text-gray-300 transition duration-300 ease-in-out'
-					} ${pathname === '/' ? 'text-gray-300 font-bold' : ''}`}
-			>
-				Home
-			</Link>
-			<Link
-				href="/blog"
-				className={`block ${isMobile
-					? 'px-4 py-2 hover:bg-purple-700 hover:text-white rounded transition-colors duration-200'
-					: 'hover:text-gray-300 transition duration-300 ease-in-out'
-					} ${pathname === '/blog' ? 'text-gray-300 font-bold' : ''}`}
-			>
-				Blog
-			</Link>
-			<Link
-				href="/about"
-				className={`block ${isMobile
-					? 'px-4 py-2 hover:bg-purple-700 hover:text-white rounded transition-colors duration-200'
-					: 'hover:text-gray-300 transition duration-300 ease-in-out'
-					} ${pathname === '/about' ? 'text-gray-300 font-bold' : ''}`}
-			>
-				About
-			</Link>
-			<Link
-				href="/contact"
-				className={`block ${isMobile
-					? 'px-4 py-2 hover:bg-purple-700 hover:text-white rounded transition-colors duration-200'
-					: 'hover:text-gray-300 transition duration-300 ease-in-out'
-					} ${pathname === '/contact' ? 'text-gray-300 font-bold' : ''}`}
-			>
-				Contact
-			</Link>
-			{(role === 'Coach' || role === 'Admin') && (
+			{(role.includes('Coach') || role.includes('Admin')) && (
 				<div className="relative" ref={servicesRef}>
 					<button
 						onClick={() => setIsServicesOpen(!isServicesOpen)}
@@ -98,7 +63,7 @@ export const Header = () => {
 								.filter(
 									(route) =>
 										!route.roles ||
-										route.roles.includes(role)
+										route.roles.some(r => role.includes(r as UserRole))
 								)
 								.map((route) => (
 									<Link
@@ -118,7 +83,7 @@ export const Header = () => {
 					)}
 				</div>
 			)}
-			{role === 'Student' && (
+			{role.includes('Student') && (
 				<Link
 					href="/students"
 					className={`block ${isMobile
@@ -150,10 +115,13 @@ export const Header = () => {
 						</Link>
 					</div>
 
-					{/* Show actual role on the right side of the header */}
+					{/* Show actual role(s) on the right side of the header */}
 					<div className="hidden md:flex items-center space-x-2">
 						<span className="text-sm text-gray-300">
-							Role: <span className="font-semibold">{role}</span>
+							Role:{" "}
+							<span className="font-semibold">
+								{role.length > 0 ? role.join(", ") : "Guest"}
+							</span>
 						</span>
 					</div>
 

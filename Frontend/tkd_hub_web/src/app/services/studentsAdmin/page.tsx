@@ -56,7 +56,6 @@ export default function StudentsAdmin() {
   );
 
   function handleEdit(id: number) {
-    console.log("handleEdit called with id:", id);
     setEditId(id);
   }
   function handleEditClose(refreshList?: boolean) {

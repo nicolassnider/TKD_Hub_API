@@ -88,7 +88,6 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
               <TableActionButton
                 onClick={() => {
                   if (typeof student.id === "number") {
-                    console.log("Edit button clicked, student id:", student.id);
                     onEdit(student.id);
                   }
                 }}
@@ -118,6 +117,17 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
                 iconClass="bi bi-award"
                 colorClass="bg-purple-600 text-white hover:bg-purple-700"
                 disabled={typeof student.id !== "number" || !student.isActive}
+              />
+              {/* Attendance management */}
+              <TableActionButton
+                onClick={() =>
+                  typeof student.id === "number" &&
+                  router.push(`/services/attendanceAdmin/${student.id}`)
+                }
+                title="Attendance Admin"
+                iconClass="bi bi-calendar-check"
+                colorClass="bg-indigo-600 text-white hover:bg-indigo-700"
+                disabled={typeof student.id !== "number"}
               />
               {student.isActive ? (
                 /* Remove Student Action Button */

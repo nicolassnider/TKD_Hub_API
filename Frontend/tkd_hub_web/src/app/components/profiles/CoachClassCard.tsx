@@ -35,7 +35,7 @@ const CoachClassCard: React.FC<CoachClassCardProps> = ({ coachClass }) => {
 					<ul className="ml-0 mt-1 list-none text-gray-500 space-y-1 flex flex-col items-center">
 						{coachClass.schedules.map((s) => {
 							const dayLabel =
-								daysOfWeek.find((d) => d.value === s.day)
+								daysOfWeek.find((d) => d.value === Number(s.day))
 									?.label ?? `Day ${s.day}`;
 							return (
 								<li

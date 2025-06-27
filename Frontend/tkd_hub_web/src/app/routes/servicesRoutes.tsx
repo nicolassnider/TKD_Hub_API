@@ -20,7 +20,7 @@ const servicesRoutes: ServiceRoute[] = [
     roles: ["Coach", "Admin"],
   },
   {
-    href: "/services/users",
+    href: "/services/usersAdmin",
     icon: "bi bi-people-fill",
     label: "Users",
     roles: ["Admin"],

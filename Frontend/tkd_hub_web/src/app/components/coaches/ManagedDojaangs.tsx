@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCoaches } from '@/app/context/CoachContext';
+import { GenericSelector } from '../common/selectors/GenericSelector';
 
 type ManagedDojaangsProps = {
 	managedDojaangIds: number[];
@@ -88,25 +89,19 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
 					<label htmlFor="add-dojaang-select" className="sr-only">
 						Add Dojaang
 					</label>
-					<select
-						id="add-dojaang-select"
-						className="border rounded px-2 py-1"
-						defaultValue=""
-						onChange={(e) => {
-							const selectedId = Number(e.target.value);
-							if (selectedId && onAdd) onAdd(selectedId);
-							e.target.value = '';
+					<GenericSelector
+						items={availableDojaangs}
+						value={null}
+						onChange={id => {
+							if (id && onAdd) onAdd(id);
 						}}
-					>
-						<option value="" disabled>
-							Add Dojaang...
-						</option>
-						{availableDojaangs.map((d) => (
-							<option key={d.id} value={d.id}>
-								{d.name}
-							</option>
-						))}
-					</select>
+						getLabel={d => d.name}
+						getId={d => d.id}
+						label={undefined}
+						placeholder="Add Dojaang..."
+						className="border rounded px-2 py-1"
+						id="add-dojaang-select"
+					/>
 				</div>
 			)}
 		</div>

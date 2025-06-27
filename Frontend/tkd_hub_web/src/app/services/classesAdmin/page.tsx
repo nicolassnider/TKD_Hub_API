@@ -6,6 +6,7 @@ import { AdminListPage } from "@/app/components/AdminListPage";
 import EditClass from "@/app/components/classes/EditClass";
 import { TrainingClass } from "@/app/types/TrainingClass";
 import AddStudentToClass from "@/app/components/classes/AddStudentToClass";
+import ManageAssistanceModal from "@/app/components/classes/ManageAssistanceModal";
 
 const ClassesAdminPage = () => {
     const { classes, addClass, updateClass, fetchClasses, loading, error } = useClasses();
@@ -13,9 +14,17 @@ const ClassesAdminPage = () => {
     const [editOpen, setEditOpen] = useState(false);
     const [editInitial, setEditInitial] = useState<TrainingClass | null>(null);
     const [addStudentsClassId, setAddStudentsClassId] = useState<number | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+
 
     const handleAddStudents = (classId: number) => {
         setAddStudentsClassId(classId); // Open modal for this class
+    };
+
+    const handleManageAssistance = (classId: number) => {
+        setSelectedClassId(classId);
+        setModalOpen(true);
     };
 
     useEffect(() => {
@@ -54,8 +63,8 @@ const ClassesAdminPage = () => {
         <>
             <AdminListPage
                 title="Classes Admin"
-                loading={loading}    // Pass actual loading state
-                error={error}        // Pass actual error state
+                loading={loading}
+                error={error}
                 onCreate={handleCreate}
                 createLabel="Create Class"
                 tableHead={
@@ -71,7 +80,8 @@ const ClassesAdminPage = () => {
                         classes={classes}
                         onEdit={handleEdit}
                         onRequestDelete={handleRequestDelete}
-                        onAddStudents={handleAddStudents} // <-- Add this line
+                        onAddStudents={handleAddStudents}
+                        onManageAssistance={handleManageAssistance} // <-- Pass handler
                     />
                 }
             />
@@ -85,6 +95,12 @@ const ClassesAdminPage = () => {
                 classId={addStudentsClassId ?? 0}
                 open={addStudentsClassId !== null}
                 onClose={() => setAddStudentsClassId(null)}
+            />
+            
+            <ManageAssistanceModal
+                open={modalOpen}
+                classId={selectedClassId}
+                onClose={() => setModalOpen(false)}
             />
         </>
     );

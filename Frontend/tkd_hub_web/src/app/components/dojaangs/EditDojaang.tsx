@@ -169,6 +169,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   value={dojaang.address}
                   onChange={handleChange}
                   disabled={saving}
+                  required
                 />
                 {/* Dojaang location */}
                 <LabeledInput
@@ -177,6 +178,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   value={dojaang.location}
                   onChange={handleChange}
                   disabled={saving}
+                  required
                 />
                 {/* Dojaang phone */}
                 <LabeledInput
@@ -186,6 +188,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   onChange={handleChange}
                   disabled={saving}
                   placeholder="Enter phone number"
+                  required
                 />
                 {/* Dojaang email */}
                 <LabeledInput
@@ -196,6 +199,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   onChange={handleChange}
                   disabled={saving}
                   placeholder="Enter email address"
+                  required
                 />
                 {/* Dojaang korean name */}
                 <LabeledInput
@@ -228,7 +232,6 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   getLabel={c => `${c.firstName} ${c.lastName}${c.email ? ` (${c.email})` : ""}`}
                   getId={c => c.id}
                   disabled={saving || coachesLoading}
-                  required
                   label="Coach"
                   placeholder="Select a coach"
                 />

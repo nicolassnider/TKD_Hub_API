@@ -40,14 +40,14 @@ const CoachContext = createContext<CoachContextType>({
     coaches: [],
     loading: false,
     error: null,
-    fetchCoaches: async () => {},
+    fetchCoaches: async () => { },
     getCoachById: async () => null,
-    createCoach: async () => {},
-    updateCoach: async () => {},
-    deleteCoach: async () => {},
-    upsertCoach: async () => {},
-    removeCoachFromDojaang: async () => {},
-    updateManagedDojaangs: async () => {},
+    createCoach: async () => { },
+    updateCoach: async () => { },
+    deleteCoach: async () => { },
+    upsertCoach: async () => { },
+    removeCoachFromDojaang: async () => { },
+    updateManagedDojaangs: async () => { },
     getCoachesByDojaang: async () => [],
 });
 
@@ -138,13 +138,11 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
                 // You might want a more sophisticated check here,
                 // e.g., if cachedData.data.managedDojaangs.length > 0
                 // For now, assuming if it's in cache, it's valid enough for this call.
-                console.log(`[CoachContext] Returning coach ${id} from cache.`);
                 return cachedData || null;
             }
 
             setLoading(true);
             setError(null);
-            console.log(`[CoachContext] Fetching coach ${id} from API.`);
             try {
                 const token = getToken();
                 if (!token) {
@@ -392,13 +390,12 @@ export const CoachProvider = ({ children }: { children: ReactNode }) => {
         async (dojaangId: number): Promise<Coach[]> => {
             // Check if the coaches for this dojaang are already in the cache.
             if (coachesByDojaangCache.current.has(dojaangId)) {
-                console.log(`[CoachContext] Returning coaches for dojaang ${dojaangId} from cache.`);
+
                 return coachesByDojaangCache.current.get(dojaangId) || [];
             }
 
             setLoading(true);
             setError(null);
-            console.log(`[CoachContext] Fetching coaches for dojaang ${dojaangId} from API.`);
             try {
                 const token = getToken();
                 if (!token) {
