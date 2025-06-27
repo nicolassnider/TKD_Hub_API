@@ -156,6 +156,7 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<User>> GetAllAsync()
     {
+        // This will include UserUserRoles and their UserRole due to repository implementation
         return await _userRepository.GetAllAsync();
     }
 
@@ -295,6 +296,41 @@ public class UserService : IUserService
         }
 
         return user;
+    }
+
+    public async Task<IEnumerable<UserDto>> GetAllWithRolesAsync()
+    {
+        var users = await _userRepository.GetAllAsync();
+
+        var userDtos = users.Select(user => new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Gender = user.Gender,
+            // Map other properties as needed...
+            Roles = user.UserUserRoles?
+                .Where(uur => uur.UserRole != null && !string.IsNullOrEmpty(uur.UserRole.Name))
+                .Select(uur => uur.UserRole.Name)
+                .ToList() ?? new List<string>(),
+            ManagedDojaangIds = user.UserDojaangs?
+            .Select(ud => ud.DojaangId)
+            .ToList() ?? new List<int>(),
+            // Add other UserDto properties here as needed
+            // Example:
+            // FirstName = user.FirstName,
+            // LastName = user.LastName,
+            // etc.
+            DateOfBirth = user.DateOfBirth,
+            DojaangId = user.DojaangId,
+            CurrentRankId = user.CurrentRankId,
+            JoinDate = user.JoinDate,
+            IsActive = user.IsActive,
+            PhoneNumber = user.PhoneNumber,
+            FirstName = user.FirstName,
+            LastName = user.LastName
+        }).ToList();
+
+        return userDtos;
     }
 
     public async Task<string?> GetRoleNameById(int roleId)
@@ -646,6 +682,23 @@ public class UserService : IUserService
 
         user.IsActive = true;
         _userRepository.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId)
+    {
+        return await _userRepository.GetUserUserRolesAsync(userId);
+    }
+
+    public async Task AddUserUserRoleAsync(UserUserRole userUserRole)
+    {
+        await _userRepository.AddUserUserRoleAsync(userUserRole);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RemoveUserUserRoleAsync(int userId, int userRoleId)
+    {
+        await _userRepository.RemoveUserUserRoleAsync(userId, userRoleId);
         await _unitOfWork.SaveChangesAsync();
     }
 }

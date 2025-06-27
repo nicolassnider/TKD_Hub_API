@@ -99,7 +99,7 @@ public static class SeedData
             DateOfBirth = new DateTime(1960, 1, 1),
             JoinDate = DateTime.UtcNow,
             //DojaangId = 1,
-            CurrentRankId = 11
+            CurrentRankId = 19
         };
 
         return new List<User> { admin, grandMaster };

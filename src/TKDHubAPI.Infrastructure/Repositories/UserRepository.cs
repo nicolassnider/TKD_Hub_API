@@ -9,6 +9,15 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         _context = context;
     }
 
+    public async Task<List<User>> GetAllAsync()
+    {
+        return await _context.Users
+            .Include(u => u.UserUserRoles)
+                .ThenInclude(uur => uur.UserRole)
+            .Include(u => u.UserDojaangs)
+            .ToListAsync();
+    }
+
     public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users
@@ -85,5 +94,30 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     private int? NormalizeDojaangId(int? dojaangId)
     {
         return (dojaangId == null || dojaangId == 0) ? null : dojaangId;
+    }
+
+    public async Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId)
+    {
+        return await _context.UserUserRoles
+            .Include(uur => uur.UserRole)
+            .Where(uur => uur.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task AddUserUserRoleAsync(UserUserRole userUserRole)
+    {
+        await _context.UserUserRoles.AddAsync(userUserRole);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveUserUserRoleAsync(int userId, int userRoleId)
+    {
+        var entity = await _context.UserUserRoles
+            .FirstOrDefaultAsync(uur => uur.UserId == userId && uur.UserRoleId == userRoleId);
+        if (entity != null)
+        {
+            _context.UserUserRoles.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
     }
 }
