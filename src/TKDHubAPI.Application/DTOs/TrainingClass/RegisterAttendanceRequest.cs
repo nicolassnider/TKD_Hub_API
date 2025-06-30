@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.TrainingClass;
-
+[ExcludeFromCodeCoverage]
 /// <summary>
 /// Request DTO for registering a student's attendance in a class.
 /// </summary>

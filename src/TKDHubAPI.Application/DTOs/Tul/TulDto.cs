@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.Tul;
+[ExcludeFromCodeCoverage]
 public class TulDto
 {
     public int Id { get; set; }

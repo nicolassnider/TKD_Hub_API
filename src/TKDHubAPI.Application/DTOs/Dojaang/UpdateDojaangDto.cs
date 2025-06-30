@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.Dojaang;
+[ExcludeFromCodeCoverage]
 public class UpdateDojaangDto
 {
     public int Id { get; set; }

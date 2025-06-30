@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.User;
+[ExcludeFromCodeCoverage]
 public class CreateUserDto
 {
     public string FirstName { get; set; }

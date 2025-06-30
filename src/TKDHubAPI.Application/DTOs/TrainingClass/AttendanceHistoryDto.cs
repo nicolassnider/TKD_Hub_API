@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.TrainingClass;
+[ExcludeFromCodeCoverage]
 public class AttendanceHistoryDto
 {
     public int Id { get; set; }

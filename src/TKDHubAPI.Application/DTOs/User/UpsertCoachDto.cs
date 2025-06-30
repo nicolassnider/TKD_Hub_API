@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.User;
-
+[ExcludeFromCodeCoverage]
 public class UpsertCoachDto
 {
     public int? Id { get; set; } // If present, update; if null, create

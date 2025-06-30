@@ -1,5 +1,6 @@
 ﻿namespace TKDHubAPI.Application.DTOs.BlogPost;
 
+[ExcludeFromCodeCoverage]
 public class BlogPostDto
 {
     public int Id { get; set; }

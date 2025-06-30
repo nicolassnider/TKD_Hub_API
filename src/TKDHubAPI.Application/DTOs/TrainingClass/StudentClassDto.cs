@@ -1,5 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.TrainingClass;
-
+[ExcludeFromCodeCoverage]
 public class StudentClassDto
 {
     public int Id { get; set; }

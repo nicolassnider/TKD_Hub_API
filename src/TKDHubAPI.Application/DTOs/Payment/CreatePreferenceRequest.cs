@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.Payment;
+[ExcludeFromCodeCoverage]
 public class CreatePreferenceRequest
 {
     public decimal Amount { get; set; }
