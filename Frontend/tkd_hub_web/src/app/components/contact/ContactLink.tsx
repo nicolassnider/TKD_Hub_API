@@ -7,15 +7,20 @@ type ContactLinkProps = {
   className?: string;
 };
 
-const ContactLink: React.FC<ContactLinkProps> = ({ href, icon, title, className }) => (
+const ContactLink: React.FC<ContactLinkProps> = ({
+  href,
+  icon,
+  title,
+  className,
+}) => (
   <a
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className={className}
+    className={`flex items-center justify-center p-2 rounded-md transition-colors duration-200 hover:bg-gray-200 ${className}`}
     title={title}
   >
-    <i className={icon}></i>
+    <i className={`${icon} text-xl`}></i>
   </a>
 );
 

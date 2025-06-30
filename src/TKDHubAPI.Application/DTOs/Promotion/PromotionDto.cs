@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.Promotion;
+[ExcludeFromCodeCoverage]
 /// <summary>
 /// DTO for reading promotion details.
 /// </summary>

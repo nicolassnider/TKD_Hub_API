@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.User;
+[ExcludeFromCodeCoverage]
 /// <summary>
 /// DTO for creating a new Student user.
 /// Does not inherit from CreateUserDto and only includes allowed properties.

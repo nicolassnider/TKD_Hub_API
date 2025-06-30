@@ -10,12 +10,17 @@ interface CreatePostModalProps {
   onClose: () => void;
 }
 
-export default function CreatePostModal({ open, onClose }: CreatePostModalProps) {
+export default function CreatePostModal({
+  open,
+  onClose,
+}: CreatePostModalProps) {
   const { addPost } = useBlogPosts();
 
   // 2. State hooks
   const [title, setTitle] = useState("");
-  const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
+  const [editorState, setEditorState] = useState(() =>
+    EditorState.createEmpty()
+  );
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<Editor>(null);
 
@@ -60,7 +65,7 @@ export default function CreatePostModal({ open, onClose }: CreatePostModalProps)
             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Title"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             required
           />
           <div

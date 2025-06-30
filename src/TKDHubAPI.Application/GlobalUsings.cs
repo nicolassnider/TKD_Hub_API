@@ -2,6 +2,7 @@
 global using FluentValidation;
 global using Microsoft.AspNetCore.Identity;
 global using System.ComponentModel.DataAnnotations;
+global using System.Diagnostics.CodeAnalysis;
 global using System.Security.Claims;
 global using TKDHubAPI.Application.DTOs.Dojaang;
 global using TKDHubAPI.Application.DTOs.User;

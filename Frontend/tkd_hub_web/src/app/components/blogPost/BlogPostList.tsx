@@ -9,17 +9,17 @@ interface BlogPostListProps {
 export default function BlogPostList({ posts }: BlogPostListProps) {
   if (!posts || posts.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
-        No blog posts found.
-      </div>
+      <div className="text-center text-gray-500 py-8">No blog posts found.</div>
     );
   }
 
   return (
-    <div className="divide-y">
+    <div className="divide-y divide-gray-200">
       {posts.map((post) => (
         <article key={post.id} className="py-6">
-          <h2 className="text-xl font-semibold text-blue-700 mb-2">{post.title}</h2>
+          <h2 className="text-xl font-semibold text-blue-700 mb-2">
+            {post.title}
+          </h2>
           <div
             className="text-gray-700 mb-2 line-clamp-3 prose"
             style={{ maxHeight: 80, overflow: "hidden" }}

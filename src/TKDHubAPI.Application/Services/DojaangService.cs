@@ -118,6 +118,22 @@ public class DojaangService : IDojaangService
     {
         var dojaang = _mapper.Map<Dojaang>(dto);
         await _dojaangRepository.AddAsync(dojaang);
+
+        if (dto.CoachId.HasValue)
+        {
+            var coach = await _userRepository.GetByIdAsync(dto.CoachId.Value);
+            if (coach != null)
+            {
+                var userDojaang = new UserDojaang
+                {
+                    UserId = coach.Id,
+                    DojaangId = dojaang.Id,
+                    Role = "Coach"
+                };
+                await _userDojaangRepository.AddAsync(userDojaang);
+            }
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -222,16 +238,17 @@ public class DojaangService : IDojaangService
         if (dojaang == null)
             throw new InvalidOperationException("Dojaang not found.");
 
-
         _mapper.Map(dto, dojaang);
-
 
         if (dto.CoachId.HasValue)
         {
             var coach = await _userRepository.GetByIdAsync(dto.CoachId.Value);
             dojaang.Coach = coach;
         }
-
+        else
+        {
+            dojaang.Coach = null;
+        }
 
         _dojaangRepository.Update(dojaang);
         await _unitOfWork.SaveChangesAsync();

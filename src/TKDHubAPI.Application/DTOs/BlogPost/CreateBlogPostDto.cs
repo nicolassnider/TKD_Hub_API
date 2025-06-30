@@ -1,5 +1,6 @@
 ﻿namespace TKDHubAPI.Application.DTOs.BlogPost;
 
+[ExcludeFromCodeCoverage]
 public class CreateBlogPostDto
 {
     public string Title { get; set; } = string.Empty;

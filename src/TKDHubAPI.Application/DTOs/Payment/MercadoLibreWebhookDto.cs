@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using TKDHubAPI.Application.DTOs.Payment;
+[ExcludeFromCodeCoverage]
 
 public class MercadoLibreWebhookDto
 {

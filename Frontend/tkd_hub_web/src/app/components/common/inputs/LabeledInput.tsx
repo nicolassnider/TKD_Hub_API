@@ -2,7 +2,8 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-interface LabeledInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface LabeledInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
   datepicker?: boolean;
@@ -46,8 +47,11 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
     (!value || (typeof value === "string" && value.trim() === ""));
 
   return (
-    <div>
-      <label htmlFor={name} className="block mb-1 font-medium">
+    <div className="flex flex-col mb-4">
+      <label
+        htmlFor={name}
+        className="mb-1 font-medium text-gray-700 text-base sm:text-sm"
+      >
         {label}
       </label>
       {datepicker ? (
@@ -55,11 +59,13 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
           <DatePicker
             id={name}
             selected={selectedDate}
-            onChange={date => {
+            onChange={(date) => {
               setTouched(true);
               onDateChange?.(date);
             }}
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded-lg px-3 py-2 transition duration-200 ${
+              showDateError ? "border-red-600" : "border-gray-300"
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             placeholderText={placeholder}
             disabled={disabled}
             dateFormat="yyyy-MM-dd"
@@ -70,7 +76,7 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
             onBlur={() => setTouched(true)}
           />
           {showDateError && (
-            <span className="text-red-600 text-xs">
+            <span className="text-red-600 text-xs mt-1">
               {errorMessage || "This field is required."}
             </span>
           )}
@@ -81,9 +87,17 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
             id={name}
             name={name}
             type={type}
-            className="w-full border rounded px-3 py-2"
-            value={value}
-            onChange={e => {
+            className={`w-full border rounded-lg px-3 py-2 transition duration-200 ${
+              showInputError ? "border-red-600" : "border-gray-300"
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            value={
+              typeof value === "string"
+                ? value
+                : value !== undefined && value !== null
+                ? String(value)
+                : ""
+            }
+            onChange={(e) => {
               setTouched(true);
               onChange?.(e);
             }}
@@ -95,7 +109,7 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
             {...rest}
           />
           {showInputError && (
-            <span className="text-red-600 text-xs">
+            <span className="text-red-600 text-xs mt-1">
               {errorMessage || "This field is required."}
             </span>
           )}

@@ -13,16 +13,6 @@ import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import LabeledInput from "../common/inputs/LabeledInput";
 import { GenericSelector } from "../common/selectors/GenericSelector";
 
-// 1. Context hooks
-
-// 2. State hooks
-
-// 3. Effects
-
-// 4. Functions
-
-// 5. Render
-
 type EditDojaangProps = {
   dojaangId?: number; // Optional: if undefined, create mode
   onClose: (refresh?: boolean) => void;
@@ -30,7 +20,8 @@ type EditDojaangProps = {
 
 export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   // 1. Context hooks
-  const { dojaangs, fetchDojaangs, createDojaang, updateDojaang, getDojaang } = useDojaangs();
+  const { dojaangs, fetchDojaangs, createDojaang, updateDojaang, getDojaang } =
+    useDojaangs();
   const { coaches = [], loading: coachesLoading } = useCoaches();
 
   // 2. State hooks
@@ -64,7 +55,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
         return;
       }
       // Try to get from context first
-      const contextDojaang = dojaangs.find(d => d.id === dojaangId);
+      const contextDojaang = dojaangs.find((d) => d.id === dojaangId);
       if (contextDojaang) {
         setDojaang(contextDojaang);
         setOriginalDojaang(contextDojaang);
@@ -78,7 +69,10 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
             setOriginalDojaang(apiDojaang);
           }
         } catch (e) {
-          if (!ignore) setError(e instanceof Error ? e.message : "Failed to fetch dojaang");
+          if (!ignore)
+            setError(
+              e instanceof Error ? e.message : "Failed to fetch dojaang"
+            );
         } finally {
           if (!ignore) setLoading(false);
         }
@@ -134,20 +128,13 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-lg sm:max-w-xl md:max-w-2xl mx-auto relative max-h-[90vh] flex flex-col">
         <ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
-        <button
-          type="button"
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
-          aria-label="Close"
-          onClick={() => onClose(false)}
-          disabled={saving}
-        >
-          &times;
-        </button>
         <div className="px-4 sm:px-8 pt-8 pb-2 flex-1 overflow-y-auto">
-          <h2 className="text-xl font-semibold mb-6 text-center">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center">
             {dojaangId ? "Edit Dojaang" : "Create Dojaang"}
-          </h2>
-          {loading && <div className="text-center text-gray-600">Loading...</div>}
+          </h3>
+          {loading && (
+            <div className="text-center text-gray-600">Loading...</div>
+          )}
           {error && <div className="text-red-600 text-center">{error}</div>}
           {!loading && !error && dojaang && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -170,6 +157,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   onChange={handleChange}
                   disabled={saving}
                   required
+                  placeholder="Enter address"
                 />
                 {/* Dojaang location */}
                 <LabeledInput
@@ -179,6 +167,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   onChange={handleChange}
                   disabled={saving}
                   required
+                  placeholder="Enter location"
                 />
                 {/* Dojaang phone */}
                 <LabeledInput
@@ -201,7 +190,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   placeholder="Enter email address"
                   required
                 />
-                {/* Dojaang korean name */}
+                {/* Dojaang Korean name */}
                 <LabeledInput
                   label="Korean Name"
                   name="koreanName"
@@ -210,7 +199,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving}
                   placeholder="Enter Korean name"
                 />
-                {/* Dojaang korean phonetic */}
+                {/* Dojaang Korean phonetic */}
                 <LabeledInput
                   label="Korean Name Phonetic"
                   name="koreanNamePhonetic"
@@ -223,14 +212,18 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                 <GenericSelector
                   items={coaches}
                   value={dojaang.coachId ?? null}
-                  onChange={id =>
+                  onChange={(id) =>
                     setDojaang({
                       ...dojaang,
                       coachId: id ?? null,
                     })
                   }
-                  getLabel={c => `${c.firstName} ${c.lastName}${c.email ? ` (${c.email})` : ""}`}
-                  getId={c => c.id}
+                  getLabel={(c) =>
+                    `${c.firstName} ${c.lastName}${
+                      c.email ? ` (${c.email})` : ""
+                    }`
+                  }
+                  getId={(c) => c.id}
                   disabled={saving || coachesLoading}
                   label="Coach"
                   placeholder="Select a coach"
@@ -238,7 +231,15 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
               </div>
               <FormActionButtons
                 onCancel={() => onClose(false)}
-                onSubmitLabel={dojaangId ? (saving ? "Saving..." : "Save") : (saving ? "Creating..." : "Create")}
+                onSubmitLabel={
+                  dojaangId
+                    ? saving
+                      ? "Saving..."
+                      : "Save"
+                    : saving
+                    ? "Creating..."
+                    : "Create"
+                }
                 loading={saving}
                 disabled={equal(dojaang, originalDojaang)}
               />

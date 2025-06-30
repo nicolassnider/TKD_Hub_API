@@ -1,72 +1,32 @@
 import React from "react";
 import { ClassSchedule } from "@/app/types/ClassSchedule";
-import { daysOfWeek } from "@/app/const/daysOfWeek";
-import { DayOfWeek } from "@/app/types/DayOfWeek";
+import DetailRow from "./DetailRow";
+import ScheduleRow from "./ScheduleRow";
+
 
 type ClassDetailsProps = {
-    name: string;
-    schedules?: ClassSchedule[];
-    coachName?: string;
-    dojaangName?: string;
-    dojaangId?: number;
+  name: string;
+  schedules?: ClassSchedule[];
+  coachName?: string;
+  dojaangName?: string;
+  dojaangId?: number;
 };
 
 const ClassDetails: React.FC<ClassDetailsProps> = ({
-    name,
-    schedules,
-    coachName,
-    dojaangName,
-    dojaangId,
-}) => {
-    // 1. Context hooks
-    // (none needed)
-
-    // 2. State hooks
-    // (none needed)
-
-    // 3. Effects
-    // (none needed)
-
-    // 4. Functions
-    const getDayLabel = (day: number | string | DayOfWeek): string => {
-        const dayNumber = typeof day === "string" ? Number(day) : day;
-        const found = daysOfWeek.find(d => d.value === dayNumber);
-        return found ? found.label : String(day);
-    };
-
-    // 5. Render
-    return (
-        <form className="mb-4 grid grid-cols-1 gap-2 text-sm text-gray-700 bg-gray-50 rounded p-4 border">
-            <div className="flex items-center">
-                <label className="w-28 font-semibold">Class:</label>
-                <span>{name}</span>
-            </div>
-            <div className="flex items-start">
-                <label className="w-28 font-semibold">Schedule:</label>
-                <span>
-                    {Array.isArray(schedules) && schedules.length > 0 ? (
-                        <ul className="list-disc pl-5">
-                            {schedules.map((s, idx) => (
-                                <li key={idx}>
-                                    {getDayLabel(s.day)} {s.startTime} - {s.endTime}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        "N/A"
-                    )}
-                </span>
-            </div>
-            <div className="flex items-center">
-                <label className="w-28 font-semibold">Coach:</label>
-                <span>{coachName ?? "N/A"}</span>
-            </div>
-            <div className="flex items-center">
-                <label className="w-28 font-semibold">Dojaang:</label>
-                <span>{dojaangName ?? dojaangId}</span>
-            </div>
-        </form>
-    );
-};
+  name,
+  schedules,
+  coachName,
+  dojaangName,
+  dojaangId,
+}) => (
+  <form className="mb-4 p-4 bg-gray-50 rounded border shadow-md">
+    <div className="flex flex-col space-y-4">
+      <DetailRow label="Class:">{name}</DetailRow>
+      <ScheduleRow schedules={schedules} />
+      <DetailRow label="Coach:">{coachName ?? "N/A"}</DetailRow>
+      <DetailRow label="Dojaang:">{dojaangName ?? dojaangId}</DetailRow>
+    </div>
+  </form>
+);
 
 export default ClassDetails;

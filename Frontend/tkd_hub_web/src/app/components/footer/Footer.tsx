@@ -1,6 +1,6 @@
 import React from "react";
 
-const APP_VERSION = "0.1.0627.1743";
+const APP_VERSION = "0.1.0630.1920";
 
 const Footer: React.FC = () => (
   <footer className="w-full py-4 bg-gray-100 border-t mt-auto">

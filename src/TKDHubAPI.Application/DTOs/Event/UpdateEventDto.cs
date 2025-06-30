@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.DTOs.Event;
+[ExcludeFromCodeCoverage]
 /// <summary>
 /// DTO for updating an event.
 /// </summary>

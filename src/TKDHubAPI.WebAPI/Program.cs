@@ -4,6 +4,7 @@ using TKDHubAPI.Infrastructure;
 using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
 using TKDHubAPI.WebAPI.SignalR;
+using Microsoft.Azure.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddWebAPIServices(builder.Configuration);
+builder.Services.AddSignalR().AddAzureSignalR(builder.Configuration["Azure:SignalR:ConnectionString"]!);
 
 var app = builder.Build();
 
