@@ -5,10 +5,20 @@ type NotFoundTableRowProps = {
   message?: string;
 };
 
-const NotFoundTableRow: React.FC<NotFoundTableRowProps> = ({ colSpan, message = "No records found." }) => (
+const NotFoundTableRow: React.FC<NotFoundTableRowProps> = ({
+  colSpan,
+  message = "No records found.",
+}) => (
   <tr>
-    <td colSpan={colSpan} className="text-center text-gray-500 py-3">
-      {message}
+    <td colSpan={colSpan} className="py-8">
+      <div className="flex flex-col items-center justify-center gap-2">
+        <span className="text-2xl text-gray-400">
+          <i className="bi bi-emoji-frown" aria-hidden="true"></i>
+        </span>
+        <span className="text-base sm:text-lg text-gray-500 font-medium">
+          {message}
+        </span>
+      </div>
     </td>
   </tr>
 );

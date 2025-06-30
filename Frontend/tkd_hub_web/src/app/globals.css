@@ -1,69 +1,138 @@
 @import 'tailwindcss';
 
 @media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
 }
 
 body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Modal background blur */
 .modal-bg-blur {
-	background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
 }
 
-/* Add this utility if not already present */
+/* Utility for preventing word breaks */
 .keep-all {
-	word-break: keep-all;
+    word-break: keep-all;
 }
 
+/* Login box enhancements */
 .tkd-login-box {
-	box-sizing: border-box;
+    box-sizing: border-box;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.08);
+    padding: 2rem 1.5rem;
+    background: #fff;
+    max-width: 400px;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
+/* Switch dot enhancements */
 .tkd-switch-dot {
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-	transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
 }
 
+/* Floating today's classes card */
 .todays-classes-floating {
-	position: fixed;
-	bottom: 1.5rem;
-	/* 6 */
-	right: 1.5rem;
-	/* 6 */
-	background: #fff;
-	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1.5px 4px rgba(0, 0, 0, 0.08);
-	border-radius: 0.5rem;
-	padding: 1rem;
-	border: 1px solid #e5e7eb;
-	width: 18rem;
-	/* 72 */
-	min-width: 220px;
-	z-index: 50;
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    width: 18rem;
+    min-width: 220px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
+/* Button min-width for promotions */
 .promotions-clear-student-btn {
-	min-width: 120px;
+    min-width: 120px;
 }
 
+/* Blog content enhancements */
 .custom-blog-content h2 {
-	color: #2563eb;
-	/* Example: Tailwind blue-600 */
-	margin-top: 1.5rem;
+    color: #2563eb;
+    margin-top: 1.5rem;
+    font-weight: 700;
+    font-size: 1.5rem;
 }
 
 .custom-blog-content ul {
-	list-style-type: disc;
-	margin-left: 2rem;
+    list-style-type: disc;
+    margin-left: 2rem;
+    padding-left: 1rem;
 }
 
 .custom-blog-content p {
-	font-size: 1.1rem;
-	line-height: 1.7;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+}
+
+.custom-blog-content img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    display: block;
+}
+
+.custom-blog-content blockquote {
+    border-left: 4px solid #2563eb;
+    padding-left: 1rem;
+    color: #374151;
+    background: #f1f5f9;
+    margin: 1.5rem 0;
+    font-style: italic;
+}
+
+.custom-blog-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.custom-blog-content th,
+.custom-blog-content td {
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.custom-blog-content th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-col-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

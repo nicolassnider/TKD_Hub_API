@@ -35,18 +35,27 @@ export function GenericSelector<T>({
   const filteredItems = filter ? items.filter(filter) : items;
 
   const showError =
-    required &&
-    touched &&
-    (value === null || value === undefined);
+    required && touched && (value === null || value === undefined);
 
   return (
-    <div>
-      {label && <label htmlFor={id} className="form-label">{label}</label>}
+    <div className="flex flex-col mb-4">
+      {label && (
+        <label
+          htmlFor={id}
+          className="mb-1 font-medium text-gray-700 text-base sm:text-sm"
+        >
+          {label}
+        </label>
+      )}
       <select
         id={id}
-        className={`form-control ${className} ${showError ? "border-red-500" : ""}`}
+        className={`w-full border rounded-lg px-3 py-2 transition duration-200 bg-white text-gray-900
+          ${showError ? "border-red-600" : "border-gray-300"}
+          focus:outline-none focus:ring-2 focus:ring-blue-500
+          ${className}
+        `}
         value={value !== null && value !== undefined ? String(value) : ""}
-        onChange={e => {
+        onChange={(e) => {
           setTouched(true);
           onChange(e.target.value ? Number(e.target.value) : null);
         }}
@@ -55,14 +64,14 @@ export function GenericSelector<T>({
         disabled={disabled}
       >
         <option value="">{placeholder}</option>
-        {filteredItems.map(item => (
+        {filteredItems.map((item) => (
           <option key={getId(item)} value={getId(item)}>
             {getLabel(item)}
           </option>
         ))}
       </select>
       {showError && (
-        <span className="text-red-600 text-xs">
+        <span className="text-red-600 text-xs mt-1">
           {errorMessage || "This field is required."}
         </span>
       )}

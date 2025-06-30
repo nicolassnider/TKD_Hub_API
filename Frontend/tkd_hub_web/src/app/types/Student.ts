@@ -3,7 +3,7 @@ export type Student = {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber?: string;
+  phoneNumber: string;
   gender?: number;
   dojaangId?: number | null; // <-- allow null
   currentRankId?: number | null;

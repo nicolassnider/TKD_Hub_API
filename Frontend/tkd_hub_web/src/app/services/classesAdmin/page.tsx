@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useClasses } from "@/app/context/ClassContext";
-import ClassTableRows from "@/app/components/classes/ClassTableRows";
 import { AdminListPage } from "@/app/components/AdminListPage";
 import EditClass from "@/app/components/classes/EditClass";
 import { TrainingClass } from "@/app/types/TrainingClass";
 import AddStudentToClass from "@/app/components/classes/AddStudentToClass";
 import ManageAssistanceModal from "@/app/components/classes/ManageAssistanceModal";
+import ClassTableRows from "@/app/components/classes/ClassTableRows";
 
 const ClassesAdminPage = () => {
     const { classes, addClass, updateClass, fetchClasses, loading, error } = useClasses();
