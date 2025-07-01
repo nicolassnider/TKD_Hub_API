@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useRoles } from "@/app/context/RoleContext";
 import { useAuth } from "@/app/context/AuthContext";
-import BlogPostTitle from "./BlogPostTitle";
+
 import BlogPostBody from "./BlogPostBody";
 import BlogPostActions from "./BlogPostActions";
 import dynamic from "next/dynamic";
 import { BlogPost } from "@/app/types/BlogPost";
+import BlogPostTitle from "./BlogPostTitle";
 
 // Dynamically import CreatePostModal with SSR disabled
 const CreatePostModal = dynamic(() => import("./CreatePostModal"), {

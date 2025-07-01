@@ -6,7 +6,7 @@ import MobileMenu from "./MobileMenu";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRoles } from "@/app/context/RoleContext";
-import RoleDisplay from "./RoleDisplay";
+
 import DesktopMenu from "./DesktopMenu";
 
 export const Header = () => {
