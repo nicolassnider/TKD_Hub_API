@@ -3,10 +3,15 @@ import { useBlogPosts } from "@/app/context/BlogPostContext";
 import { useRoles } from "@/app/context/RoleContext";
 import { useEffect, useState } from "react";
 import BlogPostList from "./BlogPostList";
-import CreatePostModal from "./CreatePostModal";
+import dynamic from "next/dynamic";
 import BlogHeader from "./BlogHeader";
 import CreatePostButton from "./CreatePostButton";
 import PageLinks from "../common/pageLinks/PageLinks";
+
+// Dynamically import CreatePostModal with SSR disabled
+const CreatePostModal = dynamic(() => import("./CreatePostModal"), {
+  ssr: false,
+});
 
 const BlogPageContent = () => {
   const { posts, fetchPosts, loading, error } = useBlogPosts();
