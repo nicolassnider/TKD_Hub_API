@@ -18,6 +18,9 @@ public static class DependencyInjection
         // Register all FluentValidation validators in this assembly
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+        services.Configure<PaginationSettings>(configuration.GetSection("PaginationSettings"));
+
+
         // Register application services
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -35,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IStudentClassService, StudentClassService>();
         services.AddScoped<IBlogPostService, BlogPostService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped(typeof(IPaginationService<>), typeof(PaginationService<>));
 
         // Register AutoMapper profiles in this assembly
         services.AddAutoMapper(Assembly.GetExecutingAssembly());

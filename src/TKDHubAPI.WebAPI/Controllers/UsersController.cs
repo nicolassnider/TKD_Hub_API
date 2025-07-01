@@ -12,8 +12,8 @@ public partial class UsersController : BaseApiController
 {
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
-    private readonly IDojaangService _dojaangService;
     private readonly ITrainingClassService _trainingClassService;
+    private readonly IPaginationService<UserDto> _paginationService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersController"/> class.
@@ -25,24 +25,25 @@ public partial class UsersController : BaseApiController
         IUserService userService,
         IMapper mapper,
         ILogger<UsersController> logger,
-        IDojaangService dojaangService,
-        ITrainingClassService trainingClassService)
+        ITrainingClassService trainingClassService,
+        IPaginationService<UserDto> paginationService)
         : base(logger)
     {
         _userService = userService;
         _mapper = mapper;
-        _dojaangService = dojaangService;
         _trainingClassService = trainingClassService;
+        _paginationService = paginationService;
     }
 
     /// <summary>
-    /// Retrieves all users as UserDto using mapping and returns a standardized success response.
+    /// Retrieves all users as UserDto using mapping and returns a paginated, standardized success response.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 0)
     {
         var userDtos = await _userService.GetAllWithRolesAsync();
-        return SuccessResponse(userDtos);
+        var paginatedResult = await _paginationService.PaginateAsync(userDtos, page, pageSize);
+        return SuccessResponse(paginatedResult);
     }
 
     /// <summary>
