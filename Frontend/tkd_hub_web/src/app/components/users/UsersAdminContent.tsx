@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useEffect, useMemo, useState } from "react";
 import { useRoles } from "../../context/RoleContext";
 import { useRouter } from "next/navigation";
@@ -11,17 +10,13 @@ import UserTableRows from "@/app/components/users/UserTableRows";
 import { User } from "@/app/types/User";
 import { UserRole } from "@/app/types/UserRole";
 
-
 const allowedRoles: UserRole[] = ["Admin"];
-
 
 export default function UsersAdminContent() {
   const { role, roleLoading } = useRoles();
   const router = useRouter();
 
-
   const { users: usersRaw = [], loading, error, fetchUsers } = useUsers();
-
 
   const users = useMemo(() => {
     if (Array.isArray(usersRaw)) return usersRaw;
@@ -36,10 +31,12 @@ export default function UsersAdminContent() {
     return [];
   }, [usersRaw]);
 
-
   const [editId, setEditId] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
+  // --- Pagination state ---
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
 
   // Role protection
   useEffect(() => {
@@ -49,67 +46,81 @@ export default function UsersAdminContent() {
     }
   }, [role, roleLoading, router]);
 
-
-  // Fetch users on mount
+  // Fetch users on mount and when page/pageSize changes
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(page, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  }, [page, pageSize]);
 
   function handleEdit(id: number) {
     setEditId(id);
   }
   function handleEditClose(refreshList?: boolean) {
     setEditId(null);
-    if (refreshList) fetchUsers();
+    if (refreshList) fetchUsers(page, pageSize);
   }
   function handleCreate() {
     setShowCreate(true);
   }
   function handleCreateClose(refreshList?: boolean) {
     setShowCreate(false);
-    if (refreshList) fetchUsers();
+    if (refreshList) fetchUsers(page, pageSize);
   }
-
 
   if (roleLoading) {
     return <div>Loading...</div>;
   }
 
-
   return (
-    <AdminListPage
-      title="Users Administration"
-      loading={loading}
-      error={error}
-      filters={null}
-      onCreate={handleCreate}
-      createLabel="Add User"
-      tableHead={
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Options</th>
-        </tr>
-      }
-      tableBody={
-        <UserTableRows
-          users={users}
-          onEdit={handleEdit}
-          onDeleted={fetchUsers}
-        />
-      }
-      modals={
-        <>
-          {showCreate && <EditUser onClose={handleCreateClose} />}
-          {editId !== null && (
-            <EditUser userId={editId} onClose={handleEditClose} />
-          )}
-        </>
-      }
-    />
+    <>
+      <AdminListPage
+        title="Users Administration"
+        loading={loading}
+        error={error}
+        filters={null}
+        onCreate={handleCreate}
+        createLabel="Add User"
+        tableHead={
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Options</th>
+          </tr>
+        }
+        tableBody={
+          <UserTableRows
+            users={users}
+            onEdit={handleEdit}
+            onDeleted={() => fetchUsers(page, pageSize)}
+          />
+        }
+        modals={
+          <>
+            {showCreate && <EditUser onClose={handleCreateClose} />}
+            {editId !== null && (
+              <EditUser userId={editId} onClose={handleEditClose} />
+            )}
+          </>
+        }
+      />
+      {/* Pagination controls outside AdminListPage */}
+      <div className="flex gap-2 items-center justify-end mt-4">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span>Page {page}</span>
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          disabled={users.length < pageSize}
+        >
+          Next
+        </button>
+      </div>
+    </>
   );
 }

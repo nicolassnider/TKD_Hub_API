@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useClasses } from "@/app/context/ClassContext";
 import { useStudents } from "@/app/context/StudentContext";
-import ClassDetails from "./ClassDetails";
 import StudentsInClass from "./StudentsInClass";
 import { Student } from "@/app/types/Student";
-import { GenericSelector } from "../common/selectors/GenericSelector";
 import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
+import AddStudentClassDetails from "./AddStudentClassDetails";
+import AddStudentSelector from "./AddStudentSelector";
+import AddStudentActionButton from "./AddStudentActionButton";
 
 type Props = {
   classId: number;
@@ -101,49 +102,23 @@ const AddStudentToClass: React.FC<Props> = ({
       <div className="bg-white rounded-lg shadow-lg p-6 min-w-[320px] max-w-md max-h-[90vh] overflow-y-auto relative">
         <ModalCloseButton onClick={onClose} />
         <h3 className="text-lg font-semibold mb-4">Add Student to Class</h3>
-
-        {classDetails && (
-          <ClassDetails
-            name={classDetails.name}
-            schedules={classDetails.schedules}
-            coachName={classDetails.coachName}
-            dojaangName={classDetails.dojaangName}
-            dojaangId={classDetails.dojaangId}
-          />
-        )}
-
-        <div className="flex flex-col gap-3 mb-4">
-          <GenericSelector
-            items={students}
-            value={studentId === "" ? null : Number(studentId)}
-            onChange={(id) => setStudentId(id ?? "")}
-            getLabel={(s) =>
-              `${s.firstName} ${s.lastName}${s.email ? ` (${s.email})` : ""}`
-            }
-            getId={(s) => s.id!}
-            disabled={!!defaultStudentId || loading}
-            label="Student"
-            placeholder="Select a student"
-          />
-        </div>
-
+        <AddStudentClassDetails classDetails={classDetails} />
+        <AddStudentSelector
+          students={students}
+          studentId={studentId}
+          setStudentId={setStudentId}
+          defaultStudentId={defaultStudentId}
+          loading={loading}
+        />
         <div className="mb-4">
           <StudentsInClass classId={classId} key={studentsInClassKey} />
         </div>
-
-        <div className="flex justify-end">
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200"
-            disabled={loading || !studentId}
-          >
-            {loading ? "Adding..." : "Add Student"}
-          </button>
-        </div>
-
-        {message && (
-          <div className="text-green-700 text-sm mt-2">{message}</div>
-        )}
+        <AddStudentActionButton
+          handleAdd={handleAdd}
+          loading={loading}
+          studentId={studentId}
+          message={message}
+        />
       </div>
     </div>
   );
