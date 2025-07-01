@@ -19,8 +19,12 @@ const BlogPostPage = () => {
     return <div className="text-center text-blue-600">Loading...</div>;
   if (error) return <div className="text-center text-red-600">{error}</div>;
   if (!post) return <div className="text-center">No post found.</div>;
+  if (typeof post.authorId === "undefined")
+    return <div className="text-center">Invalid post data.</div>;
 
-  return <BlogPostContent post={post} />;
+  const safePost = { ...post, authorId: post.authorId ?? "" };
+
+  return <BlogPostContent post={safePost} />;
 };
 
 export default BlogPostPage;

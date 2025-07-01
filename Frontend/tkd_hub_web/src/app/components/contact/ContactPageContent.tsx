@@ -3,11 +3,9 @@ import { useState } from "react";
 import ContactLink from "./ContactLink";
 import contactLinks from "./contactLinks";
 
-
 export default function ContactPageContent() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
-
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -15,17 +13,15 @@ export default function ContactPageContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     // Here you would send the form data to your API or email service
     setSubmitted(true);
   }
 
-
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-blue-100 px-4">
-      <div className="w-full max-w-xl sm:max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-10">
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-blue-100 px-2 sm:px-4">
+      <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl min-w-[320px] md:min-w-[500px] mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-10">
         <h1 className="text-3xl font-bold mb-4 text-center text-gray-900">
           Contact Us
         </h1>
@@ -70,7 +66,6 @@ export default function ContactPageContent() {
             </button>
           </form>
         )}
-
 
         {/* Social/contact info */}
         <div className="mt-8">
