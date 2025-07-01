@@ -10,6 +10,8 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRoles } from "@/app/context/RoleContext";
 
+import DesktopMenu from "./DesktopMenu";
+import RoleDisplay from "./RoleDisplay";
 
 export const Header = () => {
   const { isLoggedIn } = useAuth();
