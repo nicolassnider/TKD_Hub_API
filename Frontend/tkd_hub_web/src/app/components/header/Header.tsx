@@ -10,12 +10,22 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRoles } from "@/app/context/RoleContext";
 
+
 export const Header = () => {
   const { isLoggedIn } = useAuth();
   const pathname = usePathname();
   const { role } = useRoles();
   const [isOpen, setIsOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+
+
+  const menuItems = [
+    { href: "/", label: "Home" },
+    { href: "/blog", label: "Blog" },
+    { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
+  ];
+
 
   return (
     <nav className="bg-gray-800 text-white shadow-lg">
@@ -31,18 +41,17 @@ export const Header = () => {
             </span>
           </div>
           <div className="hidden md:flex space-x-4">
-            <MenuItem href="/" isActive={pathname === "/"}>
-              Home
-            </MenuItem>
-            <MenuItem href="/blog" isActive={pathname === "/blog"}>
-              Blog
-            </MenuItem>
-            <MenuItem href="/about" isActive={pathname === "/about"}>
-              About
-            </MenuItem>
-            <MenuItem href="/contact" isActive={pathname === "/contact"}>
-              Contact
-            </MenuItem>
+            <>
+              {menuItems.map((item) => (
+                <MenuItem
+                  key={item.href}
+                  href={item.href}
+                  isActive={pathname === item.href}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </>
             {(role.includes("Coach") || role.includes("Admin")) && (
               <ServicesDropdown
                 isOpen={isServicesOpen}
@@ -62,5 +71,6 @@ export const Header = () => {
     </nav>
   );
 };
+
 
 export default Header;

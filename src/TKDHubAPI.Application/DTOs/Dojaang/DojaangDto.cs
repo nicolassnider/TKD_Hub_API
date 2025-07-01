@@ -12,6 +12,6 @@ public class DojaangDto
     public string KoreanName { get; set; }
     public string KoreanNamePhonetic { get; set; }
     public int CoachId { get; set; }
-    public string CoachName { get; set; } // Add this
+    public string CoachName { get; set; }
     public bool IsActive { get; set; }
 }
