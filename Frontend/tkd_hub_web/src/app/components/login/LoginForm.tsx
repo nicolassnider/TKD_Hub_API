@@ -56,7 +56,6 @@ const LoginForm: React.FC = () => {
           required
           autoComplete="username"
           placeholder="Enter your email"
-          className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
         />
         <LabeledInput
           label="Password"
@@ -67,14 +66,8 @@ const LoginForm: React.FC = () => {
           required
           autoComplete="current-password"
           placeholder="Enter your password"
-          className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
         />
-        <GenericButton
-          type="submit"
-          variant="primary"
-          disabled={loading}
-          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border border-neutral-700"
-        >
+        <GenericButton type="submit" variant="success" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </GenericButton>
         {error && (

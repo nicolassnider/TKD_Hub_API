@@ -29,7 +29,7 @@ const ClassSchedulesSection: React.FC<Props> = ({
     <div className="mt-2 mb-4">
       <GenericButton
         type="button"
-        variant="neutral-dark"
+        variant="primary"
         onClick={onAdd}
         className="px-4 py-2 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-50"
       >

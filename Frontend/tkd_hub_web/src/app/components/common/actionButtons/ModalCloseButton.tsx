@@ -12,7 +12,7 @@ const ModalCloseButton: React.FC<ModalCloseButtonProps> = ({
 }) => (
   <GenericButton
     type="button"
-    variant="warning"
+    variant="secondary"
     className="absolute top-3 right-3 text-2xl font-bold min-h-0 h-8 w-8 p-0"
     aria-label="Close"
     onClick={onClick}

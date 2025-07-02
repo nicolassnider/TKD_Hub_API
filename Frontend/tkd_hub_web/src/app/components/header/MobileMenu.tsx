@@ -41,7 +41,6 @@ const MobileMenu: React.FC<{
             <GenericButton
               type="button"
               variant="success"
-              className="w-full px-4 py-2 flex items-center justify-center gap-2"
               onClick={() => {
                 router.push("/profile");
                 toggle();
