@@ -29,7 +29,7 @@ const CoachModalConfirmDelete: React.FC<CoachModalConfirmDeleteProps> = ({
         </GenericButton>
         <GenericButton
           type="button"
-          variant="error"
+          variant="primary"
           onClick={onConfirm}
           disabled={loading}
         >

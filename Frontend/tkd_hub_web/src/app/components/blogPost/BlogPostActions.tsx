@@ -12,7 +12,7 @@ const BlogPostActions = ({ canEditOrDelete, onEdit, onDelete }: Props) =>
       <GenericButton variant="primary" onClick={onEdit}>
         Edit
       </GenericButton>
-      <GenericButton variant="error" onClick={onDelete}>
+      <GenericButton variant="secondary" onClick={onDelete}>
         Delete
       </GenericButton>
     </div>

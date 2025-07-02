@@ -4,13 +4,12 @@ import { usePromotions } from "@/app/context/PromotionContext";
 import { Promotion } from "@/app/types/Promotion";
 import { CreatePromotionDto } from "@/app/types/CreatePromotionDto";
 import { useStudents } from "@/app/context/StudentContext";
-import FormActionButtons from "../common/actionButtons/FormActionButtons";
 import toast from "react-hot-toast";
 import { useCoaches } from "@/app/context/CoachContext";
 import { useRanks } from "@/app/context/RankContext";
 import { useDojaangs } from "@/app/context/DojaangContext";
 import { EditModal } from "../common/modals/EditModal";
-import EditPromotionFormFields from "./EditPromotionFormFields";
+import EditPromotionForm from "./EditPromotionForm";
 import { Student } from "@/app/types/Student";
 import { Rank } from "@/app/types/Rank";
 
@@ -20,26 +19,10 @@ type EditPromotionProps = {
   studentId?: number;
 };
 
-const getNextRankIdForStudent = (
-  studentId: number | undefined,
-  students: Student[],
-  ranks: Rank[]
-): number | undefined => {
-  if (!studentId || !ranks?.length) return undefined;
-  const student = students.find((s) => s.id === studentId);
-  const currentRankId = student?.currentRankId;
-  if (!currentRankId) return ranks[0]?.id;
-  const currentIndex = ranks.findIndex(
-    (r: { id: number }) => r.id === currentRankId
-  );
-  if (currentIndex === -1 || currentIndex === ranks.length - 1)
-    return currentRankId;
-  return ranks[currentIndex + 1]?.id;
-};
-
 const EditPromotion: React.FC<EditPromotionProps> = ({
   promotion,
   onClose,
+  studentId,
 }) => {
   const {
     createPromotion,
@@ -56,7 +39,7 @@ const EditPromotion: React.FC<EditPromotionProps> = ({
     promotion
       ? { ...promotion }
       : {
-          studentId: undefined,
+          studentId: studentId,
           rankId: undefined,
           promotionDate: "",
           notes: "",
@@ -80,14 +63,28 @@ const EditPromotion: React.FC<EditPromotionProps> = ({
       setOriginalForm({ ...promotion });
     } else {
       setForm({
-        studentId: undefined,
+        studentId: studentId,
         rankId: undefined,
         promotionDate: "",
         notes: "",
       });
       setOriginalForm(null);
     }
-  }, [promotion]);
+  }, [promotion, studentId]);
+
+  // Helper: get next rank id for a student
+  const getNextRankIdForStudent = (studentId: number) => {
+    const student: Student | undefined = students.find(
+      (s) => s.id === studentId
+    );
+    if (!student) return undefined;
+    const currentRankIndex = ranks.findIndex(
+      (r: Rank) => r.id === student.currentRankId
+    );
+    if (currentRankIndex === -1 || currentRankIndex + 1 >= ranks.length)
+      return undefined;
+    return ranks[currentRankIndex + 1]?.id;
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -136,39 +133,21 @@ const EditPromotion: React.FC<EditPromotionProps> = ({
       saving={saving}
       onClose={onClose}
     >
-      <form
-        className="flex-1 overflow-y-auto space-y-4"
+      <EditPromotionForm
+        form={form}
+        setForm={setForm}
+        originalForm={originalForm}
+        students={students}
+        ranks={ranks}
+        coaches={coaches}
+        dojaangs={dojaangs}
+        loadingRanks={loadingRanks}
+        loadingDojaangs={loadingDojaangs}
+        saving={saving}
+        onClose={onClose}
         onSubmit={handleSubmit}
-      >
-        <EditPromotionFormFields
-          form={form}
-          setForm={setForm}
-          students={students}
-          ranks={ranks}
-          coaches={coaches}
-          dojaangs={dojaangs}
-          loadingRanks={loadingRanks}
-          loadingDojaangs={loadingDojaangs}
-          saving={saving}
-          getNextRankIdForStudent={getNextRankIdForStudent}
-        />
-        <div className="flex justify-end gap-2 pt-2">
-          <FormActionButtons
-            onCancel={() => onClose(false)}
-            onSubmitLabel={
-              promotion
-                ? saving
-                  ? "Saving..."
-                  : "Save"
-                : saving
-                ? "Creating..."
-                : "Create"
-            }
-            loading={saving}
-            disabled={JSON.stringify(form) === JSON.stringify(originalForm)}
-          />
-        </div>
-      </form>
+        getNextRankIdForStudent={getNextRankIdForStudent}
+      />
     </EditModal>
   );
 };

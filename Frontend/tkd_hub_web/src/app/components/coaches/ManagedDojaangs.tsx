@@ -60,7 +60,7 @@ const ManagedDojaangs: React.FC<ManagedDojaangsProps> = ({
             {onRemove && (
               <GenericButton
                 type="button"
-                variant="error"
+                variant="warning"
                 className="ml-2 text-xs px-2 py-1"
                 onClick={() => handleRemove(id)}
                 title="Remove"

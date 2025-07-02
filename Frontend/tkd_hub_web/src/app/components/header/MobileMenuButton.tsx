@@ -7,7 +7,7 @@ const MobileMenuButton: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
 }) => (
   <GenericButton
     onClick={toggle}
-    variant="accent" // You can choose any variant you prefer
+    variant={isOpen ? "error" : "primary"} // You can choose any variant you prefer
     className="text-gray-300 hover:text-white focus:outline-none transition duration-300"
     aria-label={isOpen ? "Close menu" : "Open menu"}
   >

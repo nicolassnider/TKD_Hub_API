@@ -32,12 +32,7 @@ const ServicesDropdown: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
 
   return (
     <div className="relative" ref={servicesRef}>
-      <GenericButton
-        type="button"
-        variant="accent"
-        onClick={toggle}
-        className="flex items-center gap-2 font-semibold px-3 py-1 rounded bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-300 dark:hover:bg-neutral-700 transition"
-      >
+      <GenericButton type="button" variant="primary" onClick={toggle}>
         <i className="bi bi-tools mr-2" aria-hidden="true"></i>
         Services
         <i

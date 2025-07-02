@@ -11,7 +11,7 @@ type DaisyUIButtonVariant =
   | "warning"
   | "error"
   | "outline"
-  | "neultral"
+  | "neutral"
   | "neutral-dark";
 
 interface GenericButtonProps
@@ -20,14 +20,30 @@ interface GenericButtonProps
   children: React.ReactNode;
 }
 
+const variantClassMap: Record<DaisyUIButtonVariant, string> = {
+  primary: "btn btn-primary",
+  secondary: "btn btn-secondary",
+  accent: "btn btn-accent",
+  ghost: "btn btn-ghost",
+  link: "btn btn-link",
+  info: "btn btn-info",
+  success: "btn btn-success",
+  warning: "btn btn-warning",
+  error: "btn btn-error",
+  outline: "btn btn-outline",
+  neutral: "btn btn-neutral",
+  "neutral-dark": "btn btn-neutral-dark",
+};
+
 const GenericButton: React.FC<GenericButtonProps> = ({
   variant = "primary",
   children,
   className = "",
   ...props
 }) => {
+  const variantClass = variantClassMap[variant] || variantClassMap.primary;
   return (
-    <button className={`btn btn-${variant} ${className}`} {...props}>
+    <button className={`${variantClass} ${className}`} {...props}>
       {children}
     </button>
   );

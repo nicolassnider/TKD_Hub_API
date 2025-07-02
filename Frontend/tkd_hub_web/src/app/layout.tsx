@@ -28,13 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" data-theme="dark">
+    <html lang="en" data-theme="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
       >
         <Toaster />
         <AppProviders>
-          <Header data-theme="dark" />
+          <Header />
           <main className="flex-1 flex flex-col justify-center items-center px-4 py-8">
             {children}
           </main>
