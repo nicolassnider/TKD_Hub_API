@@ -1,12 +1,11 @@
 import React from "react";
-
+import GenericButton from "../common/actionButtons/GenericButton";
 
 type CoachModalConfirmDeleteProps = {
   loading: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 };
-
 
 const CoachModalConfirmDelete: React.FC<CoachModalConfirmDeleteProps> = ({
   loading,
@@ -20,24 +19,25 @@ const CoachModalConfirmDelete: React.FC<CoachModalConfirmDeleteProps> = ({
         Are you sure you want to delete this coach?
       </p>
       <div className="flex justify-end gap-2">
-        <button
-          className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+        <GenericButton
+          type="button"
+          variant="secondary"
           onClick={onCancel}
           disabled={loading}
         >
           Cancel
-        </button>
-        <button
-          className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+        </GenericButton>
+        <GenericButton
+          type="button"
+          variant="error"
           onClick={onConfirm}
           disabled={loading}
         >
           {loading ? "Deleting..." : "Delete"}
-        </button>
+        </GenericButton>
       </div>
     </div>
   </div>
 );
-
 
 export default CoachModalConfirmDelete;

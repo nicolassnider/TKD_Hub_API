@@ -1,4 +1,5 @@
 import React from "react";
+import GenericButton from "./GenericButton";
 
 type ModalCloseButtonProps = {
   onClick: () => void;
@@ -9,17 +10,16 @@ const ModalCloseButton: React.FC<ModalCloseButtonProps> = ({
   onClick,
   disabled,
 }) => (
-  <button
+  <GenericButton
     type="button"
-    className={`absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out ${
-      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-    }`}
+    variant="warning"
+    className="absolute top-3 right-3 text-2xl font-bold min-h-0 h-8 w-8 p-0"
     aria-label="Close"
     onClick={onClick}
     disabled={disabled}
   >
     &times;
-  </button>
+  </GenericButton>
 );
 
 export default ModalCloseButton;

@@ -126,16 +126,16 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
   // 5. Render
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-lg sm:max-w-xl md:max-w-2xl mx-auto relative max-h-[90vh] flex flex-col">
+      <div className="bg-neutral-900 rounded-lg shadow-lg w-full max-w-lg sm:max-w-xl md:max-w-2xl mx-auto relative max-h-[90vh] flex flex-col border border-neutral-700 text-neutral-100">
         <ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
         <div className="px-4 sm:px-8 pt-8 pb-2 flex-1 overflow-y-auto">
-          <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center text-neutral-100">
             {dojaangId ? "Edit Dojaang" : "Create Dojaang"}
           </h3>
           {loading && (
-            <div className="text-center text-gray-600">Loading...</div>
+            <div className="text-center text-neutral-400">Loading...</div>
           )}
-          {error && <div className="text-red-600 text-center">{error}</div>}
+          {error && <div className="text-red-400 text-center">{error}</div>}
           {!loading && !error && dojaang && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -148,6 +148,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving}
                   required
                   placeholder="Enter dojaang name"
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Dojaang address */}
                 <LabeledInput
@@ -158,6 +159,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving}
                   required
                   placeholder="Enter address"
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Dojaang location */}
                 <LabeledInput
@@ -168,6 +170,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving}
                   required
                   placeholder="Enter location"
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Dojaang phone */}
                 <LabeledInput
@@ -178,6 +181,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving}
                   placeholder="Enter phone number"
                   required
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Dojaang email */}
                 <LabeledInput
@@ -189,6 +193,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving}
                   placeholder="Enter email address"
                   required
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Dojaang Korean name */}
                 <LabeledInput
@@ -198,6 +203,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   onChange={handleChange}
                   disabled={saving}
                   placeholder="Enter Korean name"
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Dojaang Korean phonetic */}
                 <LabeledInput
@@ -207,6 +213,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   onChange={handleChange}
                   disabled={saving}
                   placeholder="Enter Korean name phonetic"
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
                 {/* Coach selector */}
                 <GenericSelector
@@ -227,6 +234,7 @@ export default function EditDojaang({ dojaangId, onClose }: EditDojaangProps) {
                   disabled={saving || coachesLoading}
                   label="Coach"
                   placeholder="Select a coach"
+                  className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
                 />
               </div>
               <FormActionButtons

@@ -95,16 +95,24 @@ export default function ProfilePage() {
   };
 
   if (authLoading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return (
+      <div className="p-8 text-center text-neutral-700 dark:text-neutral-200">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
-    return <div className="p-8 text-center">Not logged in.</div>;
+    return (
+      <div className="p-8 text-center text-neutral-700 dark:text-neutral-200">
+        Not logged in.
+      </div>
+    );
   }
 
   return (
     <div className="flex justify-center items-center my-10">
-      <div className="w-full max-w-6xl bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-10 flex flex-col gap-10 mx-auto text-center">
+      <div className="w-full max-w-6xl bg-neutral-50 dark:bg-neutral-900 rounded-xl shadow-lg p-10 flex flex-col gap-10 mx-auto text-center">
         <ProfileHeader />
         <ProfileInfo user={user} />
         {user.roles?.includes("Coach") && (

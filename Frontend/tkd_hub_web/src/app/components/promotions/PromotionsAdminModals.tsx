@@ -1,6 +1,7 @@
 import { Promotion } from "@/app/types/Promotion";
 import React from "react";
 import EditPromotion from "./EditPromotions";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 type Props = {
   showCreate: boolean;
@@ -42,37 +43,40 @@ const PromotionsAdminModals: React.FC<Props> = ({
         <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto">
           <div className="flex justify-between items-center border-b px-4 sm:px-6 py-4">
             <h3 className="text-lg font-semibold">Confirm Delete</h3>
-            <button
+            <GenericButton
               type="button"
-              className="text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
+              variant="secondary"
+              className="text-2xl font-bold"
               aria-label="Close"
               onClick={onCancelDelete}
               disabled={loading}
             >
               &times;
-            </button>
+            </GenericButton>
           </div>
           <div className="px-4 sm:px-6 py-4">
             <p className="mb-4">
               Are you sure you want to delete this promotion?
             </p>
             <div className="flex flex-col sm:flex-row justify-end gap-2">
-              <button
+              <GenericButton
                 type="button"
-                className="w-full sm:w-auto px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+                variant="secondary"
+                className="w-full sm:w-auto"
                 onClick={onCancelDelete}
                 disabled={loading}
               >
                 Cancel
-              </button>
-              <button
+              </GenericButton>
+              <GenericButton
                 type="button"
-                className="w-full sm:w-auto px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                variant="error"
+                className="w-full sm:w-auto"
                 onClick={onDelete}
                 disabled={loading}
               >
                 {loading ? "Deleting..." : "Delete"}
-              </button>
+              </GenericButton>
             </div>
           </div>
         </div>

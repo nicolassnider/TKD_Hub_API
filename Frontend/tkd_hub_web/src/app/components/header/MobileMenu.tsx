@@ -4,6 +4,7 @@ import AuthButtons from "./AuthButtons";
 import ServicesDropdown from "./ServicesDropdown";
 import { useRoles } from "@/app/context/RoleContext";
 import React from "react";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 const MobileMenu: React.FC<{
   isOpen: boolean;
@@ -37,16 +38,18 @@ const MobileMenu: React.FC<{
             />
           )}
           {isLoggedIn && (
-            <button
+            <GenericButton
+              type="button"
+              variant="success"
+              className="w-full px-4 py-2 flex items-center justify-center gap-2"
               onClick={() => {
                 router.push("/profile");
                 toggle();
               }}
-              className="w-full px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold flex items-center justify-center gap-2 transition duration-300"
             >
               <i className="bi bi-person-circle"></i>
               Profile
-            </button>
+            </GenericButton>
           )}
           <AuthButtons isLoggedIn={isLoggedIn} />
         </div>

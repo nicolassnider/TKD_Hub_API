@@ -3,10 +3,10 @@ import { useClasses } from "@/app/context/ClassContext";
 import { useStudents } from "@/app/context/StudentContext";
 import StudentsInClass from "./StudentsInClass";
 import { Student } from "@/app/types/Student";
-import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 import AddStudentClassDetails from "./AddStudentClassDetails";
 import AddStudentSelector from "./AddStudentSelector";
 import AddStudentActionButton from "./AddStudentActionButton";
+import { EditModal } from "../common/modals/EditModal";
 
 type Props = {
   classId: number;
@@ -98,29 +98,30 @@ const AddStudentToClass: React.FC<Props> = ({
   const classDetails = classes.find((c) => c.id === classId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-lg p-6 min-w-[320px] max-w-md max-h-[90vh] overflow-y-auto relative">
-        <ModalCloseButton onClick={onClose} />
-        <h3 className="text-lg font-semibold mb-4">Add Student to Class</h3>
-        <AddStudentClassDetails classDetails={classDetails} />
-        <AddStudentSelector
-          students={students}
-          studentId={studentId}
-          setStudentId={setStudentId}
-          defaultStudentId={defaultStudentId}
-          loading={loading}
-        />
-        <div className="mb-4">
-          <StudentsInClass classId={classId} key={studentsInClassKey} />
-        </div>
-        <AddStudentActionButton
-          handleAdd={handleAdd}
-          loading={loading}
-          studentId={studentId}
-          message={message}
-        />
+    <EditModal
+      open={open}
+      title="Add Student to Class"
+      saving={loading}
+      onClose={onClose}
+    >
+      <AddStudentClassDetails classDetails={classDetails} onClose={onClose} />
+      <AddStudentSelector
+        students={students}
+        studentId={studentId}
+        setStudentId={setStudentId}
+        defaultStudentId={defaultStudentId}
+        loading={loading}
+      />
+      <AddStudentActionButton
+        handleAdd={handleAdd}
+        loading={loading}
+        studentId={studentId}
+        message={message}
+      />
+      <div className="mb-4">
+        <StudentsInClass classId={classId} key={studentsInClassKey} />
       </div>
-    </div>
+    </EditModal>
   );
 };
 

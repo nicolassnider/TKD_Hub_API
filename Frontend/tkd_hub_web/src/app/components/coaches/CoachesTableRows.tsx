@@ -58,11 +58,7 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
             title="Edit"
             iconClass="bi bi-pencil-square"
             disabled={typeof coach.id !== "number" || !coach.isActive}
-            colorClass={
-              typeof coach.id !== "number" || !coach.isActive
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }
+            variant="primary"
           />
           {coach.isActive && (
             <TableActionButton
@@ -74,7 +70,7 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
               title="Promotions"
               iconClass="bi bi-award"
               disabled={typeof coach.id !== "number"}
-              colorClass="bg-purple-600 text-white hover:bg-purple-700"
+              variant="secondary"
             />
           )}
           {coach.isActive && (
@@ -85,7 +81,7 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
               title="Delete"
               iconClass="bi bi-trash"
               disabled={typeof coach.id !== "number"}
-              colorClass="bg-red-600 text-white hover:bg-red-700"
+              variant="error"
             />
           )}
           {!coach.isActive && onReactivate && (
@@ -96,7 +92,7 @@ const CoachesTableRows: React.FC<CoachesTableRowsProps> = ({
               title="Reactivate"
               iconClass="bi bi-arrow-repeat"
               disabled={typeof coach.id !== "number"}
-              colorClass="bg-green-600 text-white hover:bg-green-700"
+              variant="success"
             />
           )}
         </div>

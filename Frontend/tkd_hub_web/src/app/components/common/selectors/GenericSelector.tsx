@@ -37,23 +37,25 @@ export function GenericSelector<T>({
   const showError =
     required && touched && (value === null || value === undefined);
 
+  // Neutral theme classes similar to LabeledInput
+  const selectorClass =
+    "block w-full bg-neutral-700 text-neutral-100 border-2 border-neutral-400 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm";
+
   return (
-    <div className="flex flex-col mb-4">
+    <div className="w-full mb-4">
       {label && (
         <label
           htmlFor={id}
-          className="mb-1 font-medium text-gray-700 text-base sm:text-sm"
+          className="block mb-1 font-semibold text-neutral-100"
         >
           {label}
         </label>
       )}
       <select
         id={id}
-        className={`w-full border rounded-lg px-3 py-2 transition duration-200 bg-white text-gray-900
-          ${showError ? "border-red-600" : "border-gray-300"}
-          focus:outline-none focus:ring-2 focus:ring-blue-500
-          ${className}
-        `}
+        className={`${selectorClass} ${
+          showError ? "border-red-400" : ""
+        } ${className}`}
         value={value !== null && value !== undefined ? String(value) : ""}
         onChange={(e) => {
           setTouched(true);
@@ -71,7 +73,7 @@ export function GenericSelector<T>({
         ))}
       </select>
       {showError && (
-        <span className="text-red-600 text-xs mt-1">
+        <span className="text-red-400 text-xs mt-1 block">
           {errorMessage || "This field is required."}
         </span>
       )}

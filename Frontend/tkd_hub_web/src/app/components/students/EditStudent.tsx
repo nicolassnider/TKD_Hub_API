@@ -1,32 +1,22 @@
-"use client";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-
-
 import { useDojaangs } from "@/app/context/DojaangContext";
 import { Student } from "@/app/types/Student";
-
-
-import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
 import { useRanks } from "@/app/context/RankContext";
 import { useStudents } from "@/app/context/StudentContext";
 import EditStudentForm from "./EditStudentForm";
-
+import { EditModal } from "../common/modals/EditModal";
 
 type EditStudentProps = {
   studentId?: number;
   onClose: (refresh?: boolean) => void;
 };
 
-
 const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
-  // 1. Context hooks
   const { ranks, loading: ranksLoading, fetchRanks } = useRanks();
   const { dojaangs, loading: dojaangsLoading } = useDojaangs();
   const { getStudentById, createStudent, updateStudent } = useStudents();
 
-
-  // 2. State hooks
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,14 +26,11 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
   );
   const [isBlackBelt, setIsBlackBelt] = useState(false);
 
-
-  // 3. Effects
   useEffect(() => {
     if (!ranks || ranks.length === 0) {
       fetchRanks();
     }
   }, [fetchRanks, ranks]);
-
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -100,8 +87,6 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId, ranks]);
 
-
-  // 4. Functions
   const handleSubmit = async (form: Omit<Student, "id">) => {
     setSaving(true);
     try {
@@ -113,7 +98,6 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
           : undefined,
       };
 
-
       if (studentId) {
         await updateStudent(studentId, payload);
         toast.success("Student updated successfully!");
@@ -123,7 +107,6 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
         );
         toast.success("Student created successfully!");
       }
-
 
       onClose(true);
     } catch (err: unknown) {
@@ -135,38 +118,33 @@ const EditStudent: React.FC<EditStudentProps> = ({ studentId, onClose }) => {
     }
   };
 
-
-  // 5. Render
   if (loading) return <div className="text-center">Loading student...</div>;
-  if (error) return <div className="text-danger text-center">{error}</div>;
+  if (error) return <div className="text-red-600 text-center">{error}</div>;
   if (!form) return null;
 
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col">
-        <ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center">
-          {studentId ? "Edit Student" : "Create Student"}
-        </h3>
-        <EditStudentForm
-          form={form}
-          setForm={setForm}
-          originalForm={originalForm}
-          isBlackBelt={isBlackBelt}
-          setIsBlackBelt={setIsBlackBelt}
-          ranks={ranks}
-          ranksLoading={ranksLoading}
-          dojaangs={dojaangs}
-          dojaangsLoading={dojaangsLoading}
-          saving={saving}
-          onSubmit={handleSubmit}
-          onCancel={() => onClose(false)}
-        />
-      </div>
-    </div>
+    <EditModal
+      open={true}
+      title={studentId ? "Edit Student" : "Create Student"}
+      saving={saving}
+      onClose={onClose}
+    >
+      <EditStudentForm
+        form={form}
+        setForm={setForm}
+        originalForm={originalForm}
+        isBlackBelt={isBlackBelt}
+        setIsBlackBelt={setIsBlackBelt}
+        ranks={ranks}
+        ranksLoading={ranksLoading}
+        dojaangs={dojaangs}
+        dojaangsLoading={dojaangsLoading}
+        saving={saving}
+        onSubmit={handleSubmit}
+        onCancel={() => onClose(false)}
+      />
+    </EditModal>
   );
 };
-
 
 export default EditStudent;

@@ -4,7 +4,7 @@ type Props = { content: string };
 
 const BlogPostBody = ({ content }: Props) => (
   <div
-    className="prose mb-6"
+    className="mb-6 text-neutral-900 dark:text-neutral-100 leading-relaxed break-words"
     dangerouslySetInnerHTML={{ __html: decodeHtml(content) }}
   />
 );

@@ -117,19 +117,21 @@ const ManageAssistanceModal: React.FC<ManageAssistanceModalProps> = ({
     <>
       <CenteredModalContainer>
         <ManageAssistanceModalContainer>
-          <ManageAssistanceModalHeader
-            classId={classId}
-            lastClassInfo={lastClassInfo}
-          />
-          <StudentList
-            students={students}
-            loading={loading}
-            error={error}
-            attendanceMarking={attendanceMarking}
-            onMarkAttendance={handleMarkAttendance}
-            attendanceError={attendanceError}
-          />
-          <ManageAssistanceModalFooter onClose={onClose} />
+          <div className="bg-neutral-900 text-neutral-100 rounded-lg">
+            <ManageAssistanceModalHeader
+              classId={classId}
+              lastClassInfo={lastClassInfo}
+            />
+            <StudentList
+              students={students}
+              loading={loading}
+              error={error}
+              attendanceMarking={attendanceMarking}
+              onMarkAttendance={handleMarkAttendance}
+              attendanceError={attendanceError}
+            />
+            <ManageAssistanceModalFooter onClose={onClose} />
+          </div>
         </ManageAssistanceModalContainer>
       </CenteredModalContainer>
     </>

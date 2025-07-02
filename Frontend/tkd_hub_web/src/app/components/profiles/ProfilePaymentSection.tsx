@@ -1,4 +1,5 @@
 import PaymentIframeModal from "../payment/PaymentIframeModal";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 type Props = {
   paymentLoading: boolean;
@@ -16,16 +17,16 @@ const ProfilePaymentSection = ({
   onCloseIframe,
 }: Props) => (
   <>
-    <button
+    <GenericButton
+      type="button"
+      variant="neutral-dark"
       onClick={onPay}
       disabled={paymentLoading}
-      className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      className="mt-4 px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-50"
     >
       {paymentLoading ? "Processing..." : "Pay Membership"}
-    </button>
-    {paymentError && (
-      <div className="text-red-500 mt-2">{paymentError}</div>
-    )}
+    </GenericButton>
+    {paymentError && <div className="text-red-600 mt-2">{paymentError}</div>}
     {paymentUrl && (
       <PaymentIframeModal paymentUrl={paymentUrl} onClose={onCloseIframe} />
     )}

@@ -37,27 +37,27 @@ const TodaysClassesFloating: React.FC = () => {
 
   // 5. Render
   return (
-    <div className="todays-classes-floating p-4 bg-white shadow rounded-lg">
-      <div className="font-bold mb-2 text-blue-700 flex items-center gap-2">
+    <div className="todays-classes-floating p-4 bg-neutral-900 shadow rounded-lg border border-neutral-700">
+      <div className="font-bold mb-2 text-neutral-100 flex items-center gap-2">
         <span role="img" aria-label="calendar">
           📅
         </span>
         Today&apos;s Classes
       </div>
       {loading ? (
-        <div className="text-gray-500 text-sm">Loading...</div>
+        <div className="text-neutral-400 text-sm">Loading...</div>
       ) : todaysClasses.length === 0 ? (
-        <div className="text-gray-500 text-sm">No classes today.</div>
+        <div className="text-neutral-400 text-sm">No classes today.</div>
       ) : (
-        <ul className="text-sm">
+        <ul className="text-sm text-neutral-100">
           {todaysClasses.map((cls) => (
             <li key={cls.id} className="mb-2">
               <span className="font-semibold">{cls.name}</span>
-              <ul className="ml-4 text-xs text-gray-600">
+              <ul className="ml-4 text-xs text-neutral-400">
                 {cls.schedules
                   ?.filter((s: ClassSchedule) => Number(s.day) === today)
                   .map((s: ClassSchedule, idx: number) => (
-                    <li key={idx} className="hover:text-blue-600 transition">
+                    <li key={idx} className="hover:text-blue-400 transition">
                       {daysOfWeek.find((d) => d.value === Number(s.day))?.label}
                       : {s.startTime} - {s.endTime}
                     </li>

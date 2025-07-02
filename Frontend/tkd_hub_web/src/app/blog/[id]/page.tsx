@@ -16,11 +16,14 @@ const BlogPostPage = () => {
   }, [id]);
 
   if (loading)
-    return <div className="text-center text-blue-600">Loading...</div>;
+    return <div className="text-center text-neutral-600">Loading...</div>;
   if (error) return <div className="text-center text-red-600">{error}</div>;
-  if (!post) return <div className="text-center">No post found.</div>;
+  if (!post)
+    return <div className="text-center text-neutral-600">No post found.</div>;
   if (typeof post.authorId === "undefined")
-    return <div className="text-center">Invalid post data.</div>;
+    return (
+      <div className="text-center text-neutral-600">Invalid post data.</div>
+    );
 
   const safePost = { ...post, authorId: post.authorId ?? "" };
 

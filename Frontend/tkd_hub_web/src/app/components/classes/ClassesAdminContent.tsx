@@ -5,14 +5,12 @@ import { AdminListPage } from "@/app/components/AdminListPage";
 import EditClass from "@/app/components/classes/EditClass";
 import { TrainingClass } from "@/app/types/TrainingClass";
 import AddStudentToClass from "@/app/components/classes/AddStudentToClass";
-import ManageAssistanceModal from "@/app/components/classes/ManageAssistanceModal";
 import ClassTableRows from "@/app/components/classes/ClassTableRows";
-
+import ManageAssistanceModal from "./ManageAssistanceModal";
 
 const ClassesAdminContent = () => {
   const { classes, addClass, updateClass, fetchClasses, loading, error } =
     useClasses();
-
 
   const [editOpen, setEditOpen] = useState(false);
   const [editInitial, setEditInitial] = useState<TrainingClass | null>(null);
@@ -22,23 +20,19 @@ const ClassesAdminContent = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
-
   const handleAddStudents = (classId: number) => {
     setAddStudentsClassId(classId);
   };
-
 
   const handleManageAssistance = (classId: number) => {
     setSelectedClassId(classId);
     setModalOpen(true);
   };
 
-
   useEffect(() => {
     fetchClasses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   const handleEdit = (id: number) => {
     const found = classes.find((c) => c.id === id) || null;
@@ -46,18 +40,15 @@ const ClassesAdminContent = () => {
     setEditOpen(true);
   };
 
-
   const handleRequestDelete = (id: number) => {
     // Implement delete logic or modal here if needed
     console.log("Request delete class with id:", id);
   };
 
-
   const handleCreate = () => {
     setEditInitial(null);
     setEditOpen(true);
   };
-
 
   const handleEditSubmit = async (
     data: Omit<TrainingClass, "id">,
@@ -71,7 +62,6 @@ const ClassesAdminContent = () => {
     setEditOpen(false);
   };
 
-
   return (
     <>
       <AdminListPage
@@ -81,11 +71,22 @@ const ClassesAdminContent = () => {
         onCreate={handleCreate}
         createLabel="Create Class"
         tableHead={
-          <tr>
-            <th>Class Name</th>
-            <th>Instructor</th>
-            <th>Schedule</th>
-            {/* Add more headers as needed */}
+          <tr className="bg-neutral-100 dark:bg-neutral-800">
+            <th className="px-6 py-3 text-left text-neutral-700 dark:text-neutral-200 whitespace-nowrap">
+              Class Name
+            </th>
+            <th className="px-6 py-3 text-left text-neutral-700 dark:text-neutral-200 whitespace-nowrap">
+              Instructor
+            </th>
+            <th className="px-6 py-3 text-left text-neutral-700 dark:text-neutral-200 whitespace-nowrap">
+              Location
+            </th>
+            <th className="px-6 py-3 text-left text-neutral-700 dark:text-neutral-200 w-full">
+              Schedule
+            </th>
+            <th className="px-6 py-3 text-center text-neutral-700 dark:text-neutral-200 min-w-[160px] whitespace-nowrap">
+              Options
+            </th>
           </tr>
         }
         tableBody={
@@ -117,6 +118,5 @@ const ClassesAdminContent = () => {
     </>
   );
 };
-
 
 export default ClassesAdminContent;

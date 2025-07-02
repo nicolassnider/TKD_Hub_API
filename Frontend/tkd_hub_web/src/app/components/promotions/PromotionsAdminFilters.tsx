@@ -1,5 +1,6 @@
 import { Student } from "@/app/types/Student";
 import { GenericSelector } from "../common/selectors/GenericSelector";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 type Props = {
   students: Student[];
@@ -30,16 +31,17 @@ const PromotionsAdminFilters: React.FC<Props> = ({
         />
       </div>
       {studentIdFilter !== undefined && (
-        <button
+        <GenericButton
           type="button"
-          className="self-end sm:self-auto h-[42px] px-4 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 min-w-[120px] promotions-clear-student-btn"
+          variant="secondary"
+          className="self-end sm:self-auto h-[42px] min-w-[120px] promotions-clear-student-btn"
           onClick={onClearStudent}
         >
           Clear Student
-        </button>
+        </GenericButton>
       )}
     </div>
   </div>
 );
 
-export default PromotionsAdminFilters
+export default PromotionsAdminFilters;

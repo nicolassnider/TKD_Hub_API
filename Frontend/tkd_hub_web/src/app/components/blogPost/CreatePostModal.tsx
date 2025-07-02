@@ -84,9 +84,9 @@ export default function CreatePostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-2 text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-100 bg-opacity-80 dark:bg-neutral-900 dark:bg-opacity-80">
+      <div className="rounded-lg shadow-lg p-6 w-full max-w-2xl flex flex-col gap-6 max-h-[90vh] overflow-y-auto bg-neutral-50 dark:bg-neutral-800">
+        <h2 className="text-2xl font-bold mb-2 text-center text-neutral-900 dark:text-neutral-100">
           {postId ? "Edit Post" : "Create New Post"}
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 flex-1">

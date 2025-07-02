@@ -3,6 +3,7 @@ import React, { useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRoles } from "@/app/context/RoleContext";
 import servicesRoutes from "@/app/routes/servicesRoutes";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 const ServicesDropdown: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
   isOpen,
@@ -31,20 +32,21 @@ const ServicesDropdown: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
 
   return (
     <div className="relative" ref={servicesRef}>
-      <button
+      <GenericButton
+        type="button"
+        variant="accent"
         onClick={toggle}
-        className="flex items-center gap-2 hover:text-gray-300 transition-colors duration-300 ease-in-out focus:outline-none font-semibold px-3 py-1 rounded bg-purple-600 hover:bg-purple-700"
+        className="flex items-center gap-2 font-semibold px-3 py-1 rounded bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-300 dark:hover:bg-neutral-700 transition"
       >
-        <i className="bi bi-gear-fill"></i>
+        <i className="bi bi-tools mr-2" aria-hidden="true"></i>
         Services
         <i
-          className={`bi ${
-            isOpen ? "bi-chevron-up" : "bi-chevron-down"
-          } transition-transform duration-300`}
+          className={`bi ms-2 ${isOpen ? "bi-chevron-up" : "bi-chevron-down"}`}
+          aria-hidden="true"
         ></i>
-      </button>
+      </GenericButton>
       {isOpen && (
-        <div className="absolute left-0 mt-2 min-w-[180px] bg-gray-800 rounded-md shadow-lg z-10 border border-purple-500 transition-all duration-300 ease-in-out">
+        <div className="absolute left-0 mt-2 min-w-[180px] bg-neutral-50 dark:bg-neutral-900 rounded-md shadow-lg z-10 border border-neutral-300 dark:border-neutral-700 transition-all duration-300 ease-in-out">
           {servicesRoutes
             .filter(
               (route) =>
@@ -58,9 +60,10 @@ const ServicesDropdown: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
                 key={route.href}
                 href={route.href}
                 onClick={toggle}
-                className={`flex items-center px-4 py-2 hover:bg-purple-700 transition-colors rounded`}
+                className="flex items-center px-4 py-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded text-neutral-900 dark:text-neutral-100"
               >
-                <i className={`${route.icon} mr-2`}></i>
+                {/* Bootstrap icon */}
+                <i className={`${route.icon} mr-2`} aria-hidden="true"></i>
                 {route.label}
               </Link>
             ))}

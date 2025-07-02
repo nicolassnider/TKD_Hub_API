@@ -1,3 +1,5 @@
+import GenericButton from "../common/actionButtons/GenericButton";
+
 type Props = {
   handleAdd: () => void;
   loading: boolean;
@@ -12,16 +14,19 @@ const AddStudentActionButton = ({
   message,
 }: Props) => (
   <>
-    <div className="flex justify-end">
-      <button
+    <div className="flex justify-end mt-4">
+      <GenericButton
+        type="button"
+        variant="primary"
         onClick={handleAdd}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200"
         disabled={loading || !studentId}
       >
         {loading ? "Adding..." : "Add Student"}
-      </button>
+      </GenericButton>
     </div>
-    {message && <div className="text-green-700 text-sm mt-2">{message}</div>}
+    {message && (
+      <div className="text-green-700 text-sm mt-2 text-right">{message}</div>
+    )}
   </>
 );
 

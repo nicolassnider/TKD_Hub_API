@@ -1,5 +1,6 @@
 import React from "react";
 import { Student } from "@/app/types/Student";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 type StudentListProps = {
   students: Student[];
@@ -37,15 +38,17 @@ const StudentList: React.FC<StudentListProps> = ({
               <span>
                 {student.firstName} {student.lastName}
               </span>
-              <button
-                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+              <GenericButton
+                type="button"
+                variant="success"
+                className="px-2 py-1 text-xs"
                 disabled={attendanceMarking[student.id]}
                 onClick={() => onMarkAttendance(student.id!)}
               >
                 {attendanceMarking[student.id]
                   ? "Marking..."
                   : "Mark Attendance"}
-              </button>
+              </GenericButton>
             </li>
           ) : null
         )}

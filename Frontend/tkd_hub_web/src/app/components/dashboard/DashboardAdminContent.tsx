@@ -2,12 +2,11 @@
 import React, { useState } from "react";
 import { useDashboards } from "@/app/context/DashboardContext";
 import DashboardWidgets from "@/app/components/dashboard/DashboardWidgets";
-
+import GenericButton from "../common/actionButtons/GenericButton";
 
 const DashboardAdminContent = () => {
   // 1. Context hooks
   const { createDashboard, loading, error } = useDashboards();
-
 
   // 2. State hooks
   const [userRole, setUserRole] = useState("Coach");
@@ -19,14 +18,12 @@ const DashboardAdminContent = () => {
     data: Record<string, unknown>;
   } | null>(null);
 
-
   // 3. Functions
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await createDashboard({ userRole, widgets });
     setResponse(result);
   };
-
 
   // 4. Render
   return (
@@ -48,13 +45,9 @@ const DashboardAdminContent = () => {
             setWidgets(e.target.value.split(",").map((w) => w.trim()))
           }
         />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          disabled={loading}
-        >
+        <GenericButton type="submit" variant="primary" disabled={loading}>
           {loading ? "Creating..." : "Create Dashboard"}
-        </button>
+        </GenericButton>
       </form>
       {error && <div className="text-red-600 mt-2">{error}</div>}
       {response && (
@@ -65,6 +58,5 @@ const DashboardAdminContent = () => {
     </div>
   );
 };
-
 
 export default DashboardAdminContent;

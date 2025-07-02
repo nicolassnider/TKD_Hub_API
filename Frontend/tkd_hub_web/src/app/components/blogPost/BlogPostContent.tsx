@@ -34,7 +34,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
       <BlogPostActions
         canEditOrDelete={!!canEditOrDelete}
         onEdit={() => {
-          console.log("Edit clicked");
           setEditOpen(true);
         }}
       />

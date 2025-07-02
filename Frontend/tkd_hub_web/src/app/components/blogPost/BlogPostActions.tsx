@@ -1,20 +1,20 @@
+import GenericButton from "../common/actionButtons/GenericButton";
+
 type Props = {
   canEditOrDelete: boolean;
   onEdit?: () => void;
+  onDelete?: () => void;
 };
 
-const BlogPostActions = ({ canEditOrDelete, onEdit }: Props) =>
+const BlogPostActions = ({ canEditOrDelete, onEdit, onDelete }: Props) =>
   canEditOrDelete ? (
     <div className="flex justify-end gap-2">
-      <button
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition"
-        onClick={onEdit}
-      >
+      <GenericButton variant="primary" onClick={onEdit}>
         Edit
-      </button>
-      <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded transition">
+      </GenericButton>
+      <GenericButton variant="error" onClick={onDelete}>
         Delete
-      </button>
+      </GenericButton>
     </div>
   ) : null;
 

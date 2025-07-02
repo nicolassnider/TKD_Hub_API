@@ -10,12 +10,12 @@ const NotFoundTableRow: React.FC<NotFoundTableRowProps> = ({
   message = "No records found.",
 }) => (
   <tr>
-    <td colSpan={colSpan} className="py-8">
+    <td colSpan={colSpan} className="py-8 bg-neutral-900">
       <div className="flex flex-col items-center justify-center gap-2">
-        <span className="text-2xl text-gray-400">
+        <span className="text-2xl text-neutral-500">
           <i className="bi bi-emoji-frown" aria-hidden="true"></i>
         </span>
-        <span className="text-base sm:text-lg text-gray-500 font-medium">
+        <span className="text-base sm:text-lg text-neutral-400 font-medium">
           {message}
         </span>
       </div>

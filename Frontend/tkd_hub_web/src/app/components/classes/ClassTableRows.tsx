@@ -3,7 +3,6 @@ import TableActionButton from "../common/actionButtons/TableActionButton";
 import { daysOfWeek } from "@/app/const/daysOfWeek";
 import TableRows, { TableColumn } from "../common/tableRows/TableRows";
 
-
 type Props = {
   classes: TrainingClass[];
   onEdit: (id: number) => void;
@@ -75,20 +74,20 @@ const ClassTableRows: React.FC<Props> = ({
               onClick={() => onEdit(trainingClass.id)}
               title="Edit"
               iconClass="bi bi-pencil-square"
-              colorClass="bg-blue-600 text-white hover:bg-blue-700"
+              variant="primary"
             />
             <TableActionButton
               onClick={() => onRequestDelete(trainingClass.id)}
               title="Delete"
               iconClass="bi bi-trash"
-              colorClass="bg-red-600 text-white hover:bg-red-700"
+              variant="error"
             />
             {onAddStudents && (
               <TableActionButton
                 onClick={() => onAddStudents(trainingClass.id)}
                 title="Add Students"
                 iconClass="bi bi-person-plus"
-                colorClass="bg-green-600 text-white hover:bg-green-700"
+                variant="success"
               />
             )}
             {latestSchedule && onManageAssistance && (
@@ -98,7 +97,7 @@ const ClassTableRows: React.FC<Props> = ({
                   Number(latestSchedule.day)
                 )}, ${latestSchedule.startTime})`}
                 iconClass="bi bi-calendar-check"
-                colorClass="bg-indigo-600 text-white hover:bg-indigo-700"
+                variant="info"
               />
             )}
           </div>
