@@ -8,7 +8,6 @@ import { Student } from "@/app/types/Student";
 import { useStudents } from "@/app/context/StudentContext";
 import { GenericSelector } from "@/app/components/common/selectors/GenericSelector";
 
-
 export default function StudentsAdminContent() {
   const {
     students: studentsRaw = [],
@@ -17,7 +16,6 @@ export default function StudentsAdminContent() {
     fetchStudents,
   } = useStudents();
   const { dojaangs, loading: dojaangsLoading, fetchDojaangs } = useDojaangs();
-
 
   const students: Student[] = useMemo(() => {
     if (Array.isArray(studentsRaw)) {
@@ -45,12 +43,10 @@ export default function StudentsAdminContent() {
     return [];
   }, [studentsRaw]);
 
-
   const [editId, setEditId] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [filterDojaangId, setFilterDojaangId] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
-
 
   const filteredStudents = useMemo(
     () =>
@@ -63,7 +59,6 @@ export default function StudentsAdminContent() {
     [students, filterDojaangId, showAll]
   );
 
-
   function handleEdit(id: number) {
     setEditId(id);
   }
@@ -72,17 +67,14 @@ export default function StudentsAdminContent() {
     if (refreshList) fetchStudents();
   }
 
-
   function handleCreate() {
     setShowCreate(true);
   }
-
 
   function handleCreateClose(refreshList?: boolean) {
     setShowCreate(false);
     if (refreshList) fetchStudents();
   }
-
 
   useEffect(() => {
     fetchStudents();
@@ -90,18 +82,16 @@ export default function StudentsAdminContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
   useEffect(() => {
     // No-op, but dependencies are now correct
   }, [studentsRaw, students, filteredStudents, filterDojaangId, showAll]);
-
 
   return (
     <>
       <div className="flex items-center gap-4 mb-0 pl-4">
         <label
           htmlFor="showAllSwitch"
-          className="font-medium text-gray-700 flex items-center gap-4 cursor-pointer"
+          className="font-medium text-neutral-200 flex items-center gap-4 cursor-pointer"
         >
           <span className="mr-4">Show inactive students</span>
           <span className="relative inline-block w-12 align-middle select-none transition duration-200 ease-in mr-2">
@@ -112,10 +102,10 @@ export default function StudentsAdminContent() {
               onChange={() => setShowAll((v) => !v)}
               className="sr-only peer"
             />
-            <span className="block w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-blue-600 transition"></span>
-            <span className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-6 tkd-switch-dot"></span>
+            <span className="block w-12 h-6 bg-neutral-700 rounded-full peer-checked:bg-blue-600 transition"></span>
+            <span className="dot absolute left-1 top-1 bg-neutral-200 w-4 h-4 rounded-full transition peer-checked:translate-x-6 tkd-switch-dot"></span>
           </span>
-          <span className="ml-2 text-sm text-gray-500">
+          <span className="ml-2 text-sm text-neutral-400">
             {showAll ? "All" : "Active"}
           </span>
         </label>
@@ -135,17 +125,26 @@ export default function StudentsAdminContent() {
               disabled={loading || dojaangsLoading}
               label="Dojaang"
               placeholder="All dojaangs"
+              className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
             />
           </div>
         }
         onCreate={handleCreate}
         createLabel="Create"
         tableHead={
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Options</th>
+          <tr className="bg-neutral-800">
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
+              ID
+            </th>
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
+              Name
+            </th>
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
+              Email
+            </th>
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
+              Options
+            </th>
           </tr>
         }
         tableBody={

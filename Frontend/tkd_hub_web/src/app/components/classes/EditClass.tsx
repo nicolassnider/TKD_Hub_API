@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 
 import LabeledInput from "../common/inputs/LabeledInput";
 import FormActionButtons from "../common/actionButtons/FormActionButtons";
-import ModalCloseButton from "../common/actionButtons/ModalCloseButton";
-
 import { TrainingClass } from "@/app/types/TrainingClass";
 import { ClassSchedule } from "@/app/types/ClassSchedule";
 import { Coach } from "@/app/types/Coach";
@@ -12,9 +10,11 @@ import { useDojaangs } from "@/app/context/DojaangContext";
 import { GenericSelector } from "../common/selectors/GenericSelector";
 import { DayOfWeek } from "@/app/types/DayOfWeek";
 import ClassSchedulesSection from "./ClassSchedulesSection";
+import { EditModal } from "../common/modals/EditModal";
 
 type EditClassProps = {
-  open: boolean;
+  classId?: number;
+  open?: boolean; // for compatibility, but not required if always modal
   onClose: (wasCreated?: boolean) => void;
   onSubmit: (data: Omit<TrainingClass, "id">, id?: number) => void;
   initialData?: TrainingClass | null;
@@ -31,7 +31,7 @@ const defaultForm: Omit<TrainingClass, "id"> = {
 };
 
 const EditClass: React.FC<EditClassProps> = ({
-  open,
+  open = true,
   onClose,
   onSubmit,
   initialData,
@@ -148,7 +148,7 @@ const EditClass: React.FC<EditClassProps> = ({
           };
 
       await onSubmit(submitData as Omit<TrainingClass, "id">, initialData?.id);
-      onClose();
+      onClose(true);
     } finally {
       setSaving(false);
     }
@@ -158,68 +158,68 @@ const EditClass: React.FC<EditClassProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col overflow-y-auto">
-        <ModalCloseButton onClick={() => onClose(false)} disabled={saving} />
-        <h2 className="text-lg font-bold mb-4">
-          {initialData ? "Edit Class" : "Create Class"}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          {/*Class name*/}
-          <LabeledInput
-            label="Class Name"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            placeholder="Enter class name"
-          />
-          {/* Dojaang Selector */}
-          <GenericSelector
-            items={dojaangs}
-            value={form.dojaangId === 0 ? null : form.dojaangId}
-            onChange={(id: number | null) =>
-              setForm({ ...form, dojaangId: id ?? 0 })
-            }
-            getLabel={(d) => d.name}
-            getId={(d) => d.id}
-            required
-            disabled={saving || loadingDojaangs}
-            label="Dojaang"
-            placeholder="Select a dojaang"
-          />
-          {/* Coach Selector */}
-          <GenericSelector
-            items={availableCoaches}
-            value={form.coachId === 0 ? null : form.coachId}
-            onChange={(id: number | null) =>
-              setForm({ ...form, coachId: id ?? 0 })
-            }
-            getLabel={(c) =>
-              `${c.firstName} ${c.lastName}${c.email ? ` (${c.email})` : ""}`
-            }
-            getId={(c) => c.id}
-            required
-            disabled={saving}
-            label="Coach"
-            placeholder="Select a coach"
-          />
+    <EditModal
+      open={open}
+      title={initialData ? "Edit Class" : "Create Class"}
+      saving={saving}
+      onClose={onClose}
+    >
+      <form onSubmit={handleSubmit}>
+        {/*Class name*/}
+        <LabeledInput
+          label="Class Name"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          required
+          placeholder="Enter class name"
+        />
+        {/* Dojaang Selector */}
+        <GenericSelector
+          items={dojaangs}
+          value={form.dojaangId === 0 ? null : form.dojaangId}
+          onChange={(id: number | null) =>
+            setForm({ ...form, dojaangId: id ?? 0 })
+          }
+          getLabel={(d) => d.name}
+          getId={(d) => d.id}
+          required
+          disabled={saving || loadingDojaangs}
+          label="Dojaang"
+          placeholder="Select a dojaang"
+        />
+        {/* Coach Selector */}
+        <GenericSelector
+          items={availableCoaches}
+          value={form.coachId === 0 ? null : form.coachId}
+          onChange={(id: number | null) =>
+            setForm({ ...form, coachId: id ?? 0 })
+          }
+          getLabel={(c) =>
+            `${c.firstName} ${c.lastName}${c.email ? ` (${c.email})` : ""}`
+          }
+          getId={(c) => c.id}
+          required
+          disabled={saving}
+          label="Coach"
+          placeholder="Select a coach"
+        />
 
-          {/* Schedules Section */}
-          <ClassSchedulesSection
-            schedules={form.schedules}
-            onAdd={handleAddSchedule}
-            onRemove={handleRemoveSchedule}
-            onChange={handleScheduleChange}
-          />
+        {/* Schedules Section */}
+        <ClassSchedulesSection
+          schedules={form.schedules}
+          onAdd={handleAddSchedule}
+          onRemove={handleRemoveSchedule}
+          onChange={handleScheduleChange}
+        />
 
-          <FormActionButtons
-            onCancel={onClose}
-            onSubmitLabel={initialData ? "Update" : "Create"}
-          />
-        </form>
-      </div>
-    </div>
+        <FormActionButtons
+          onCancel={() => onClose(false)}
+          onSubmitLabel={initialData ? "Update" : "Create"}
+          loading={saving}
+        />
+      </form>
+    </EditModal>
   );
 };
 

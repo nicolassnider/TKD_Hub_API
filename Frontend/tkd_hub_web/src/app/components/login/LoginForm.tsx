@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import toast from "react-hot-toast";
 import LabeledInput from "../common/inputs/LabeledInput";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 const errorAnimationStyle = `
 @keyframes fadeInError {
@@ -55,6 +56,7 @@ const LoginForm: React.FC = () => {
           required
           autoComplete="username"
           placeholder="Enter your email"
+          className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
         />
         <LabeledInput
           label="Password"
@@ -65,16 +67,18 @@ const LoginForm: React.FC = () => {
           required
           autoComplete="current-password"
           placeholder="Enter your password"
+          className="bg-neutral-900 text-neutral-100 border-neutral-700 placeholder:text-neutral-400"
         />
-        <button
+        <GenericButton
           type="submit"
-          className="bg-blue-600 text-white rounded px-4 py-2 font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          variant="primary"
           disabled={loading}
+          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border border-neutral-700"
         >
           {loading ? "Logging in..." : "Login"}
-        </button>
+        </GenericButton>
         {error && (
-          <div className="text-red-600 text-center tkd-error-animate">
+          <div className="text-red-400 text-center tkd-error-animate">
             {error}
           </div>
         )}

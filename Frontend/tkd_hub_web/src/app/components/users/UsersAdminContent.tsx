@@ -9,6 +9,7 @@ import EditUser from "@/app/components/users/EditUser";
 import UserTableRows from "@/app/components/users/UserTableRows";
 import { User } from "@/app/types/User";
 import { UserRole } from "@/app/types/UserRole";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 const allowedRoles: UserRole[] = ["Admin"];
 
@@ -107,19 +108,23 @@ export default function UsersAdminContent() {
       />
       {/* Pagination controls outside AdminListPage */}
       <div className="flex gap-2 items-center justify-end mt-4">
-        <button
+        <GenericButton
+          type="button"
+          variant="secondary"
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page === 1}
         >
           Previous
-        </button>
+        </GenericButton>
         <span>Page {page}</span>
-        <button
+        <GenericButton
+          type="button"
+          variant="secondary"
           onClick={() => setPage((p) => p + 1)}
           disabled={users.length < pageSize}
         >
           Next
-        </button>
+        </GenericButton>
       </div>
     </>
   );

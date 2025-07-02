@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import CoachesTableRows from "../../components/coaches/CoachesTableRows";
@@ -10,12 +9,10 @@ import { useUsers } from "@/app/context/UserContext";
 import { useCoaches } from "@/app/context/CoachContext";
 import CoachModalConfirmDelete from "./CoachModalConfirmDelete";
 
-
 export default function CoachesAdminContent() {
   // 1. Context hooks
   const { reactivateUser } = useUsers();
   const { coaches, loading, error, fetchCoaches, deleteCoach } = useCoaches();
-
 
   // 2. State hooks
   const [editId, setEditId] = useState<number | null>(null);
@@ -24,19 +21,16 @@ export default function CoachesAdminContent() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-
   // 3. Effects
   useEffect(() => {
     handleRefresh();
     // eslint-disable-next-line
   }, []);
 
-
   // 4. Functions
   const handleRefresh = () => {
     fetchCoaches();
   };
-
 
   const handleReactivate = async (coachId: number) => {
     try {
@@ -48,19 +42,16 @@ export default function CoachesAdminContent() {
     }
   };
 
-
   function handleEditClose(wasUpdated?: boolean) {
     setEditId(null);
     if (wasUpdated) handleRefresh();
   }
-
 
   function handleAddClose(wasCreated?: boolean) {
     setShowAdd(false);
     if (wasCreated) toast.success("Coach created!");
     handleRefresh();
   }
-
 
   async function handleDelete(coachId: number) {
     setDeleteLoading(true);
@@ -76,12 +67,10 @@ export default function CoachesAdminContent() {
     }
   }
 
-
   // Only filter here, don't pass showAll to CoachesTableRows
   const filteredCoaches = showAll
     ? coaches
     : coaches.filter((coach) => coach.isActive !== false);
-
 
   // 5. Render
   return (
@@ -89,7 +78,7 @@ export default function CoachesAdminContent() {
       <div className="flex items-center gap-4 mb-0 pl-4">
         <label
           htmlFor="showAllSwitch"
-          className="font-medium text-gray-700 flex items-center gap-4 cursor-pointer"
+          className="font-medium text-neutral-200 flex items-center gap-4 cursor-pointer"
         >
           <span className="mr-4">Show inactive coaches</span>
           {/* ON/OFF Switch */}
@@ -101,10 +90,10 @@ export default function CoachesAdminContent() {
               onChange={() => setShowAll((v) => !v)}
               className="sr-only peer"
             />
-            <span className="block w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-blue-600 transition"></span>
-            <span className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-6 tkd-switch-dot"></span>
+            <span className="block w-12 h-6 bg-neutral-700 rounded-full peer-checked:bg-blue-600 transition"></span>
+            <span className="dot absolute left-1 top-1 bg-neutral-200 w-4 h-4 rounded-full transition peer-checked:translate-x-6 tkd-switch-dot"></span>
           </span>
-          <span className="ml-2 text-sm text-gray-500">
+          <span className="ml-2 text-sm text-neutral-400">
             {showAll ? "All" : "Active"}
           </span>
         </label>
@@ -140,17 +129,17 @@ export default function CoachesAdminContent() {
           </>
         }
         tableHead={
-          <tr className="bg-gray-100">
-            <th className="px-4 py-2 text-left font-semibold text-gray-700">
+          <tr className="bg-neutral-800">
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
               ID
             </th>
-            <th className="px-4 py-2 text-left font-semibold text-gray-700">
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
               Name
             </th>
-            <th className="px-4 py-2 text-left font-semibold text-gray-700">
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
               Email
             </th>
-            <th className="px-4 py-2 text-left font-semibold text-gray-700">
+            <th className="px-4 py-2 text-left font-semibold text-neutral-100">
               Options
             </th>
           </tr>

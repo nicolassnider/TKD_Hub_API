@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using TKDHubAPI.Application.DTOs.Pagination;
+using TKDHubAPI.Application.Settings;
 
 namespace TKDHubAPI.Application.Services;
 

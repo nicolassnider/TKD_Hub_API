@@ -23,7 +23,6 @@ export const GenderSelector: React.FC<GenderSelectorProps> = ({
   disabled = false,
   required = false,
   label = "Gender",
-  className = "",
 }) => (
   <GenericSelector
     items={genderOptions}
@@ -34,7 +33,6 @@ export const GenderSelector: React.FC<GenderSelectorProps> = ({
     disabled={disabled}
     required={required}
     label={label}
-    className={className}
     placeholder="Select an option"
   />
 );

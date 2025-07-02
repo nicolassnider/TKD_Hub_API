@@ -588,14 +588,11 @@ public class UserService : IUserService
 
     public async Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto)
     {
-        // Ensure at least the Coach role is present
-        if (dto.RoleIds == null || !dto.RoleIds.Any())
-        {
-            var coachRole = await _userRoleRepository.GetByNameAsync("Coach");
-            if (coachRole == null)
-                throw new Exception("Coach role not found in the system.");
-            dto.RoleIds = new List<int> { coachRole.Id };
-        }
+        // Always ensure the Coach role is assigned internally
+        var coachRole = await _userRoleRepository.GetByNameAsync("Coach");
+        if (coachRole == null)
+            throw new Exception("Coach role not found in the system.");
+
         if (dto.Id.HasValue && dto.Id.Value > 0)
         {
             // Update existing coach
@@ -637,7 +634,7 @@ public class UserService : IUserService
         }
         else
         {
-            // Create new coach with default password
+            // Create new coach with default password and assign Coach role
             var createDto = new CreateUserDto
             {
                 FirstName = dto.FirstName,
@@ -650,7 +647,7 @@ public class UserService : IUserService
                 DojaangId = dto.DojaangId,
                 RankId = dto.RankId,
                 JoinDate = dto.JoinDate,
-                RoleIds = dto.RoleIds
+                RoleIds = new List<int> { coachRole.Id } // Assign Coach role
             };
 
             var user = await AddCoachToDojaangAsync(requestingUserId, createDto);

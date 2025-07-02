@@ -115,7 +115,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
               }}
               title="Edit"
               iconClass="bi bi-pencil-square"
-              colorClass="bg-blue-600 text-white hover:bg-blue-700"
+              variant="primary"
               disabled={typeof student.id !== "number" || !student.isActive}
             />
             <TableActionButton
@@ -125,7 +125,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
               }}
               title="Add to Class"
               iconClass="bi bi-plus-circle"
-              colorClass="bg-green-600 text-white hover:bg-green-700"
+              variant="success"
               disabled={typeof student.id !== "number" || !student.isActive}
             />
             <TableActionButton
@@ -135,7 +135,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
               }
               title="Manage Promotions"
               iconClass="bi bi-award"
-              colorClass="bg-purple-600 text-white hover:bg-purple-700"
+              variant="secondary"
               disabled={typeof student.id !== "number" || !student.isActive}
             />
             <TableActionButton
@@ -145,7 +145,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
               }
               title="Attendance Admin"
               iconClass="bi bi-calendar-check"
-              colorClass="bg-indigo-600 text-white hover:bg-indigo-700"
+              variant="info"
               disabled={typeof student.id !== "number"}
             />
             {student.isActive ? (
@@ -156,7 +156,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
                 }
                 title="Delete"
                 iconClass="bi bi-trash"
-                colorClass="bg-red-600 text-white hover:bg-red-700"
+                variant="error"
                 disabled={typeof student.id !== "number"}
               />
             ) : (
@@ -167,8 +167,8 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
                 }
                 title="Reactivate"
                 iconClass="bi bi-arrow-repeat"
+                variant="success"
                 disabled={typeof student.id !== "number"}
-                colorClass="bg-green-600 text-white hover:bg-green-700"
               />
             )}
           </div>

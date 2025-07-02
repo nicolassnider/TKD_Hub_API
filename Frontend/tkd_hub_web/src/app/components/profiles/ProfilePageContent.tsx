@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useAuth } from "@/app/context/AuthContext";
 import { usePayment } from "@/app/context/PaymentContext";
 import { StudentAttendance } from "@/app/types/StudentAttendance";
@@ -17,6 +16,7 @@ import CoachClasses from "./CoachClasses";
 import StudentAttendanceList from "../classes/StudentAttendanceList";
 import PaymentIframeModal from "../payment/PaymentIframeModal";
 import { useClasses } from "@/app/context/ClassContext";
+import GenericButton from "../common/actionButtons/GenericButton";
 export default function ProfilePageContent() {
   // 1. Context hooks
   const { user, loading: authLoading } = useAuth();
@@ -27,17 +27,14 @@ export default function ProfilePageContent() {
     error: paymentError,
   } = usePayment();
 
-
   // 2. State hooks
   const [coachClasses, setCoachClasses] = useState<TrainingClass[]>([]);
   const fetchedCoachId = useRef<string | null>(null);
   const [attendance, setAttendance] = useState<StudentAttendance[]>([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
 
-
   // Payment iframe state
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-
 
   // 3. Effect to fetch coach classes only when user.id or roles change and only once per coach id
   useEffect(() => {
@@ -54,7 +51,6 @@ export default function ProfilePageContent() {
     }
   }, [user?.id, user?.roles, getClassesByCoachId]);
 
-
   // Fetch attendance for students
   useEffect(() => {
     if (user?.roles?.includes("Student") && user.id) {
@@ -68,14 +64,12 @@ export default function ProfilePageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.roles]);
 
-
   // 5. Payment DTO as expected by backend
   const paymentRequest = {
     amount: 100,
     description: "Membership Fee",
     payerEmail: "nicolas@gmail.com",
   };
-
 
   // 6. Functions
   const handlePayment = async () => {
@@ -87,7 +81,6 @@ export default function ProfilePageContent() {
         toast.success("Payment received! ID: " + data);
         stopSignalR();
       });
-
 
       const result = await createPreference(paymentRequest);
       if (result && result.init_point) {
@@ -104,23 +97,19 @@ export default function ProfilePageContent() {
     }
   };
 
-
   const handleCloseIframe = () => {
     setPaymentUrl(null);
     stopSignalR();
   };
-
 
   // 7. Render
   if (authLoading) {
     return <div className="p-8 text-center">Loading...</div>;
   }
 
-
   if (!user) {
     return <div className="p-8 text-center">Not logged in.</div>;
   }
-
 
   return (
     <div className="flex justify-center items-center my-10">
@@ -138,17 +127,18 @@ export default function ProfilePageContent() {
           />
         )}
         {/* Payment Button Example */}
-        <button
+        <GenericButton
+          type="button"
+          variant="primary"
           onClick={handlePayment}
           disabled={paymentLoading}
-          className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="mt-4 px-6 py-2"
         >
           {paymentLoading ? "Processing..." : "Pay Membership"}
-        </button>
+        </GenericButton>
         {paymentError && (
           <div className="text-red-500 mt-2">{paymentError}</div>
         )}
-
 
         {/* Payment Iframe Modal */}
         {paymentUrl && (

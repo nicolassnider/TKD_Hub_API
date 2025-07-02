@@ -27,8 +27,8 @@ const BlogPageContent = () => {
     Array.isArray(role) && (role.includes("Admin") || role.includes("Coach"));
 
   return (
-    <main className="flex flex-col flex-1 items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-blue-100 px-4">
-      <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 sm:p-10">
+    <main className="flex flex-col flex-1 items-center justify-center min-h-screen bg-gradient-to-b from-neutral-100 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800 px-4">
+      <div className="w-full max-w-2xl bg-neutral-50 dark:bg-neutral-900 rounded-lg shadow-lg p-6 sm:p-10">
         <BlogHeader />
         {canCreatePost && (
           <CreatePostButton onClick={() => setModalOpen(true)} />

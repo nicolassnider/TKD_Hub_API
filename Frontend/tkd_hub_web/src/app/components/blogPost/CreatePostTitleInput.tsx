@@ -1,15 +1,18 @@
+import LabeledInput from "../common/inputs/LabeledInput";
+
 type Props = {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const CreatePostTitleInput = ({ value, onChange }: Props) => (
-  <input
-    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    placeholder="Title"
+  <LabeledInput
+    label="Title"
+    name="post-title"
     value={value}
     onChange={onChange}
     required
+    placeholder="Title"
   />
 );
 

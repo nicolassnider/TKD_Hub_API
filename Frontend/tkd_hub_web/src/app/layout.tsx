@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { Toaster } from "react-hot-toast";
 import { AppProviders } from "./context/AppProviders";
 import Header from "./components/header/Header";
@@ -29,13 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" data-theme="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-white min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
       >
         <Toaster />
         <AppProviders>
-          <Header />
+          <Header data-theme="dark" />
           <main className="flex-1 flex flex-col justify-center items-center px-4 py-8">
             {children}
           </main>

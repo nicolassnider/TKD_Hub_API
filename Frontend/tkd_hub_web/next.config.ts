@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
 		'http://192.168.0.31:3000',
 		'https://192.168.0.31:3000',
 		'https://192.168.0.31:3000',
-	],
+	]
 };
 
 export default nextConfig;

@@ -1,9 +1,13 @@
+import React from "react";
+import GenericButton from "../common/actionButtons/GenericButton";
+
 const MobileMenuButton: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
   isOpen,
   toggle,
 }) => (
-  <button
+  <GenericButton
     onClick={toggle}
+    variant="accent" // You can choose any variant you prefer
     className="text-gray-300 hover:text-white focus:outline-none transition duration-300"
     aria-label={isOpen ? "Close menu" : "Open menu"}
   >
@@ -30,7 +34,7 @@ const MobileMenuButton: React.FC<{ isOpen: boolean; toggle: () => void }> = ({
         />
       )}
     </svg>
-  </button>
+  </GenericButton>
 );
 
 export default MobileMenuButton;

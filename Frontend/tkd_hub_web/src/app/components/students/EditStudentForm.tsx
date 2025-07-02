@@ -9,7 +9,6 @@ import equal from "fast-deep-equal";
 import { Rank } from "@/app/types/Rank";
 import { Dojaang } from "@/app/types/Dojaang";
 
-
 type EditStudentFormProps = {
   form: Omit<Student, "id">;
   setForm: React.Dispatch<React.SetStateAction<Omit<Student, "id"> | null>>;
@@ -24,7 +23,6 @@ type EditStudentFormProps = {
   onSubmit: (form: Omit<Student, "id">) => void;
   onCancel: () => void;
 };
-
 
 const EditStudentForm: React.FC<EditStudentFormProps> = ({
   form,
@@ -50,7 +48,6 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
     }));
   };
 
-
   const handleDojaangChange = (id: number | null) => {
     setForm((prev) => ({
       ...prev!,
@@ -58,12 +55,10 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
     }));
   };
 
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(form);
   };
-
 
   return (
     <form
@@ -116,7 +111,6 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
           }
           disabled={saving}
           required
-          className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
         />
         <LabeledInput
           label="Date of Birth"
@@ -132,7 +126,6 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
           required
           disabled={saving}
           maxDate={new Date()}
-          className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
         />
         <div className="flex-1">
           <GenericSelector
@@ -153,7 +146,6 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
             required
             label="Rank"
             placeholder="Select a rank"
-            className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
           />
           <div className="flex items-center gap-2 mt-2">
             <input
@@ -162,11 +154,11 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
               checked={isBlackBelt}
               onChange={(e) => setIsBlackBelt(e.target.checked)}
               disabled={saving || ranksLoading}
-              className="accent-black w-5 h-5 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+              className="accent-neutral-700 w-5 h-5 rounded border-neutral-700 bg-neutral-900"
             />
             <label
               htmlFor="isBlackBelt"
-              className="font-medium select-none cursor-pointer mb-0"
+              className="font-medium select-none cursor-pointer mb-0 text-neutral-200"
             >
               Is Black Belt?
             </label>
@@ -183,7 +175,6 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
           label="Dojaang"
           id="dojaang-selector"
           placeholder="Select a dojaang"
-          className="w-full h-[44px] px-3 py-2 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <FormActionButtons
@@ -195,6 +186,5 @@ const EditStudentForm: React.FC<EditStudentFormProps> = ({
     </form>
   );
 };
-
 
 export default EditStudentForm;

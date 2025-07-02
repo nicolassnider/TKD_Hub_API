@@ -1,16 +1,19 @@
+import GenericButton from "../common/actionButtons/GenericButton";
+
 type Props = {
   onClick: () => void;
 };
 
 const CreatePostButton = ({ onClick }: Props) => (
   <div className="mb-6 flex justify-end">
-    <button
+    <GenericButton
       type="button"
+      variant="neutral-dark"
       onClick={onClick}
-      className="px-4 py-2 rounded bg-blue-700 hover:bg-blue-800 text-white font-semibold shadow transition"
+      className="bg-neutral-900 hover:bg-neutral-800 text-neutral-50"
     >
       Create Post
-    </button>
+    </GenericButton>
   </div>
 );
 

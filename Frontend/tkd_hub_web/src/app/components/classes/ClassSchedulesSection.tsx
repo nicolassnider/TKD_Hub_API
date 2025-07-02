@@ -3,6 +3,7 @@ import { daysOfWeek } from "@/app/const/daysOfWeek";
 import { ClassSchedule } from "@/app/types/ClassSchedule";
 import LabeledInput from "../common/inputs/LabeledInput";
 import { GenericSelector } from "../common/selectors/GenericSelector";
+import GenericButton from "../common/actionButtons/GenericButton";
 
 type Props = {
   schedules: ClassSchedule[];
@@ -22,22 +23,25 @@ const ClassSchedulesSection: React.FC<Props> = ({
   onChange,
 }) => (
   <div className="mb-4">
-    <label className="block font-medium mb-1">Schedules</label>
+    <label className="block font-medium mb-1 text-neutral-800 dark:text-neutral-100">
+      Schedules
+    </label>
     <div className="mt-2 mb-4">
-      <button
+      <GenericButton
         type="button"
-        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-semibold"
+        variant="neutral-dark"
         onClick={onAdd}
+        className="px-4 py-2 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-50"
       >
         Add Schedule
-      </button>
+      </GenericButton>
     </div>
     {schedules.length > 0 && (
-      <div className="mt-4 space-y-2 border-t border-gray-200 pt-4">
+      <div className="mt-4 space-y-2 border-t border-neutral-200 dark:border-neutral-700 pt-4">
         {schedules.map((schedule, idx) => (
           <div
             key={schedule.id ?? idx}
-            className="flex flex-col gap-2 bg-gray-50 rounded p-2 md:flex-row md:items-stretch flex-wrap"
+            className="flex flex-col gap-2 bg-neutral-100 dark:bg-neutral-800 rounded p-2 md:flex-row md:items-stretch flex-wrap"
           >
             <div className="flex flex-col min-w-[120px] w-full md:w-1/4">
               <GenericSelector
@@ -78,15 +82,18 @@ const ClassSchedulesSection: React.FC<Props> = ({
                 />
               </div>
               <div className="flex items-end ml-auto">
-                <button
+                <GenericButton
                   type="button"
-                  className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors h-full flex items-center justify-center"
+                  variant="error"
+                  className="h-full flex items-center justify-center px-3 py-2 bg-red-600 hover:bg-red-700 text-neutral-50 rounded"
                   onClick={() => onRemove(idx)}
                   title="Remove schedule"
                 >
-                  <i className="bi bi-x-lg text-lg" aria-hidden="true"></i>
+                  <span className="text-lg" aria-hidden="true">
+                    &times;
+                  </span>
                   <span className="sr-only">Remove</span>
-                </button>
+                </GenericButton>
               </div>
             </div>
           </div>

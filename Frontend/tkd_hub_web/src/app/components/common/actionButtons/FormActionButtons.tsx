@@ -1,4 +1,5 @@
 import React from "react";
+import GenericButton from "./GenericButton";
 
 type FormActionButtonsProps = {
   onCancel: () => void;
@@ -14,25 +15,27 @@ const FormActionButtons: React.FC<FormActionButtonsProps> = ({
   disabled = false,
 }) => (
   <div className="flex justify-between items-center mt-4">
-    <button
+    <GenericButton
       type="button"
-      className="flex items-center justify-center px-4 py-2 rounded-md bg-gray-300 text-gray-800 hover:bg-gray-400 transition duration-200 ease-in-out"
+      variant="secondary"
       onClick={onCancel}
       disabled={loading}
     >
-      <i className="bi bi-x-lg md:hidden text-lg"></i>
+      <span className="md:hidden text-lg">✖</span>
       <span className="hidden md:inline">Cancel</span>
-    </button>
-    <button
+    </GenericButton>
+    <GenericButton
       type="submit"
-      className={`flex items-center justify-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition duration-200 ease-in-out ${
-        loading || disabled ? "bg-gray-400 cursor-not-allowed" : ""
-      }`}
+      variant="primary"
       disabled={loading || disabled}
     >
-      <i className="bi bi-check-lg md:hidden text-lg"></i>
+      {loading ? (
+        <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2 align-middle"></span>
+      ) : (
+        <span className="md:hidden text-lg">✔</span>
+      )}
       <span className="hidden md:inline">{onSubmitLabel}</span>
-    </button>
+    </GenericButton>
   </div>
 );
 

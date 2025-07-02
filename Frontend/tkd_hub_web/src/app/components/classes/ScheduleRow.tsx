@@ -12,9 +12,11 @@ const getDayLabel = (day: number | string | DayOfWeek): string => {
 const ScheduleRow: React.FC<{ schedules?: ClassSchedule[] }> = ({
   schedules,
 }) => (
-  <div className="flex items-start">
-    <label className="w-28 font-semibold">Schedule:</label>
-    <span className="flex-1">
+  <div className="flex items-start py-1">
+    <label className="w-32 font-semibold text-neutral-700 dark:text-neutral-200">
+      Schedule:
+    </label>
+    <span className="flex-1 text-neutral-900 dark:text-neutral-100">
       {Array.isArray(schedules) && schedules.length > 0 ? (
         <ul className="list-disc pl-5">
           {schedules.map((s, idx) => (

@@ -49,14 +49,14 @@ const DojaangTableRows: React.FC<DojaangTableRowsProps> = ({
             onClick={() => onEdit(dojaang.id)}
             title="Edit"
             iconClass="bi bi-pencil-square"
-            colorClass="bg-blue-600 text-white hover:bg-blue-700"
+            variant="primary"
           />
           {Array.isArray(role) && role.includes("Admin") && (
             <TableActionButton
               onClick={() => handleDelete(dojaang.id)}
               title="Delete"
               iconClass="bi bi-trash"
-              colorClass="bg-red-600 text-white hover:bg-red-700"
+              variant="error"
             />
           )}
         </div>

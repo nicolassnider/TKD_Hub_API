@@ -50,7 +50,7 @@ const UserTableRows: React.FC<UserTableRowsProps> = ({
             onClick={() => typeof user.id === "number" && onEdit(user.id)}
             title="Edit"
             iconClass="bi bi-pencil-square"
-            colorClass="bg-blue-600 text-white hover:bg-blue-700"
+            variant="primary"
             disabled={typeof user.id !== "number"}
           />
           <TableActionButton
@@ -65,7 +65,7 @@ const UserTableRows: React.FC<UserTableRowsProps> = ({
             }}
             title="Delete"
             iconClass="bi bi-trash"
-            colorClass="bg-red-600 text-white hover:bg-red-700"
+            variant="error"
             disabled={typeof user.id !== "number"}
           />
         </div>

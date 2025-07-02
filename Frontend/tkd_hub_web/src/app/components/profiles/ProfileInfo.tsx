@@ -7,7 +7,6 @@ type ProfileInfoProps = {
   user: User;
 };
 
-// 4. Functions
 function getGenderLabel(value: number) {
   const found = GENDER_LABELS.find((g) => g.value === value);
   return found ? found.label : "Unknown";
@@ -24,10 +23,8 @@ function formatDate(dateString?: string) {
 }
 
 const ProfileInfo: React.FC<ProfileInfoProps> = ({ user }) => {
-  // 1. Context hooks
   const { ranks } = useRanks();
 
-  // 5. Render
   const rankName =
     user.currentRankId && ranks.length > 0
       ? ranks.find((r) => r.id === user.currentRankId)?.name ||
@@ -37,39 +34,43 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ user }) => {
       : null;
 
   return (
-    <div className="max-w-xl mx-auto bg-white rounded-lg shadow-md p-6 transition-transform duration-200 hover:scale-105 hover:shadow-lg">
+    <div className="max-w-xl mx-auto bg-neutral-50 dark:bg-neutral-800 rounded-lg shadow-md p-6 transition-transform duration-200 hover:scale-105 hover:shadow-lg">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
         {/* Name */}
-        <div className="font-semibold text-gray-700 text-right sm:text-left">
+        <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
           Name:
         </div>
-        <div className="text-right sm:text-left">
+        <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
           {user.firstName} {user.lastName}
         </div>
 
         {/* Email */}
-        <div className="font-semibold text-gray-700 text-right sm:text-left">
+        <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
           Email:
         </div>
-        <div className="text-right sm:text-left">{user.email}</div>
+        <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
+          {user.email}
+        </div>
 
         {/* Phone */}
         {user.phoneNumber && (
           <>
-            <div className="font-semibold text-gray-700 text-right sm:text-left">
+            <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
               Phone:
             </div>
-            <div className="text-right sm:text-left">{user.phoneNumber}</div>
+            <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
+              {user.phoneNumber}
+            </div>
           </>
         )}
 
         {/* Gender */}
         {user.gender !== undefined && (
           <>
-            <div className="font-semibold text-gray-700 text-right sm:text-left">
+            <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
               Gender:
             </div>
-            <div className="text-right sm:text-left">
+            <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
               {getGenderLabel(user.gender)}
             </div>
           </>
@@ -78,10 +79,10 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ user }) => {
         {/* Date of Birth */}
         {user.dateOfBirth && (
           <>
-            <div className="font-semibold text-gray-700 text-right sm:text-left">
+            <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
               Date of Birth:
             </div>
-            <div className="text-right sm:text-left">
+            <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
               {formatDate(user.dateOfBirth)}
             </div>
           </>
@@ -90,20 +91,22 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ user }) => {
         {/* Current Rank */}
         {rankName && (
           <>
-            <div className="font-semibold text-gray-700 text-right sm:text-left">
+            <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
               Current Rank:
             </div>
-            <div className="text-right sm:text-left">{rankName}</div>
+            <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
+              {rankName}
+            </div>
           </>
         )}
 
         {/* Join Date */}
         {user.joinDate && (
           <>
-            <div className="font-semibold text-gray-700 text-right sm:text-left">
+            <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
               Join Date:
             </div>
-            <div className="text-right sm:text-left">
+            <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
               {formatDate(user.joinDate)}
             </div>
           </>
@@ -112,20 +115,20 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ user }) => {
         {/* Roles */}
         {user.roles && (
           <>
-            <div className="font-semibold text-gray-700 text-right sm:text-left">
+            <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
               Roles:
             </div>
-            <div className="text-right sm:text-left">
+            <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
               {user.roles.join(", ")}
             </div>
           </>
         )}
 
         {/* Status */}
-        <div className="font-semibold text-gray-700 text-right sm:text-left">
+        <div className="font-semibold text-neutral-700 dark:text-neutral-200 text-right sm:text-left">
           Status:
         </div>
-        <div className="text-right sm:text-left">
+        <div className="text-right sm:text-left text-neutral-900 dark:text-neutral-100">
           {user.isActive ? "Active" : "Inactive"}
         </div>
       </div>

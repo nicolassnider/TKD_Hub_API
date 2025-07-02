@@ -37,13 +37,13 @@ export default function PromotionsTableRows({
             onClick={() => onEdit(promotion)}
             title="Edit"
             iconClass="bi bi-pencil-square"
-            colorClass="bg-blue-600 text-white hover:bg-blue-700"
+            variant="primary"
           />
           <TableActionButton
             onClick={() => onDelete(promotion.id)}
             title="Delete"
             iconClass="bi bi-trash"
-            colorClass="bg-red-600 text-white hover:bg-red-700"
+            variant="error"
           />
         </div>
       )}
