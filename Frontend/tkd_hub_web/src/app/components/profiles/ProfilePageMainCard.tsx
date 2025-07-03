@@ -6,12 +6,11 @@ import toast from "react-hot-toast";
 import ProfileInfo from "./ProfileInfo";
 import CoachClasses from "./CoachClasses";
 import StudentAttendanceList from "../classes/StudentAttendanceList";
-import PaymentIframeModal from "../payment/PaymentIframeModal";
 import { useClasses } from "@/app/context/ClassContext";
-import GenericButton from "../common/actionButtons/GenericButton";
 import { User } from "@/app/types/User";
 import { StudentAttendance } from "@/app/types/StudentAttendance";
 import { TrainingClass } from "@/app/types/TrainingClass";
+import ProfilePaymentSection from "./ProfilePaymentSection";
 
 type ProfilePageMainCardProps = {
   user: User;
@@ -119,22 +118,14 @@ export default function ProfilePageMainCard({
           loading={attendanceLoading}
         />
       )}
-      <GenericButton
-        type="button"
-        variant="primary"
-        onClick={handlePayment}
-        disabled={paymentLoading}
-        className="mt-4 px-6 py-2"
-      >
-        {paymentLoading ? "Processing..." : "Pay Membership"}
-      </GenericButton>
-      {paymentError && <div className="text-red-500 mt-2">{paymentError}</div>}
-      {paymentUrl && (
-        <PaymentIframeModal
-          paymentUrl={paymentUrl}
-          onClose={handleCloseIframe}
-        />
-      )}
+      {/* Payment section extracted to its own component */}
+      <ProfilePaymentSection
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentUrl={paymentUrl}
+        onPay={handlePayment}
+        onCloseIframe={handleCloseIframe}
+      />
     </div>
   );
 }

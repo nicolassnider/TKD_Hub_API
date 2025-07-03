@@ -19,10 +19,9 @@ const ProfilePaymentSection = ({
   <>
     <GenericButton
       type="button"
-      variant="neutral-dark"
+      variant="warning"
       onClick={onPay}
       disabled={paymentLoading}
-      className="mt-4 px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-50"
     >
       {paymentLoading ? "Processing..." : "Pay Membership"}
     </GenericButton>

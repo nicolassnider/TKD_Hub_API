@@ -1,18 +1,5 @@
+import { DaisyUIButtonVariant } from "@/app/types/DaisyUIButtonVariant";
 import React from "react";
-
-type DaisyUIButtonVariant =
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "ghost"
-  | "link"
-  | "info"
-  | "success"
-  | "warning"
-  | "error"
-  | "outline"
-  | "neutral"
-  | "neutral-dark";
 
 interface GenericButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -42,8 +29,18 @@ const GenericButton: React.FC<GenericButtonProps> = ({
   ...props
 }) => {
   const variantClass = variantClassMap[variant] || variantClassMap.primary;
+  // Quita w-full de baseClass
+  const baseClass =
+    "flex items-center justify-center gap-1 text-xs xs:text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2 break-words";
+  // Si no se pasa w-*, aplica w-full por defecto
+  const widthClass = /\bw-(full|auto|min|max|fit)\b/.test(className)
+    ? ""
+    : "w-full";
   return (
-    <button className={`${variantClass} ${className}`} {...props}>
+    <button
+      className={`${variantClass} ${baseClass} ${widthClass} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   );
