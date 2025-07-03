@@ -50,14 +50,17 @@ const DesktopMenu = ({
         <GenericButton
           type="button"
           variant="success"
-          className="px-4 py-2 flex items-center gap-2"
           onClick={() => router.push("/profile")}
+          className="w-auto flex items-center gap-2"
         >
-          <i className="bi bi-person-circle"></i>
-          Profile
+          <i className="bi bi-person-circle text-lg" aria-hidden="true"></i>
+          <span>Profile</span>
         </GenericButton>
       )}
-      <AuthButtons isLoggedIn={isLoggedIn} />
+      <AuthButtons
+        isLoggedIn={isLoggedIn}
+        className="w-auto flex items-center gap-2"
+      />
     </div>
   );
 };

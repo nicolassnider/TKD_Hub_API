@@ -1,8 +1,8 @@
 "use client";
 
-import AboutActions from "../components/about/AboutActions";
 import AboutFeatures from "../components/about/AboutFeatures";
 import AboutVision from "../components/about/AboutVision";
+import PageLinks from "../components/common/pageLinks/PageLinks";
 
 export default function AboutPage() {
   return (
@@ -18,7 +18,7 @@ export default function AboutPage() {
         </p>
         <AboutFeatures />
         <AboutVision />
-        <AboutActions />
+        <PageLinks linksToShow={["/", "/contact", "/blog"]} />
       </div>
     </main>
   );

@@ -1,26 +1,26 @@
 import React from "react";
 
-type ContactLinkProps = {
+type Props = {
   href: string;
-  icon: string; // Bootstrap icon class, e.g. "bi bi-whatsapp"
+  icon: string;
   title: string;
-  className?: string;
+  className?: string; // Esta clase debe ir en el ícono
 };
 
-const ContactLink: React.FC<ContactLinkProps> = ({
+const ContactLink: React.FC<Props> = ({
   href,
   icon,
   title,
-  className,
+  className = "",
 }) => (
   <a
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className={`flex items-center justify-center p-2 rounded-md transition-colors duration-200 hover:bg-neutral-200 bg-neutral-100 text-neutral-800 hover:text-neutral-900 ${className}`}
-    title={title}
+    aria-label={title}
+    className="rounded-lg p-4 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
   >
-    <i className={`${icon} text-xl`}></i>
+    <i className={`${icon} text-3xl ${className}`} />
   </a>
 );
 

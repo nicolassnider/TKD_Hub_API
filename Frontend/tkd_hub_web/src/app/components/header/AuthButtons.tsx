@@ -3,7 +3,15 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import GenericButton from "../common/actionButtons/GenericButton";
 
-const AuthButtons: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
+interface AuthButtonsProps {
+  isLoggedIn: boolean;
+  className?: string;
+}
+
+const AuthButtons: React.FC<AuthButtonsProps> = ({
+  isLoggedIn,
+  className = "",
+}) => {
   const { logout } = useAuth();
   const router = useRouter();
 
@@ -13,20 +21,29 @@ const AuthButtons: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
         <GenericButton
           type="button"
           variant="error"
-          className="ml-4"
+          className={className}
           onClick={() => {
             logout();
             router.push("/");
           }}
         >
+          <i
+            className="bi bi-box-arrow-right mr-3 text-lg"
+            aria-hidden="true"
+          ></i>
           Logout
         </GenericButton>
       ) : (
         <GenericButton
           type="button"
           variant="primary"
+          className={className}
           onClick={() => router.push("/login")}
         >
+          <i
+            className="bi bi-box-arrow-in-right mr-3 text-lg"
+            aria-hidden="true"
+          ></i>
           Login
         </GenericButton>
       )}

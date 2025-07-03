@@ -4,6 +4,7 @@ import ContactLink from "./ContactLink";
 import contactLinks from "./contactLinks";
 import GenericButton from "../common/actionButtons/GenericButton";
 import LabeledInput from "../common/inputs/LabeledInput";
+import PageLinks from "../common/pageLinks/PageLinks";
 
 export default function ContactPageContent() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -24,7 +25,7 @@ export default function ContactPageContent() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-neutral-100 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800 px-2 sm:px-4">
       <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl min-w-[320px] md:min-w-[500px] mx-auto bg-neutral-50 dark:bg-neutral-900 rounded-lg shadow-lg p-6 sm:p-10">
-        <h1 className="text-3xl font-bold mb-4 text-center text-neutral-900">
+        <h1 className="text-3xl font-bold mb-4 text-center text-neutral-900 dark:text-neutral-100">
           Contact Us
         </h1>
         {submitted ? (
@@ -81,11 +82,14 @@ export default function ContactPageContent() {
                 icon={link.icon}
                 title={link.title}
                 className={
-                  "bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                  // Use the className from the contactLinks array
+                  link.className +
+                  " bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
                 }
               />
             ))}
           </div>
+          <PageLinks linksToShow={["/", "/about", "/blog"]} />
         </div>
       </div>
     </main>

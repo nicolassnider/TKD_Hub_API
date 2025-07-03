@@ -8,6 +8,7 @@ import BlogHeader from "./BlogHeader";
 import CreatePostButton from "./CreatePostButton";
 import PageLinks from "../common/pageLinks/PageLinks";
 
+
 // Dynamically import CreatePostModal with SSR disabled
 const CreatePostModal = dynamic(() => import("./CreatePostModal"), {
   ssr: false,
@@ -38,7 +39,7 @@ const BlogPageContent = () => {
         )}
         {error && <div className="text-center text-red-600 mb-4">{error}</div>}
         <BlogPostList posts={posts} />
-        <PageLinks />
+        <PageLinks linksToShow={["/", "/about", "/contact"]} />
       </div>
       <CreatePostModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </main>
