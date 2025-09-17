@@ -70,7 +70,7 @@ const AttendanceTableRows: React.FC<AttendanceTableRowsProps> = ({
       columns={columns(classMap)}
       actions={(item) => (
         <div className="flex gap-2 items-center">
-          {!onEdit && (
+          {onEdit && (
             <TableActionButton
               onClick={() => typeof item.id === "number" && onEdit(item.id)}
               title="Edit"
