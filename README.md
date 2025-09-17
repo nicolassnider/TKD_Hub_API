@@ -2,6 +2,18 @@
 
 TKDHub is a web-based platform and RESTful API for managing Taekwondo dojaangs (schools), users, coaches, students, events, promotions, ranks, and more. The solution is built with ASP.NET Core (.NET 8), Entity Framework Core, and follows clean architecture principles with separate Application, Domain, Infrastructure, and WebAPI layers.
 
+## Docker / Local dev
+
+There are example Dockerfiles for the API and the frontend in the project root proposals. To run both services locally for development, prefer using the `dotnet` and `npm` commands directly, or create a `docker-compose.yml` that wires the API, a SQL Server container, and the frontend.
+
+Key notes:
+
+- The Web API is under `src/TKDHubAPI.WebAPI`.
+- The Next.js frontend is under `frontend/tkd_hub_web`.
+- Database migrations live in the API project under `src/TKDHubAPI.Infrastructure/Migrations` (run via `dotnet ef database update` or the startup migration runner).
+
+If you plan to deploy, keep MercadoPago secret keys on the server and only expose the public key to the browser (see frontend README).
+
 ---
 
 ## Features
@@ -39,34 +51,39 @@ TKDHub is a web-based platform and RESTful API for managing Taekwondo dojaangs (
 ### Setup & Run (API)
 
 1. **Clone the repository:**
+
    ```sh
    git clone <your-repo-url>
    cd TKDHubAPI
+   ```
+
 2. **Configure the database:**
+
    - Update the connection string in `appsettings.json` as needed.
 
 3. **Apply migrations (auto-applied on startup):**
+
    - The API will automatically apply any pending EF Core migrations at startup.
 
 4. **Run the API:**
+
    ```sh
    dotnet run --project src/TKDHubAPI.WebAPI
+   ```
 
 5. **Access Swagger UI:**
+
    - Navigate to [https://localhost:5001/swagger](https://localhost:5001/swagger) (or the port shown in your console).
 
 ### Setup & Run (Frontend)
 
 If you have a frontend in `frontend/tkd_hub_web`, run:
 
-   ```sh
-   cd frontend/tkd_hub_web
-   npm install
+```sh
+cd frontend/tkd_hub_web
+npm install
 npm run dev
- ```
-
- 
-   
+```
 
 ## API Overview
 
@@ -75,17 +92,17 @@ Authentication is via JWT Bearer tokens.
 
 ### Main Endpoints
 
-| Resource   | Endpoint Example                | Methods         | Description                        |
-|------------|--------------------------------|-----------------|------------------------------------|
-| Auth       | `/api/auth/login`              | POST            | User login, returns JWT           |
-| Users      | `/api/users`                   | GET, POST, PUT, DELETE | Manage users                  |
-| Dojaangs   | `/api/dojaang`                 | GET, POST, PUT, DELETE | Manage dojaangs               |
-| Coaches    | `/api/coaches`                 | GET, POST, PUT, DELETE | Manage coaches and assignments |
-| Students   | `/api/students`                | GET, POST, PUT, DELETE | Manage students                |
-| Events     | `/api/events`                  | GET, POST, PUT, DELETE | Manage events                  |
-| Promotions | `/api/promotions`              | GET, POST, PUT, DELETE | Manage promotions              |
-| Ranks      | `/api/ranks`                   | GET, POST, PUT, DELETE | Manage ranks                   |
-| Tuls       | `/api/tuls`                    | GET, PUT, DELETE       | Manage Tuls (patterns)         |
+| Resource   | Endpoint Example  | Methods                | Description                    |
+| ---------- | ----------------- | ---------------------- | ------------------------------ |
+| Auth       | `/api/auth/login` | POST                   | User login, returns JWT        |
+| Users      | `/api/users`      | GET, POST, PUT, DELETE | Manage users                   |
+| Dojaangs   | `/api/dojaang`    | GET, POST, PUT, DELETE | Manage dojaangs                |
+| Coaches    | `/api/coaches`    | GET, POST, PUT, DELETE | Manage coaches and assignments |
+| Students   | `/api/students`   | GET, POST, PUT, DELETE | Manage students                |
+| Events     | `/api/events`     | GET, POST, PUT, DELETE | Manage events                  |
+| Promotions | `/api/promotions` | GET, POST, PUT, DELETE | Manage promotions              |
+| Ranks      | `/api/ranks`      | GET, POST, PUT, DELETE | Manage ranks                   |
+| Tuls       | `/api/tuls`       | GET, PUT, DELETE       | Manage Tuls (patterns)         |
 
 > **Note:** Some endpoints require Admin or Coach roles. See Swagger for details.
 
@@ -103,10 +120,10 @@ Update the allowed origins in your configuration if needed.
 All errors are returned in a consistent format via custom middleware.  
 Example error response:
 
-   ```json
-   {
-     "error": "Detailed error message here."
-   }
+```json
+{
+  "error": "Detailed error message here."
+}
 ```
 
 ## API Documentation
@@ -114,6 +131,7 @@ Example error response:
 Interactive API docs are available at `/swagger` when the API is running.
 
 ## Postman Collection
+
 https://.postman.co/workspace/herramientas~45fc8431-f748-496d-8a4c-412bf74cffb6/collection/148107-2bc03adf-7c18-4829-b77f-e90824db5f37?action=share&creator=148107
 
 ---

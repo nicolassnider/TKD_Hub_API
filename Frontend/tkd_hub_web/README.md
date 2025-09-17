@@ -34,3 +34,30 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## MercadoPago integration (frontend)
+
+This project includes a small helper component for starting a MercadoPago checkout flow: `components/MercadoPagoCheckoutButton.tsx`.
+
+Environment variables
+
+- `NEXT_PUBLIC_API_BASE_URL` — backend API base URL (e.g. `http://localhost:5000`).
+- `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` — MercadoPago public key for client widgets (do NOT store secret tokens here).
+
+Best practices
+
+- Keep MercadoPago secret access tokens only on the server. Create payment preferences from the backend and return a checkout URL or preference id to the frontend.
+- The frontend should call an API endpoint such as `/api/mercadopago/create-preference` on the WebAPI project.
+- Use sandbox/test credentials during development to avoid real charges.
+
+Example usage
+
+```tsx
+import MercadoPagoCheckoutButton from "@/components/MercadoPagoCheckoutButton";
+
+export default function Pay() {
+  return (
+    <MercadoPagoCheckoutButton amountCents={5000} description="Class fee" />
+  );
+}
+```
