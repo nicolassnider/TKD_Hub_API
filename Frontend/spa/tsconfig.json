@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "ES2021"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "./src",
+    "paths": {
+      "pages/*": ["pages/*"],
+      "components/*": ["components/*"],
+      "lib/*": ["lib/*"],
+      "context/*": ["context/*"]
+    }
+  },
+  "include": ["src"]
+}
