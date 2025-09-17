@@ -1,10 +1,10 @@
+using Microsoft.Azure.SignalR;
 using Microsoft.EntityFrameworkCore;
 using TKDHubAPI.Application;
 using TKDHubAPI.Infrastructure;
 using TKDHubAPI.Infrastructure.Data;
 using TKDHubAPI.WebAPI;
 using TKDHubAPI.WebAPI.SignalR;
-using Microsoft.Azure.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +43,10 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 
+// Serve static files from wwwroot (will host the frontend static export)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseCors("AllowFrontend");
@@ -57,5 +61,8 @@ app.UseEndpoints(endpoints =>
 });
 
 app.MapControllers();
+
+// SPA fallback: serve index.html for unmatched routes (so client-side routing works)
+app.MapFallbackToFile("index.html");
 
 app.Run();
