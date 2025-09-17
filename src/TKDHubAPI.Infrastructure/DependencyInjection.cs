@@ -16,9 +16,20 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         // Configure MercadoPago settings and validate required fields at startup
+        services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
         services.AddOptions<MercadoPagoSettings>()
             .Bind(configuration.GetSection("MercadoPago"))
-            .Validate(settings => !string.IsNullOrWhiteSpace(settings.AccessToken) && !string.IsNullOrWhiteSpace(settings.PublicKey), "MercadoPago AccessToken and PublicKey must be provided")
+            .Validate(settings =>
+            {
+                // Run DataAnnotations validation manually
+                var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+                var context = new System.ComponentModel.DataAnnotations.ValidationContext(settings);
+                bool valid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(settings, context, validationResults, true);
+                if (!valid) return false;
+
+                // Additional predicate validation
+                return !string.IsNullOrWhiteSpace(settings.AccessToken) && !string.IsNullOrWhiteSpace(settings.PublicKey);
+            }, "MercadoPago AccessToken and PublicKey must be provided and valid")
             .ValidateOnStart();
 
         // Register IUnitOfWork for DI

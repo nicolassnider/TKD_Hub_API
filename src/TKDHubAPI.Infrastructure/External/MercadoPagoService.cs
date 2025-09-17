@@ -27,6 +27,13 @@ public class MercadoPagoService : IMercadoPagoService
         if (string.IsNullOrWhiteSpace(payerEmail))
             return new CreatePreferenceResponse { Success = false, ErrorMessage = "Payer email is required." };
 
+        // Validate settings at runtime and fail fast if something is misconfigured
+        if (string.IsNullOrWhiteSpace(_settings.AccessToken))
+        {
+            _logger.LogError("MercadoPago AccessToken is not configured.");
+            return new CreatePreferenceResponse { Success = false, ErrorMessage = "Payment provider is not configured." };
+        }
+
         // Set the access token for the SDK (global). Keep this call local to avoid surprises in parallel scenarios.
         MercadoPagoConfig.AccessToken = _settings.AccessToken;
 
@@ -50,50 +57,65 @@ public class MercadoPagoService : IMercadoPagoService
         var client = new PreferenceClient();
 
         // Simple retry with exponential backoff to handle transient MercadoPago/API issues
-        var maxAttempts = 3;
-        var delayMs = 500;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++)
-        {
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                Preference preference = await client.CreateAsync(request);
+        var maxAttempts = Math.Clamp(_settings.MaxRetries, 1, 10);
+        var delayMs = Math.Clamp(_settings.InitialRetryDelayMs, 100, 60000);
 
-                if (preference == null)
+        using (_logger.BeginScope(new { Amount = amount, Payer = payerEmail }))
+        {
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
                 {
-                    _logger.LogWarning("MercadoPago returned null preference on attempt {Attempt}", attempt);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    // The MercadoPago SDK's CreateAsync does not accept CancellationToken. We check before/after.
+                    Preference preference = await client.CreateAsync(request);
+
+                    if (preference == null)
+                    {
+                        _logger.LogWarning("MercadoPago returned null preference on attempt {Attempt}", attempt);
+                        continue;
+                    }
+
+                    // InitPoint can be null depending on MercadoPago response; guard it
+                    var url = preference.InitPoint ?? preference.SandboxInitPoint ?? string.Empty;
+                    if (string.IsNullOrEmpty(url))
+                    {
+                        _logger.LogWarning("MercadoPago preference created but no InitPoint was returned. Preference id: {Id}", preference.Id);
+                        return new CreatePreferenceResponse { Success = false, ErrorMessage = "Payment URL not available." };
+                    }
+
+                    return new CreatePreferenceResponse { Success = true, PaymentUrl = url };
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("CreatePreferenceAsync cancelled by caller.");
+                    return new CreatePreferenceResponse { Success = false, ErrorMessage = "Operation cancelled." };
+                }
+                catch (Exception ex) when (attempt < maxAttempts)
+                {
+                    _logger.LogWarning(ex, "Attempt {Attempt} to create MercadoPago preference failed. Retrying after {Delay}ms.", attempt, delayMs);
+                    try
+                    {
+                        await Task.Delay(delayMs, cancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogInformation("Delay cancelled during retry backoff.");
+                        return new CreatePreferenceResponse { Success = false, ErrorMessage = "Operation cancelled." };
+                    }
+
+                    delayMs = (int)Math.Min((long)delayMs * 2, 60000);
                     continue;
                 }
-
-                // InitPoint can be null depending on MercadoPago response; guard it
-                var url = preference.InitPoint ?? preference.SandboxInitPoint ?? string.Empty;
-                if (string.IsNullOrEmpty(url))
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("MercadoPago preference created but no InitPoint was returned. Preference id: {Id}", preference.Id);
-                    return new CreatePreferenceResponse { Success = false, ErrorMessage = "Payment URL not available." };
+                    _logger.LogError(ex, "Failed to create MercadoPago preference on attempt {Attempt}.", attempt);
+                    return new CreatePreferenceResponse { Success = false, ErrorMessage = "Failed to create payment preference." };
                 }
-
-                return new CreatePreferenceResponse { Success = true, PaymentUrl = url };
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogInformation("CreatePreferenceAsync cancelled by caller.");
-                return new CreatePreferenceResponse { Success = false, ErrorMessage = "Operation cancelled." };
-            }
-            catch (Exception ex) when (attempt < maxAttempts)
-            {
-                _logger.LogWarning(ex, "Attempt {Attempt} to create MercadoPago preference failed. Retrying after {Delay}ms.", attempt, delayMs);
-                await Task.Delay(delayMs, cancellationToken);
-                delayMs *= 2; // exponential backoff
-                continue;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create MercadoPago preference after {Attempt} attempts.", attempt);
-                return new CreatePreferenceResponse { Success = false, ErrorMessage = "Failed to create payment preference." };
             }
         }
 
+        // If we reach here, all retries exhausted
         return new CreatePreferenceResponse { Success = false, ErrorMessage = "Failed to create payment preference after retries." };
     }
 }
