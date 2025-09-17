@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
 using TKDHubAPI.Application.Settings;
 using TKDHubAPI.WebAPI.Converters;
+using TKDHubAPI.WebAPI.Swagger;
 
 namespace TKDHubAPI.WebAPI;
 
@@ -52,6 +54,29 @@ public static class DependencyInjection
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "TKDHub API", Version = "v1" });
 
+            // Include XML comments from this assembly and related projects (if generated)
+            try
+            {
+                var basePath = AppContext.BaseDirectory;
+                var thisXml = Path.Combine(basePath, Assembly.GetExecutingAssembly().GetName().Name + ".xml");
+                if (File.Exists(thisXml)) c.IncludeXmlComments(thisXml);
+
+                var appXml = Path.Combine(basePath, "TKDHubAPI.Application.xml");
+                if (File.Exists(appXml)) c.IncludeXmlComments(appXml);
+
+                var domainXml = Path.Combine(basePath, "TKDHubAPI.Domain.xml");
+                if (File.Exists(domainXml)) c.IncludeXmlComments(domainXml);
+            }
+            catch
+            {
+                // ignore failures to include xml comments
+            }
+
+            // Add document filter for tags descriptions
+            c.DocumentFilter<TagsDocumentFilter>();
+            // Add document filter to remove hidden/obsolete endpoints
+            c.DocumentFilter<HiddenEndpointsDocumentFilter>();
+
             // Add JWT Bearer definition
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
@@ -87,7 +112,7 @@ public static class DependencyInjection
         // Bind JwtSettings from configuration
         var jwtSection = configuration.GetSection("Jwt");
         services.Configure<JwtSettings>(jwtSection);
-        var jwtSettings = jwtSection.Get<JwtSettings>();
+        var jwtSettings = jwtSection.Get<JwtSettings>()!;
 
         services.AddAuthentication(options =>
         {

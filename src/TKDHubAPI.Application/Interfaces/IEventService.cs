@@ -60,4 +60,18 @@ public interface IEventService : ICrudService<Event>
     /// <param name="name">The name of the event to filter by.</param>
     /// <returns>A collection of events matching the specified name.</returns>
     Task<IEnumerable<Event>> GetEventsByNameAsync(string name);
+
+    /// <summary>
+    /// Updates an existing event. Only admins are allowed to perform this action.
+    /// </summary>
+    /// <param name="ev">The event entity with updated values.</param>
+    /// <param name="user">The user performing the action (should be an admin).</param>
+    Task UpdateAsync(Event ev, User user);
+
+    /// <summary>
+    /// Deletes an event by id. Only admins are allowed to perform this action.
+    /// </summary>
+    /// <param name="id">The id of the event to delete.</param>
+    /// <param name="user">The user performing the action (should be an admin).</param>
+    Task DeleteAsync(int id, User user);
 }

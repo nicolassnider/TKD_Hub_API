@@ -7,22 +7,22 @@ namespace TKDHubAPI.WebAPI.Controllers;
 /// Provides endpoints to create, retrieve, update, and delete dojaangs.
 /// </summary>
 [Authorize]
-public class DojaangController : BaseApiController
+public class DojaangsController : BaseApiController
 {
     private readonly IDojaangService _dojaangService;
     private readonly IUserService _userService;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DojaangController"/> class.
+    /// Initializes a new instance of the <see cref="DojaangsController"/> class.
     /// </summary>
     /// <param name="dojaangService">The dojaang service instance.</param>
     /// <param name="userService">The user service instance.</param>
     /// <param name="logger">The logger instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
-    public DojaangController(
+    public DojaangsController(
         IDojaangService dojaangService,
         IUserService userService,
-        ILogger<DojaangController> logger,
+        ILogger<DojaangsController> logger,
         IMapper mapper
     ) : base(logger)
     {
@@ -32,10 +32,18 @@ public class DojaangController : BaseApiController
 
 
     /// <summary>
-    /// Retrieves all dojaangs.
+    /// Retrieves all dojaangs (martial arts schools).
     /// </summary>
+    /// <remarks>
+    /// Returns a list of all registered dojaangs. This endpoint is available to authenticated users.
+    /// Use query or paging on the service layer if you expect many records.
+    /// </remarks>
+    /// <response code="200">Returns the list of dojaangs.</response>
+    /// <response code="401">Unauthorized - user is not authenticated.</response>
     /// <returns>A list of all dojaangs as <see cref="DojaangDto"/> objects.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<DojaangDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll()
     {
         var dojaangs = await _dojaangService.GetAllAsync();
@@ -47,8 +55,18 @@ public class DojaangController : BaseApiController
     /// Retrieves a dojaang by its unique identifier.
     /// </summary>
     /// <param name="id">The dojaang ID.</param>
+    /// <remarks>
+    /// Returns the requested dojaang when it exists. If the dojaang cannot be found a 404 response
+    /// will be returned. This endpoint requires authentication.
+    /// </remarks>
+    /// <response code="200">Returns the dojaang.</response>
+    /// <response code="401">Unauthorized - user is not authenticated.</response>
+    /// <response code="404">Dojaang not found.</response>
     /// <returns>The dojaang as a <see cref="DojaangDto"/>, or 404 if not found.</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(DojaangDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var dojaang = await _dojaangService.GetByIdAsync(id);
@@ -64,9 +82,28 @@ public class DojaangController : BaseApiController
     /// Creates a new dojaang. Only admins are allowed to perform this action.
     /// </summary>
     /// <param name="dto">The dojaang creation DTO.</param>
+    /// <remarks>
+    /// Sample request:
+    /// {
+    ///   "name": "Westside Taekwondo",
+    ///   "address": "123 Martial Ave",
+    ///   "location": "City Center",
+    ///   "phoneNumber": "555-0100",
+    ///   "email": "info@westside.example.com",
+    ///   "coachId": 42
+    /// }
+    /// </remarks>
+    /// <response code="200">Returns the created dojaang.</response>
+    /// <response code="400">Bad request - validation or business rule failed.</response>
+    /// <response code="401">Unauthorized - user is not authenticated.</response>
+    /// <response code="404">User performing the action was not found.</response>
     /// <returns>The created dojaang as a <see cref="DojaangDto"/>.</returns>
     [Authorize(Roles = "Admin")]
     [HttpPost]
+    [ProducesResponseType(typeof(DojaangDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create([FromBody] CreateDojaangDto dto)
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -89,9 +126,20 @@ public class DojaangController : BaseApiController
     /// </summary>
     /// <param name="id">The dojaang ID.</param>
     /// <param name="updateDto">The dojaang update DTO.</param>
-    /// <returns>No content if successful, or an error response.</returns>
+    /// <remarks>
+    /// Provide the ID both in the URL and in the body. Partial updates should be supported by the service
+    /// if needed; otherwise send the full resource representation.
+    /// </remarks>
+    /// <response code="204">Update successful - no content returned.</response>
+    /// <response code="400">Bad request - ID mismatch or validation error.</response>
+    /// <response code="401">Unauthorized - user is not authenticated.</response>
+    /// <response code="404">Dojaang not found.</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDojaangDto updateDto)
     {
         if (updateDto.Id != id)
@@ -118,9 +166,17 @@ public class DojaangController : BaseApiController
     /// Deletes a dojaang by its unique identifier. Only admins are allowed to perform this action.
     /// </summary>
     /// <param name="id">The dojaang ID.</param>
-    /// <returns>No content if successful, or 404 if not found.</returns>
+    /// <remarks>
+    /// This will permanently remove the dojaang. Ensure the caller has the proper privileges.
+    /// </remarks>
+    /// <response code="204">Delete successful.</response>
+    /// <response code="401">Unauthorized - user is not authenticated.</response>
+    /// <response code="404">Dojaang not found.</response>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
         var existingDojaang = await _dojaangService.GetByIdAsync(id);

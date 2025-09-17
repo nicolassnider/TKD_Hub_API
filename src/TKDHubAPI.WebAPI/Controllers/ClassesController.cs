@@ -33,8 +33,15 @@ public class ClassesController : BaseApiController
     /// <summary>
     /// Retrieves all training classes.
     /// </summary>
+    /// <remarks>
+    /// Returns all training classes. Consider applying paging on the client or service layer for large datasets.
+    /// </remarks>
+    /// <response code="200">Returns the list of training classes</response>
+    /// <response code="401">Unauthorized - user not authenticated</response>
     /// <returns>A list of <see cref="TrainingClassDto"/> objects representing all training classes.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(List<TrainingClassDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll()
     {
         var classes = await _trainingClassService.GetAllAsync();
@@ -46,11 +53,17 @@ public class ClassesController : BaseApiController
     /// Retrieves a training class by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the training class.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> containing the <see cref="TrainingClassDto"/> if found;
-    /// otherwise, a 404 error response.
-    /// </returns>
+    /// <remarks>
+    /// Returns a single training class when it exists; otherwise returns 404.
+    /// </remarks>
+    /// <response code="200">Returns the training class.</response>
+    /// <response code="401">Unauthorized - user not authenticated</response>
+    /// <response code="404">Training class not found</response>
+    /// <returns>An <see cref="IActionResult"/> containing the <see cref="TrainingClassDto"/> if found.</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(TrainingClassDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var trainingClass = await _trainingClassService.GetByIdAsync(id);
@@ -64,10 +77,22 @@ public class ClassesController : BaseApiController
     /// Creates a new training class.
     /// </summary>
     /// <param name="trainingClassDto">The DTO containing the data for the new training class.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> containing the created <see cref="TrainingClassDto"/>.
-    /// </returns>
+    /// <remarks>
+    /// Sample request:
+    /// {
+    ///   "name": "Beginner Class",
+    ///   "dojaangId": 1,
+    ///   "coachId": 2
+    /// }
+    /// </remarks>
+    /// <response code="200">Returns the created training class.</response>
+    /// <response code="400">Bad request - validation or business rule failed.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
+    /// <returns>An <see cref="IActionResult"/> containing the created <see cref="TrainingClassDto"/>.</returns>
     [HttpPost]
+    [ProducesResponseType(typeof(TrainingClassDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create([FromBody] CreateTrainingClassDto trainingClassDto)
     {
         try
@@ -90,10 +115,14 @@ public class ClassesController : BaseApiController
     /// </summary>
     /// <param name="id">The unique identifier of the training class to update.</param>
     /// <param name="trainingClassDto">The DTO containing the updated data for the training class.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> indicating the result of the update operation.
-    /// </returns>
+    /// <response code="200">Update successful.</response>
+    /// <response code="400">Bad request - ID mismatch.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
+    /// <returns>An <see cref="IActionResult"/> indicating the result of the update operation.</returns>
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Update(int id, [FromBody] TrainingClassDto trainingClassDto)
     {
         if (id != trainingClassDto.Id)
@@ -108,10 +137,12 @@ public class ClassesController : BaseApiController
     /// Deletes a training class by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the training class to delete.</param>
-    /// <returns>
-    /// An <see cref="IActionResult"/> indicating the result of the delete operation.
-    /// </returns>
+    /// <response code="200">Delete successful.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
+    /// <returns>An <see cref="IActionResult"/> indicating the result of the delete operation.</returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int id)
     {
         await _trainingClassService.DeleteAsync(id);
@@ -122,8 +153,12 @@ public class ClassesController : BaseApiController
     /// Retrieves all students enrolled in a specific training class.
     /// </summary>
     /// <param name="classId">The unique identifier of the training class.</param>
+    /// <response code="200">Returns the list of students for the class.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
     /// <returns>A list of <see cref="UserDto"/> objects representing the students in the class.</returns>
     [HttpGet("{classId}/students")]
+    [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetStudentsByClassId(int classId)
     {
         var students = await _studentClassService.GetStudentsByTrainingClassIdAsync(classId);
@@ -136,9 +171,12 @@ public class ClassesController : BaseApiController
     /// If no day is provided, returns classes for today.
     /// </summary>
     /// <param name="day">The day of the week (optional). If not provided, uses today's day.</param>
+    /// <response code="200">Returns classes scheduled for the specified day.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
     /// <returns>A list of <see cref="TrainingClassDto"/> objects scheduled for the specified day.</returns>
     [HttpGet("by-day")]
-
+    [ProducesResponseType(typeof(List<TrainingClassDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetByDay([FromQuery] DayOfWeek? day = null)
     {
         var targetDay = day ?? DateTime.Today.DayOfWeek;
@@ -156,8 +194,12 @@ public class ClassesController : BaseApiController
     /// Retrieves all training classes given by a specific coach.
     /// </summary>
     /// <param name="coachId">The unique identifier of the coach.</param>
+    /// <response code="200">Returns classes given by the coach.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
     /// <returns>A list of <see cref="TrainingClassDto"/> objects representing the classes given by the coach.</returns>
     [HttpGet("coach/{coachId}")]
+    [ProducesResponseType(typeof(List<TrainingClassDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetByCoachId(int coachId)
     {
         var classes = await _trainingClassService.GetByCoachIdAsync(coachId);
@@ -169,9 +211,13 @@ public class ClassesController : BaseApiController
     /// Retrieves all class attendance records for a specific student.
     /// </summary>
     /// <param name="studentId">The unique identifier of the student.</param>
+    /// <response code="200">Returns the attendance records for the student.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
     /// <returns>A list of <see cref="StudentClassDto"/> records for the student.</returns>
     [HttpGet("student/{studentId}/attendance")]
     [Authorize]
+    [ProducesResponseType(typeof(List<StudentClassDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAttendanceByStudentId(int studentId)
     {
         var records = await _studentClassService.GetByStudentIdAsync(studentId);
@@ -184,9 +230,15 @@ public class ClassesController : BaseApiController
     /// </summary>
     /// <param name="studentClassId">The StudentClass relationship ID.</param>
     /// <param name="request">The attendance registration request.</param>
+    /// <response code="200">Attendance registered successfully.</response>
+    /// <response code="400">Bad request - validation or business rule failed.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
     /// <returns>Success or error response.</returns>
     [HttpPost("student-class/{studentClassId}/attendance")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> RegisterAttendance(int studentClassId, [FromBody] RegisterAttendanceRequest request)
     {
         await _trainingClassService.RegisterAttendanceAsync(
@@ -203,9 +255,13 @@ public class ClassesController : BaseApiController
     /// </summary>
     /// <param name="studentClassId">The StudentClass relationship ID.</param>
     /// <param name="request">The attendance history filter request.</param>
+    /// <response code="200">Returns attendance history records.</response>
+    /// <response code="401">Unauthorized - user not authenticated.</response>
     /// <returns>List of attendance records as DTOs.</returns>
     [HttpGet("student-class/{studentClassId}/attendance-history")]
     [Authorize]
+    [ProducesResponseType(typeof(List<AttendanceHistoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAttendanceHistory(
         int studentClassId,
         [FromQuery] GetAttendanceHistoryRequest request)
