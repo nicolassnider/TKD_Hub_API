@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { CreatePreferenceRequest, CreatePreferenceResponse } from '../../../lib/types';
-import { createPreference } from '../../../lib/mercadopago';
+import { createPreference } from '@/app/lib/mercadopago';
+import { CreatePreferenceDTO, CreatePreferenceResponse } from '../types/Payment';
 
 
 interface Props {
-  request: CreatePreferenceRequest;
+  request: CreatePreferenceDTO;
   onSuccess?: (result: CreatePreferenceResponse) => void;
   onError?: (error: Error) => void;
   className?: string;
@@ -18,11 +18,22 @@ export default function MercadoPagoCheckoutButton({ request, onSuccess, onError,
     try {
       const json = await createPreference(request);
 
-      const checkoutUrl = json.preferenceUrl || json.initPoint || json.sandbox_init_point;
+      // The backend may return different field names depending on env/version.
+      const maybe = json as unknown;
+      const isObj = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object';
+      let checkoutUrl: string | undefined;
+      if (isObj(maybe)) {
+        const p = maybe['preferenceUrl'] as unknown;
+        const i = maybe['initPoint'] as unknown;
+        const s = maybe['sandbox_init_point'] as unknown;
+        if (typeof p === 'string') checkoutUrl = p;
+        else if (typeof i === 'string') checkoutUrl = i;
+        else if (typeof s === 'string') checkoutUrl = s;
+      }
       if (!checkoutUrl) throw new Error('No checkout URL returned from server');
 
-      const win = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-      if (win) win.focus();
+      const win = window.open(checkoutUrl as string, '_blank');
+      if (win && typeof win.focus === 'function') win.focus();
 
       setLoading(false);
       onSuccess?.(json);

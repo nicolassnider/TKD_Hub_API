@@ -84,15 +84,18 @@ export default function ProfilePageMainCard({
       });
 
       const result = await createPreference(paymentRequest);
-      if (result && result.init_point) {
-        setPaymentUrl(result.init_point);
-      } else if (result && result.sandbox_init_point) {
-        setPaymentUrl(result.sandbox_init_point);
-      } else if (result && result.paymentUrl) {
-        setPaymentUrl(result.paymentUrl);
-      } else {
-        alert("Payment URL not received from server.");
+      if (result) {
+        if (typeof result.init_point === 'string') {
+          setPaymentUrl(result.init_point);
+        } else if (typeof result.sandbox_init_point === 'string') {
+          setPaymentUrl(result.sandbox_init_point);
+        } else if ('paymentUrl' in result && typeof (result as unknown as Record<string, unknown>)['paymentUrl'] === 'string') {
+          setPaymentUrl((result as unknown as Record<string, string>)['paymentUrl']);
+        } else {
+          alert("Payment URL not received from server.");
+        }
       }
+      
     } catch {
       // Error is handled by context
     }

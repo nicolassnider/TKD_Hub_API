@@ -1,5 +1,6 @@
 import { useApiConfig } from "@/app/context/ApiConfigContext";
 import { useAuth } from "../context/AuthContext";
+import { fetchJson, ApiError } from "@/app/lib/api";
 
 type GetTokenFn = () => string | null;
 
@@ -11,23 +12,16 @@ export function useApiRequest() {
   const { baseUrl } = useApiConfig();
   const { getToken } = useAuth();
 
-  const apiRequest = async <T>(
-    url: string,
-    options: ApiRequestOptions = {},
-    customGetToken?: GetTokenFn
-  ): Promise<T> => {
-    const token =
-      options.allowAnonymous
-        ? null
-        : customGetToken
-          ? customGetToken()
-          : getToken
-            ? getToken()
-            : null;
+  const apiRequest = async <T>(url: string, options: ApiRequestOptions = {}, customGetToken?: GetTokenFn): Promise<T> => {
+    const token = options.allowAnonymous
+      ? null
+      : customGetToken
+      ? customGetToken()
+      : getToken
+      ? getToken()
+      : null;
 
-    const fullUrl = url.startsWith("http")
-      ? url
-      : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
+    const fullUrl = url.startsWith("http") ? url : `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -36,34 +30,15 @@ export function useApiRequest() {
     };
 
     try {
-      const response = await fetch(fullUrl, {
-        ...options,
-        headers,
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'API request failed';
-        try {
-          const error = await response.json();
-          errorMessage = error.message || errorMessage;
-        } catch {
-          // Ignore JSON parse error for empty body
-        }
-        if (response.status === 0) {
-          errorMessage += ' (Possible CORS error: check your backend CORS settings)';
-        }
-        throw new Error(errorMessage);
+      return await fetchJson<T>(fullUrl, { ...options, headers });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        // rethrow ApiError so callers can inspect status/details
+        console.error('API Error:', err.message, err.details);
+        throw err;
       }
-
-      if (response.status === 204) {
-        // @ts-expect-error: T may be void for 204
-        return undefined;
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+      console.error('API unexpected error:', err);
+      throw err;
     }
   };
 

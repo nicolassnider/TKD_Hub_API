@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// Avoid fetching Google Fonts during CI/build in environments without network or with strict TLS.
+// We keep safe fallbacks so the build doesn't fail; if you prefer Google fonts, restore these imports
+// and ensure the build environment can reach fonts.googleapis.com with valid TLS.
 import "./globals.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Toaster } from "react-hot-toast";
@@ -7,15 +9,9 @@ import { AppProviders } from "./context/AppProviders";
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Fallback placeholders for font variables (no network fetch)
+const geistSans = { variable: "--font-geist-sans" } as const;
+const geistMono = { variable: "--font-geist-mono" } as const;
 
 export const metadata: Metadata = {
   title: "Create Next App",
