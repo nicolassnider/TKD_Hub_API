@@ -10,8 +10,38 @@ export class ApiError extends Error {
   }
 }
 
+function getApiBase(): string {
+  // Prefer Vite client env when running in the browser. Use process.env for node (tests/dev server).
+  try {
+    if (typeof window !== 'undefined') {
+      const env = (import.meta as any).env;
+      const v = env && (env.VITE_PUBLIC_API_URL || env.VITE_API_HOST || '');
+      return (v || '').replace(/\/$/, '');
+    }
+  } catch {
+    // ignore
+  }
+
+  // fallback for Node (tests / tooling)
+  // Use globalThis to avoid referencing Node-specific 'process' in browser typings.
+  const nodeVal = (globalThis as any).process?.env?.API_HOST || '';
+  return (nodeVal || '').replace(/\/$/, '');
+}
+
+function resolveUrl(input: RequestInfo): RequestInfo {
+  if (typeof input === 'string') {
+    // If it's a relative API path like `/api/...`, prefix with base when configured
+    if (input.startsWith('/api')) {
+      const base = getApiBase();
+      if (base) return `${base}${input}`;
+    }
+  }
+  return input;
+}
+
 export async function fetchJson<T = unknown>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, init);
+  const resolved = resolveUrl(input);
+  const res = await fetch(resolved, init);
 
   if (!res.ok) {
     let body: unknown = undefined;
