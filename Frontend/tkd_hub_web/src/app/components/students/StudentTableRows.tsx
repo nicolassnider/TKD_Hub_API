@@ -87,7 +87,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
       <TableRows
         data={filteredStudents}
         columns={[
-          ...columns.slice(0, 2),
+          columns[0], // ID
           {
             ...columns[1],
             render: (student) => (
@@ -103,7 +103,7 @@ const StudentTableRows: React.FC<StudentTableRowsProps> = ({
               </>
             ),
           },
-          columns[2],
+          columns[2], // Email
         ]}
         actions={(student) => (
           <div className="flex gap-2 items-center">
