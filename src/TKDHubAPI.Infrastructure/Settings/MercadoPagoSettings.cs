@@ -1,6 +1,11 @@
 ﻿namespace TKDHubAPI.Infrastructure.Settings;
+using System.ComponentModel.DataAnnotations;
+
 public class MercadoPagoSettings
 {
-    public string PublicKey { get; set; }
+    [Required]
+    public string PublicKey { get; set; } = string.Empty;
+
+    [Required]
     public string AccessToken { get; set; } = string.Empty;
 }

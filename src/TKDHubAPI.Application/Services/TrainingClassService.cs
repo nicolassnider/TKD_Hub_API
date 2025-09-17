@@ -48,11 +48,6 @@ public class TrainingClassService : ITrainingClassService
         await _trainingClassRepository.DeleteAsync(id);
     }
 
-    public async Task<IEnumerable<TrainingClass>> DeleteAsync()
-    {
-        return await _trainingClassRepository.GetAllAsync();
-    }
-
     public async Task<TrainingClass> GetByIdAsync(int id)
     {
         return await _trainingClassRepository.GetByIdAsync(id);
@@ -153,4 +148,5 @@ public class TrainingClassService : ITrainingClassService
         }
         return await _attendanceRepository.GetByStudentClassIdAsync(studentClassId);
     }
+
 }

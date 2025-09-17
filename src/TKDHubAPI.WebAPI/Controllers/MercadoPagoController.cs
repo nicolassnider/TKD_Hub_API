@@ -28,12 +28,19 @@ public class MercadoPagoController : BaseApiController
     /// An <see cref="IActionResult"/> containing the payment URL if successful; otherwise, a bad request response.
     /// </returns>
     [HttpPost("create-preference")]
-    public async Task<IActionResult> CreatePreference([FromBody] CreatePreferenceRequest request)
+    public async Task<IActionResult> CreatePreference([FromBody] CreatePreferenceRequest request, CancellationToken cancellationToken)
     {
         if (request == null || request.Amount <= 0 || string.IsNullOrWhiteSpace(request.Description) || string.IsNullOrWhiteSpace(request.PayerEmail))
             return BadRequest("Invalid request.");
 
-        var paymentUrl = await _mercadoPagoService.CreatePreferenceAsync(request.Amount, request.Description, request.PayerEmail);
-        return Ok(new { PaymentUrl = paymentUrl });
+        var result = await _mercadoPagoService.CreatePreferenceAsync(request.Amount, request.Description, request.PayerEmail, cancellationToken);
+
+        if (result == null)
+            return StatusCode(500, "Unexpected error while creating payment preference.");
+
+        if (!result.Success)
+            return BadRequest(new { Error = result.ErrorMessage });
+
+        return Ok(new { PaymentUrl = result.PaymentUrl });
     }
 }

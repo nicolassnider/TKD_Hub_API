@@ -110,18 +110,13 @@ public class CoachServiceTest : BaseServiceTest<CoachService, IUserRepository>
         // Arrange
         var coachId = 1;
         var dojaangs = new List<Dojaang>
-            {
-                new Dojaang { Id = 10, Name = "A" },
-                new Dojaang { Id = 20, Name = "B" }
-            };
-        var managedDtos = new List<ManagedDojaangDto>
-            {
-                new ManagedDojaangDto { Id = 10, Name = "A" },
-                new ManagedDojaangDto { Id = 20, Name = "B" }
-            };
+    {
+        new Dojaang { Id = 10, Name = "A" },
+        new Dojaang { Id = 20, Name = "B" }
+    };
 
-        _dojaangRepositoryMock.Setup(r => r.GetDojaangsByCoachIdAsync(coachId)).ReturnsAsync(dojaangs);
-        _mapperMock.Setup(m => m.Map<List<ManagedDojaangDto>>(dojaangs)).Returns(managedDtos);
+        _userServiceMock.Setup(s => s.GetManagedDojaangIdsAsync(coachId)).ReturnsAsync(new List<int> { 10, 20 });
+        _dojaangRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(dojaangs);
 
         // Act
         var result = await Service.GetManagedDojaangsAsync(coachId);
@@ -163,6 +158,7 @@ public class CoachServiceTest : BaseServiceTest<CoachService, IUserRepository>
         var coachId = 1;
         var dojaangId = 10;
 
+        _userServiceMock.Setup(s => s.CoachManagesDojaangAsync(coachId, dojaangId)).ReturnsAsync(true);
         _userServiceMock.Setup(s => s.RemoveCoachFromDojaangAsync(coachId, dojaangId)).Returns(Task.CompletedTask);
 
         // Act
@@ -182,15 +178,32 @@ public class CoachServiceTest : BaseServiceTest<CoachService, IUserRepository>
         // Arrange
         var dojaangId = 10;
         var users = new List<User>
-{
-    new User { Id = 1, FirstName = "John", Dojaang = new Dojaang { Id = dojaangId } },
-    new User { Id = 2, FirstName = "Jane", Dojaang = new Dojaang { Id = dojaangId } }
-};
+        {
+            new User
+            {
+                Id = 1,
+                FirstName = "John",
+                UserDojaangs = new List<UserDojaang>
+
+                {
+                    new UserDojaang { DojaangId = dojaangId, Role = "Coach" }
+                }
+            },
+            new User
+            {
+                Id = 2,
+                FirstName = "Jane",
+                UserDojaangs = new List<UserDojaang>
+                {
+                    new UserDojaang { DojaangId = dojaangId, Role = "Coach" }
+                }
+            }
+        };
         var userDtos = new List<UserDto>
-    {
-        new UserDto { Id = 1, FirstName = "John" },
-        new UserDto { Id = 2, FirstName = "Jane" }
-    };
+        {
+            new UserDto { Id = 1, FirstName = "John" },
+            new UserDto { Id = 2, FirstName = "Jane" }
+        };
 
         _userServiceMock.Setup(s => s.GetUsersByRoleAsync("Coach")).ReturnsAsync(users);
         _mapperMock.Setup(m => m.Map<UserDto>(It.IsAny<User>()))

@@ -1,6 +1,4 @@
-﻿// Make sure this is TKDHubAPI.Application.Settings for your ServiceBusSettings
-// using TKDHubAPI.Infrastructure.Settings; // This was in your original, ensure paths are correct for your structure
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Infrastructure.External;
@@ -17,7 +15,11 @@ public static class DependencyInjection
         services.AddDbContext<TkdHubDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
+        // Configure MercadoPago settings and validate required fields at startup
+        services.AddOptions<MercadoPagoSettings>()
+            .Bind(configuration.GetSection("MercadoPago"))
+            .Validate(settings => !string.IsNullOrWhiteSpace(settings.AccessToken) && !string.IsNullOrWhiteSpace(settings.PublicKey), "MercadoPago AccessToken and PublicKey must be provided")
+            .ValidateOnStart();
 
         // Register IUnitOfWork for DI
         services.AddScoped<IUnitOfWork, UnitOfWork>();

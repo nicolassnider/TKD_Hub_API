@@ -30,7 +30,8 @@ public class StudentClassService : IStudentClassService
 
     public async Task<IEnumerable<StudentClass>> GetByStudentIdAsync(int studentId)
     {
-        return await _studentClassRepository.GetByStudentIdAsync(studentId);
+        var classes = await _studentClassRepository.GetByStudentIdAsync(studentId);
+        return classes.OrderByDescending(sc => sc.Date);
     }
 
     public async Task<IEnumerable<StudentClass>> GetByTrainingClassIdAsync(int trainingClassId)
