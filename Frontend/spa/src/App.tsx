@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { RoleProvider } from 'context/RoleContext'
 import Header from 'components/Header'
-import LoginForm from 'components/LoginForm'
 import DojaangAdmin from 'components/DojaangAdmin'
 import StudentsList from 'pages/StudentsList'
 import StudentDetail from 'pages/StudentDetail'
@@ -28,6 +27,7 @@ import UsersList from 'pages/UsersList'
 import UserDetail from 'pages/UserDetail'
 import Dashboard from 'pages/Dashboard'
 import MercadoPagoDebug from 'pages/MercadoPagoDebug'
+import LoginForm from './components/LoginForm'
 
 
 
