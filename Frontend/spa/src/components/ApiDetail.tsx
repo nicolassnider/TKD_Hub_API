@@ -64,7 +64,14 @@ export default function ApiDetail({ apiPath, id }: Props) {
 
   const renderValue = (v: any) => {
     if (v === null || v === undefined) return <em>null</em>;
-    if (typeof v === "boolean") return <Chip label={String(v)} size="small" color={v ? "success" : "default"} />;
+    if (typeof v === "boolean")
+      return (
+        <Chip
+          label={String(v)}
+          size="small"
+          color={v ? "success" : "default"}
+        />
+      );
     if (typeof v === "number") return <span>{v}</span>;
     if (typeof v === "string") {
       if (isIsoDate(v)) {
@@ -107,7 +114,8 @@ export default function ApiDetail({ apiPath, id }: Props) {
       <Box sx={{ bgcolor: "background.default", p: 1, borderRadius: 1 }}>
         {Object.entries(v).map(([k, val]) => (
           <Typography key={k} component="div" sx={{ fontSize: 13, mb: 0.5 }}>
-            <strong>{k}:</strong> {typeof val === "object" ? JSON.stringify(val) : String(val)}
+            <strong>{k}:</strong>{" "}
+            {typeof val === "object" ? JSON.stringify(val) : String(val)}
           </Typography>
         ))}
       </Box>

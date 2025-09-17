@@ -23,15 +23,20 @@ type Props = {
 };
 
 export default function ManageDojaangs({ coachId }: Props) {
-  const { items: dojaangs, loading, error, reload } = useApiItems("/api/Dojaangs");
+  const {
+    items: dojaangs,
+    loading,
+    error,
+    reload,
+  } = useApiItems("/api/Dojaangs");
   const [managed, setManaged] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const { token } = useRole();
-  
+
   const getAuthHeaders = (contentType?: string) => {
-  let t: string | null | undefined = token;
+    let t: string | null | undefined = token;
     try {
       if (!t && typeof window !== "undefined") {
         t = localStorage.getItem("token");
@@ -50,7 +55,9 @@ export default function ManageDojaangs({ coachId }: Props) {
     (async () => {
       try {
         const headers = getAuthHeaders();
-        const res = await fetchJson<any>(`/api/Coaches/${coachId}`, { headers });
+        const res = await fetchJson<any>(`/api/Coaches/${coachId}`, {
+          headers,
+        });
         if (!mounted) return;
         const c = res?.data ?? res;
         // coach may expose managed dojaangs as objects or as an array of ids
@@ -58,7 +65,9 @@ export default function ManageDojaangs({ coachId }: Props) {
         if (Array.isArray(c?.managedDojaangIds)) {
           ids = c.managedDojaangIds.map((x: any) => Number(x));
         } else if (Array.isArray(c?.managedDojaangs)) {
-          ids = c.managedDojaangs.map((d: any) => Number(d?.id)).filter(Boolean);
+          ids = c.managedDojaangs
+            .map((d: any) => Number(d?.id))
+            .filter(Boolean);
         }
         setManaged(ids);
       } catch (e) {
@@ -71,7 +80,9 @@ export default function ManageDojaangs({ coachId }: Props) {
   }, [coachId, token]);
 
   const toggle = (id: number) => {
-    setManaged((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]));
+    setManaged((m) =>
+      m.includes(id) ? m.filter((x) => x !== id) : [...m, id],
+    );
   };
 
   const save = async () => {
@@ -98,11 +109,17 @@ export default function ManageDojaangs({ coachId }: Props) {
     (async () => {
       try {
         const headers = getAuthHeaders();
-        const res = await fetchJson<any>(`/api/Coaches/${coachId}`, { headers });
+        const res = await fetchJson<any>(`/api/Coaches/${coachId}`, {
+          headers,
+        });
         const c = res?.data ?? res;
         let ids: number[] = [];
-        if (Array.isArray(c?.managedDojaangIds)) ids = c.managedDojaangIds.map((x: any) => Number(x));
-        else if (Array.isArray(c?.managedDojaangs)) ids = c.managedDojaangs.map((d: any) => Number(d?.id)).filter(Boolean);
+        if (Array.isArray(c?.managedDojaangIds))
+          ids = c.managedDojaangIds.map((x: any) => Number(x));
+        else if (Array.isArray(c?.managedDojaangs))
+          ids = c.managedDojaangs
+            .map((d: any) => Number(d?.id))
+            .filter(Boolean);
         setManaged(ids);
       } catch (e) {
         // ignore
@@ -136,19 +153,37 @@ export default function ManageDojaangs({ coachId }: Props) {
         </DialogTitle>
         <DialogContent dividers>
           {loading && <div>Loading dojaangs…</div>}
-          {error && <Alert severity="error">Error loading dojaangs: {error}</Alert>}
+          {error && (
+            <Alert severity="error">Error loading dojaangs: {error}</Alert>
+          )}
           {saveError && <Alert severity="error">{saveError}</Alert>}
           <List>
             {dojaangs.map((d: any) => {
               const did = Number(d.id);
               return (
-                <ListItem key={d.id} button onClick={() => toggle(did)} sx={{ py: 2 }}>
+                <ListItem
+                  key={d.id}
+                  button
+                  onClick={() => toggle(did)}
+                  sx={{ py: 2 }}
+                >
                   <ListItemIcon>
-                    <Checkbox edge="start" checked={managed.includes(did)} tabIndex={-1} disableRipple />
+                    <Checkbox
+                      edge="start"
+                      checked={managed.includes(did)}
+                      tabIndex={-1}
+                      disableRipple
+                    />
                   </ListItemIcon>
                   <ListItemText
-                    primary={<Typography variant="subtitle1">{d.name}</Typography>}
-                    secondary={<Typography variant="body2" color="text.secondary">{d.address}</Typography>}
+                    primary={
+                      <Typography variant="subtitle1">{d.name}</Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="text.secondary">
+                        {d.address}
+                      </Typography>
+                    }
                   />
                 </ListItem>
               );
@@ -156,7 +191,9 @@ export default function ManageDojaangs({ coachId }: Props) {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleClose} disabled={saving}>
+            Cancel
+          </Button>
           <Button onClick={save} variant="contained" disabled={saving}>
             {saving ? "Saving…" : "Save managed dojaangs"}
           </Button>

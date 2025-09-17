@@ -87,70 +87,138 @@ npm run dev
 
 ## API Overview
 
-All endpoints are prefixed with `/api/`.  
-Authentication is via JWT Bearer tokens.
+All endpoints are prefixed with `/api/`.
 
-### Main Endpoints
+# TKDHub — API & Frontends (overview)
 
-| Resource   | Endpoint Example  | Methods                | Description                    |
-| ---------- | ----------------- | ---------------------- | ------------------------------ |
-| Auth       | `/api/auth/login` | POST                   | User login, returns JWT        |
-| Users      | `/api/users`      | GET, POST, PUT, DELETE | Manage users                   |
-| Dojaangs   | `/api/dojaang`    | GET, POST, PUT, DELETE | Manage dojaangs                |
-| Coaches    | `/api/coaches`    | GET, POST, PUT, DELETE | Manage coaches and assignments |
-| Students   | `/api/students`   | GET, POST, PUT, DELETE | Manage students                |
-| Events     | `/api/events`     | GET, POST, PUT, DELETE | Manage events                  |
-| Promotions | `/api/promotions` | GET, POST, PUT, DELETE | Manage promotions              |
-| Ranks      | `/api/ranks`      | GET, POST, PUT, DELETE | Manage ranks                   |
-| Tuls       | `/api/tuls`       | GET, PUT, DELETE       | Manage Tuls (patterns)         |
+TKDHub is a web platform and RESTful API for managing Taekwondo dojaangs (schools), users, coaches, students, events, promotions, ranks, and more. The solution uses .NET 8, EF Core and follows a layered/clean architecture (Domain / Application / Infrastructure / WebAPI).
 
-> **Note:** Some endpoints require Admin or Coach roles. See Swagger for details.
+This README focuses on developer setup and quick troubleshooting for the backend and the included frontends.
 
----
+## Quick facts
 
-## CORS
+- Web API: `src/TKDHubAPI.WebAPI`
+- Vite SPA (React): `frontend/spa`
+- Next.js web (optional): `frontend/tkd_hub_web`
+- Tests: `tests/TKDHubAPI.Application.Test`
+- Migrations: `src/TKDHubAPI.Infrastructure/Migrations`
 
-CORS is enabled for the frontend.  
-Update the allowed origins in your configuration if needed.
+## Prerequisites
 
----
+- .NET 8 SDK
+- Node.js + npm (for building the SPA)
+- SQL Server (or another supported DB; update `appsettings.*.json` accordingly)
 
-## Error Handling
+## Local development — API
 
-All errors are returned in a consistent format via custom middleware.  
-Example error response:
+1. Restore and build the solution
 
-```json
-{
-  "error": "Detailed error message here."
-}
+```powershell
+dotnet restore "TKD_Hub_API.sln"
+dotnet build "TKD_Hub_API.sln"
 ```
 
-## API Documentation
+2. Run the API
 
-Interactive API docs are available at `/swagger` when the API is running.
+```powershell
+dotnet run --project src\TKDHubAPI.WebAPI\TKDHubAPI.WebAPI.csproj
+```
 
-## Postman Collection
+The Web API will apply EF Core migrations at startup if configured. Watch the console output for the listening port and open `/swagger` (e.g. `https://localhost:5001/swagger`).
 
-https://.postman.co/workspace/herramientas~45fc8431-f748-496d-8a4c-412bf74cffb6/collection/148107-2bc03adf-7c18-4829-b77f-e90824db5f37?action=share&creator=148107
+Notes
 
----
+- Authentication: JWT Bearer tokens. Many endpoints are role-protected (Admin/Coach/Student).
+- Endpoint prefix: `/api/`
+
+## Local development — SPA (Vite)
+
+This repository contains a Vite + React SPA at `frontend/spa`. The Vite build is configured to output production assets directly into the API `wwwroot` folder so the API can serve the built SPA.
+
+Build steps for the SPA
+
+```powershell
+cd frontend\spa
+npm install
+npm run build
+```
+
+After a successful build, the production files are emitted to `src\TKDHubAPI.WebAPI\wwwroot` (check `vite.config.ts` if you changed the config). Run the API and it will serve the SPA static assets.
+
+For local frontend development you can run the SPA dev server (it runs on its own port):
+
+```powershell
+npm run dev
+```
+
+If you want the SPA and API served from the same origin locally, run the SPA build and then run the API.
+
+## Swagger / OpenAPI
+
+- Swagger UI is available at `/swagger` while the API is running.
+- A custom OpenAPI DocumentFilter is included to hide endpoints that are `[Obsolete]` or marked with `ApiExplorerSettings(IgnoreApi = true)`. If you add endpoints and they don't show up, check those attributes and the filter behavior in `src/TKDHubAPI.WebAPI/Swagger`.
+
+## Events API notes
+
+- The application layer includes `Event` entities, DTOs, mappings and `IEventService`/`EventService`.
+- The WebAPI exposes an `EventsController` that provides CRUD and filter endpoints and calls `ICurrentUserService` to provide a `User` into admin-guarded service methods.
+- If you need attendance-specific responses (for example: event + list of attendees), add a service method like `GetEventWithAttendanceByIdAsync(int id)` and implement it in the `EventService` and the repository — I can add that on request.
+
+## Troubleshooting
+
+- Build fails because file is in use (locked exe)
+
+  Error example:
+
+  - MSB3027: Could not copy "...TKDHubAPI.WebAPI.exe" to "...bin\Debug\net8.0\TKDHubAPI.WebAPI.exe": The process cannot access the file because it is being used by another process.
+
+  This happens when a previous `dotnet run` or debugger is still running and has a lock on the apphost. To resolve on Windows (PowerShell):
+
+  ```powershell
+  # List dotnet processes (inspect Path to identify WebAPI instance)
+  Get-Process dotnet | Select-Object Id, Path, ProcessName
+
+  # Stop a specific process (use the Id from the previous command)
+  Stop-Process -Id <PID>
+
+  # Or stop by name (if process is an .exe with the project name)
+  Get-Process -Name TKDHubAPI.WebAPI -ErrorAction SilentlyContinue | Stop-Process
+  ```
+
+  Or use Task Manager to find and kill the running `TKDHubAPI.WebAPI` process.
+
+- Swagger hides endpoints unexpectedly
+
+  - Check for `[Obsolete]` or `ApiExplorerSettings(IgnoreApi = true)` on controllers/actions.
+  - The custom filter removes operations by method name; if you use custom OperationIds the filter may not match — review `src/TKDHubAPI.WebAPI/Swagger/HiddenEndpointsDocumentFilter.cs`.
+
+## Tests
+
+Run application-layer unit tests:
+
+```powershell
+dotnet test tests\TKDHubAPI.Application.Test\TKDHubAPI.Application.Test.csproj
+```
+
+## Quick dev checklist
+
+- Update `appsettings.*.json` connection string.
+- Build and run the API.
+- Build the SPA into `wwwroot` if you need same-origin hosting.
+- Use `/swagger` to exercise endpoints.
 
 ## Contributing
 
-1. Fork the repository.
+1. Fork the repo.
 2. Create a feature branch.
-3. Commit your changes.
-4. Open a pull request.
+3. Add tests when relevant.
+4. Open a PR and reference the issue.
 
 ---
 
-## License
+If you'd like, I can:
 
-This project is licensed under the MIT License.
+- Stop the running WebAPI instance and run the API for an end-to-end check (Swagger, /api/Events).
+- Add a dedicated `GetEventWithAttendanceByIdAsync` service + repo method and wire a controller endpoint to return attendance lists.
 
----
-
-## Contact
-
-For questions or support, please open an issue or contact the maintainers.
+Last updated: 2025-09-17
