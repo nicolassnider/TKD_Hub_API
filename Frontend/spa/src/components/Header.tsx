@@ -203,6 +203,9 @@ export default function Header() {
             <Button color="inherit" onClick={() => navigate("/coaches")}>
               Coaches
             </Button>
+            <Button color="inherit" onClick={() => navigate("/dojaangs")}>
+              Dojaangs
+            </Button>
           </Box>
 
           {token ? (

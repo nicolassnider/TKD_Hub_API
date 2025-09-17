@@ -11,7 +11,6 @@ export function useApiItems(apiPath: string) {
 
   useEffect(() => {
     let mounted = true;
-    if (roleLoading) return;
     (async () => {
       setLoading(true);
       setError(null);
@@ -39,7 +38,7 @@ export function useApiItems(apiPath: string) {
     return () => {
       mounted = false;
     };
-  }, [apiPath, token, roleLoading, reloadKey]);
+  }, [apiPath, token, reloadKey]);
 
   return { items, loading, error, reload: () => setReloadKey((k) => k + 1) };
 }
