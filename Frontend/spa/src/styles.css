@@ -5,21 +5,40 @@
 
 body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
   background: var(--bg);
   color: var(--fg);
 }
 
 /* simple centering utilities used by App */
-.min-h-screen { min-height: 100vh }
-.flex { display: flex }
-.items-center { align-items: center }
-.justify-center { justify-content: center }
-.text-3xl { font-size: 1.75rem }
-.font-bold { font-weight: 700 }
+.min-h-screen {
+  min-height: 100vh;
+}
+.flex {
+  display: flex;
+}
+.items-center {
+  align-items: center;
+}
+.justify-center {
+  justify-content: center;
+}
+.text-3xl {
+  font-size: 1.75rem;
+}
+.font-bold {
+  font-weight: 700;
+}
 
 /* application container spacing */
 .app-container {
   margin: 0.5rem; /* small outer margin */
-  padding: 1rem;  /* inner padding for content */
+  padding: 1rem; /* inner padding for content */
 }

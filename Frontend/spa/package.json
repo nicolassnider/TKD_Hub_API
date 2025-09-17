@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "format": "npx prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "e2e:test": "node ./test/smoke-header.test.js",
     "build:copy": "npm run build",
     "preview": "vite preview --port 4173"
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "puppeteer": "^20.0.0",
+    "prettier": "^3.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",

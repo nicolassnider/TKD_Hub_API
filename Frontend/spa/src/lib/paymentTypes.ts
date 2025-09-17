@@ -13,7 +13,9 @@ export interface CreatePreferenceResponse {
   [key: string]: unknown;
 }
 
-export function getCheckoutUrl(resp: CreatePreferenceResponse): string | undefined {
+export function getCheckoutUrl(
+  resp: CreatePreferenceResponse,
+): string | undefined {
   return (
     (resp.checkoutUrl as string) ||
     (resp.init_point as string) ||
