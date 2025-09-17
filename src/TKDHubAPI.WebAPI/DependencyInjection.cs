@@ -20,10 +20,14 @@ public static class DependencyInjection
     /// <param name="services">The service collection to add dependencies to.</param>
     /// <param name="configuration">The application configuration.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddWebAPIServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddWebAPIServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         // 1. Add Controllers and JSON Options
-        services.AddControllers()
+        services
+            .AddControllers()
             .AddJsonOptions(options =>
             {
                 // Register custom converter for TimeOnly
@@ -36,17 +40,22 @@ public static class DependencyInjection
         // 3. Configure and Add CORS
         // Bind CorsSettings from configuration
         services.Configure<CorsSettings>(configuration.GetSection("Cors"));
-        var corsSettings = configuration.GetSection("Cors").Get<CorsSettings>() ?? new CorsSettings();
+        var corsSettings =
+            configuration.GetSection("Cors").Get<CorsSettings>() ?? new CorsSettings();
 
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowFrontend", policy =>
-            {
-                policy.WithOrigins(corsSettings.AllowedOrigins ?? Array.Empty<string>())
-                      .AllowAnyHeader()
-                      .AllowAnyMethod();
-                //.AllowCredentials();
-            });
+            options.AddPolicy(
+                "AllowFrontend",
+                policy =>
+                {
+                    policy
+                        .WithOrigins(corsSettings.AllowedOrigins ?? Array.Empty<string>())
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                    //.AllowCredentials();
+                }
+            );
         });
 
         // 4. Add Swagger/OpenAPI Generation
@@ -58,14 +67,20 @@ public static class DependencyInjection
             try
             {
                 var basePath = AppContext.BaseDirectory;
-                var thisXml = Path.Combine(basePath, Assembly.GetExecutingAssembly().GetName().Name + ".xml");
-                if (File.Exists(thisXml)) c.IncludeXmlComments(thisXml);
+                var thisXml = Path.Combine(
+                    basePath,
+                    Assembly.GetExecutingAssembly().GetName().Name + ".xml"
+                );
+                if (File.Exists(thisXml))
+                    c.IncludeXmlComments(thisXml);
 
                 var appXml = Path.Combine(basePath, "TKDHubAPI.Application.xml");
-                if (File.Exists(appXml)) c.IncludeXmlComments(appXml);
+                if (File.Exists(appXml))
+                    c.IncludeXmlComments(appXml);
 
                 var domainXml = Path.Combine(basePath, "TKDHubAPI.Domain.xml");
-                if (File.Exists(domainXml)) c.IncludeXmlComments(domainXml);
+                if (File.Exists(domainXml))
+                    c.IncludeXmlComments(domainXml);
             }
             catch
             {
@@ -78,31 +93,37 @@ public static class DependencyInjection
             c.DocumentFilter<HiddenEndpointsDocumentFilter>();
 
             // Add JWT Bearer definition
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT"
-            });
+            c.AddSecurityDefinition(
+                "Bearer",
+                new OpenApiSecurityScheme
+                {
+                    Description =
+                        "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                }
+            );
 
             // Add global security requirement
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
+            c.AddSecurityRequirement(
+                new OpenApiSecurityRequirement
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer",
+                            },
+                        },
+                        Array.Empty<string>()
+                    },
                 }
-            },
-            Array.Empty<string>()
-        }
-    });
+            );
         });
 
         // 5. Add HTTP Context Accessor
@@ -114,25 +135,28 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(jwtSection);
         var jwtSettings = jwtSection.Get<JwtSettings>()!;
 
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            // Configure JWT token validation parameters
-            options.TokenValidationParameters = new TokenValidationParameters
+        services
+            .AddAuthentication(options =>
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings.Issuer,
-                ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
-            };
-        });
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                // Configure JWT token validation parameters
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings.Key)
+                    ),
+                };
+            });
 
         // 7. Add Authorization
         services.AddAuthorization();
@@ -141,9 +165,7 @@ public static class DependencyInjection
         // Example: services.AddScoped<ExceptionHandlingMiddleware>();
 
         // 9. Add SignalR
-        services.AddSignalR()
-        .AddAzureSignalR();
-
+        services.AddSignalR().AddAzureSignalR();
 
         return services;
     }

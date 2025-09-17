@@ -17,12 +17,14 @@ public class ClassesController : BaseApiController
     /// </summary>
     /// <param name="logger">The logger instance for logging operations.</param>
     /// <param name="trainingClassService">The service for managing training classes.</param>
+    /// <param name="studentClassService">The service for managing student-class relationships and attendance.</param>
     /// <param name="mapper">The AutoMapper instance for object mapping.</param>
     public ClassesController(
         ILogger<ClassesController> logger,
         ITrainingClassService trainingClassService,
         IMapper mapper,
-        IStudentClassService studentClassService)
+        IStudentClassService studentClassService
+    )
         : base(logger)
     {
         _trainingClassService = trainingClassService;
@@ -184,7 +186,7 @@ public class ClassesController : BaseApiController
         var classes = await _trainingClassService.GetAllAsync();
         var filtered = classes
             .Where(c => c.Schedules != null && c.Schedules.Any(s => s.Day == targetDay))
-        .ToList();
+            .ToList();
 
         var dtos = _mapper.Map<List<TrainingClassDto>>(filtered);
         return SuccessResponse(dtos);
@@ -239,7 +241,10 @@ public class ClassesController : BaseApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> RegisterAttendance(int studentClassId, [FromBody] RegisterAttendanceRequest request)
+    public async Task<IActionResult> RegisterAttendance(
+        int studentClassId,
+        [FromBody] RegisterAttendanceRequest request
+    )
     {
         await _trainingClassService.RegisterAttendanceAsync(
             studentClassId,
@@ -264,9 +269,14 @@ public class ClassesController : BaseApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAttendanceHistory(
         int studentClassId,
-        [FromQuery] GetAttendanceHistoryRequest request)
+        [FromQuery] GetAttendanceHistoryRequest request
+    )
     {
-        var records = await _trainingClassService.GetAttendanceHistoryAsync(studentClassId, request.From, request.To);
+        var records = await _trainingClassService.GetAttendanceHistoryAsync(
+            studentClassId,
+            request.From,
+            request.To
+        );
         var dtos = _mapper.Map<List<AttendanceHistoryDto>>(records);
         return SuccessResponse(dtos);
     }

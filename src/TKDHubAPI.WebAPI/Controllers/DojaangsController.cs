@@ -24,12 +24,12 @@ public class DojaangsController : BaseApiController
         IUserService userService,
         ILogger<DojaangsController> logger,
         IMapper mapper
-    ) : base(logger)
+    )
+        : base(logger)
     {
         _dojaangService = dojaangService;
         _userService = userService;
     }
-
 
     /// <summary>
     /// Retrieves all dojaangs (martial arts schools).
@@ -49,7 +49,6 @@ public class DojaangsController : BaseApiController
         var dojaangs = await _dojaangService.GetAllAsync();
         return SuccessResponse(dojaangs);
     }
-
 
     /// <summary>
     /// Retrieves a dojaang by its unique identifier.
@@ -76,7 +75,6 @@ public class DojaangsController : BaseApiController
         }
         return SuccessResponse(dojaang);
     }
-
 
     /// <summary>
     /// Creates a new dojaang. Only admins are allowed to perform this action.
@@ -106,20 +104,19 @@ public class DojaangsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create([FromBody] CreateDojaangDto dto)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userIdClaim = User.Claims.FirstOrDefault(c =>
+            c.Type == System.Security.Claims.ClaimTypes.NameIdentifier
+        );
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             return ErrorResponse("Invalid user context.", 401);
-
 
         var currentUser = await _userService.GetByIdAsync(userId);
         if (currentUser == null)
             return ErrorResponse("User not found.", 404);
 
-
         var dojaang = await _dojaangService.CreateDojaangAsync(dto, currentUser);
         return SuccessResponse(dojaang);
     }
-
 
     /// <summary>
     /// Updates an existing dojaang. Only admins are allowed to perform this action.
@@ -147,20 +144,15 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("ID in URL does not match ID in body.", 400);
         }
 
-
-
-
         var existingDojaang = await _dojaangService.GetByIdAsync(id);
         if (existingDojaang == null)
         {
             return ErrorResponse("Dojaang not found", 404);
         }
 
-
         await _dojaangService.UpdateAsync(updateDto);
         return NoContent();
     }
-
 
     /// <summary>
     /// Deletes a dojaang by its unique identifier. Only admins are allowed to perform this action.
@@ -185,9 +177,7 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
-
         await _dojaangService.DeleteAsync(id);
         return NoContent();
     }
-
 }

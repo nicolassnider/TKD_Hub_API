@@ -12,7 +12,12 @@ public class EventsController : BaseApiController
     private readonly IMapper _mapper;
     private readonly ICurrentUserService _currentUserService;
 
-    public EventsController(ILogger<EventsController> logger, IEventService eventService, IMapper mapper, ICurrentUserService currentUserService)
+    public EventsController(
+        ILogger<EventsController> logger,
+        IEventService eventService,
+        IMapper mapper,
+        ICurrentUserService currentUserService
+    )
         : base(logger)
     {
         _eventService = eventService;
@@ -37,7 +42,8 @@ public class EventsController : BaseApiController
     public async Task<IActionResult> GetById(int id)
     {
         var ev = await _eventService.GetByIdAsync(id);
-        if (ev == null) return ErrorResponse("Event not found.", 404);
+        if (ev == null)
+            return ErrorResponse("Event not found.", 404);
         var dto = _mapper.Map<EventDto>(ev);
         return SuccessResponse(dto);
     }
@@ -73,7 +79,8 @@ public class EventsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateEventDto dto)
     {
-        if (id != dto.Id) return ErrorResponse("ID mismatch.", 400);
+        if (id != dto.Id)
+            return ErrorResponse("ID mismatch.", 400);
 
         try
         {
@@ -135,7 +142,10 @@ public class EventsController : BaseApiController
 
     [HttpGet("by-date-range")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetByDateRange([FromQuery] DateTime start, [FromQuery] DateTime end)
+    public async Task<IActionResult> GetByDateRange(
+        [FromQuery] DateTime start,
+        [FromQuery] DateTime end
+    )
     {
         var items = await _eventService.GetEventsByDateRangeAsync(start, end);
         var dtos = _mapper.Map<List<EventDto>>(items);
@@ -148,7 +158,8 @@ public class EventsController : BaseApiController
     public async Task<IActionResult> GetAttendanceForEvent(int eventId)
     {
         var ev = await _eventService.GetByIdAsync(eventId);
-        if (ev == null) return ErrorResponse("Event not found.", 404);
+        if (ev == null)
+            return ErrorResponse("Event not found.", 404);
         var dto = _mapper.Map<EventDto>(ev);
         return SuccessResponse(dto);
     }

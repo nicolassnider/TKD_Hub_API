@@ -1,8 +1,9 @@
 ﻿namespace TKDHubAPI.Application.DTOs.Event;
-[ExcludeFromCodeCoverage]
+
 /// <summary>
 /// DTO for creating a new event.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class CreateEventDto
 {
     [Required]

@@ -26,11 +26,13 @@ public class HiddenEndpointsDocumentFilter : IDocumentFilter
             if (apiDescription.ActionDescriptor is ControllerActionDescriptor cad)
             {
                 // ObsoleteAttribute
-                var hasObsolete = cad.MethodInfo.GetCustomAttributes(true)
+                var hasObsolete = cad
+                    .MethodInfo.GetCustomAttributes(true)
                     .Any(a => a is ObsoleteAttribute);
 
                 // ApiExplorerSettingsAttribute with IgnoreApi = true
-                var apiExplorerAttr = cad.MethodInfo.GetCustomAttributes(true)
+                var apiExplorerAttr = cad
+                    .MethodInfo.GetCustomAttributes(true)
                     .OfType<Microsoft.AspNetCore.Mvc.ApiExplorerSettingsAttribute>()
                     .FirstOrDefault();
 
@@ -46,14 +48,18 @@ public class HiddenEndpointsDocumentFilter : IDocumentFilter
             }
         }
 
-        if (toRemove.Count == 0) return;
+        if (toRemove.Count == 0)
+            return;
 
         // For each path and operation, check operation.OperationId and remove matches
         var pathsToRemove = new List<string>();
         foreach (var path in swaggerDoc.Paths.ToList())
         {
-            var opsToRemove = path.Value.Operations
-                .Where(kvp => !string.IsNullOrEmpty(kvp.Value.OperationId) && toRemove.Contains(kvp.Value.OperationId))
+            var opsToRemove = path
+                .Value.Operations.Where(kvp =>
+                    !string.IsNullOrEmpty(kvp.Value.OperationId)
+                    && toRemove.Contains(kvp.Value.OperationId)
+                )
                 .Select(kvp => kvp.Key)
                 .ToList();
 

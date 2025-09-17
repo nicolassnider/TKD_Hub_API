@@ -13,7 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddWebAPIServices(builder.Configuration);
-builder.Services.AddSignalR().AddAzureSignalR(builder.Configuration["Azure:SignalR:ConnectionString"]!);
+builder
+    .Services.AddSignalR()
+    .AddAzureSignalR(builder.Configuration["Azure:SignalR:ConnectionString"]!);
 
 var app = builder.Build();
 
@@ -33,6 +35,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 
 app.UseMiddleware<CustomErrorResponseMiddleware>();
+
 // Enable Swagger middleware
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -54,12 +57,8 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-    endpoints.MapHub<PaymentHub>("/paymentHub");
-});
-
+// Use top-level route registrations instead of UseEndpoints to satisfy analyzer ASP0014
+app.MapHub<PaymentHub>("/paymentHub");
 app.MapControllers();
 
 // SPA fallback: serve index.html for unmatched routes (so client-side routing works)

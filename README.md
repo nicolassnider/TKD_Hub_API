@@ -89,7 +89,7 @@ npm run dev
 
 All endpoints are prefixed with `/api/`.
 
-# TKDHub — API & Frontends (overview)
+## TKDHub — API & Frontends (overview)
 
 TKDHub is a web platform and RESTful API for managing Taekwondo dojaangs (schools), users, coaches, students, events, promotions, ranks, and more. The solution uses .NET 8, EF Core and follows a layered/clean architecture (Domain / Application / Infrastructure / WebAPI).
 
@@ -103,7 +103,7 @@ This README focuses on developer setup and quick troubleshooting for the backend
 - Tests: `tests/TKDHubAPI.Application.Test`
 - Migrations: `src/TKDHubAPI.Infrastructure/Migrations`
 
-## Prerequisites
+## Requirements
 
 - .NET 8 SDK
 - Node.js + npm (for building the SPA)
@@ -113,16 +113,17 @@ This README focuses on developer setup and quick troubleshooting for the backend
 
 1. Restore and build the solution
 
-```powershell
-dotnet restore "TKD_Hub_API.sln"
-dotnet build "TKD_Hub_API.sln"
-```
+   ````powershell
+   dotnet restore "TKD_Hub_API.sln"
+   dotnet build "TKD_Hub_API.sln"```
+
+   ````
 
 2. Run the API
 
-```powershell
-dotnet run --project src\TKDHubAPI.WebAPI\TKDHubAPI.WebAPI.csproj
-```
+   ```powershell
+   dotnet run --project src\TKDHubAPI.WebAPI\TKDHubAPI.WebAPI.csproj
+   ```
 
 The Web API will apply EF Core migrations at startup if configured. Watch the console output for the listening port and open `/swagger` (e.g. `https://localhost:5001/swagger`).
 
@@ -213,12 +214,3 @@ dotnet test tests\TKDHubAPI.Application.Test\TKDHubAPI.Application.Test.csproj
 2. Create a feature branch.
 3. Add tests when relevant.
 4. Open a PR and reference the issue.
-
----
-
-If you'd like, I can:
-
-- Stop the running WebAPI instance and run the API for an end-to-end check (Swagger, /api/Events).
-- Add a dedicated `GetEventWithAttendanceByIdAsync` service + repo method and wire a controller endpoint to return attendance lists.
-
-Last updated: 2025-09-17

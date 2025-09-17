@@ -21,12 +21,12 @@ public class PaginationService<T> : IPaginationService<T>
         var items = source.Skip((page - 1) * effectivePageSize).Take(effectivePageSize).ToList();
         var totalCount = source.Count();
 
-        return new PaginatedResult<T>
+        return await Task.FromResult(new PaginatedResult<T>
         {
             Items = items,
             TotalCount = totalCount,
             Page = page,
             PageSize = effectivePageSize
-        };
+        });
     }
 }
