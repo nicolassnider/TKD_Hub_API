@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.Interfaces;
+using TKDHubAPI.Application.Common;
 
 /// <summary>
 /// Service interface for managing events, including creation, retrieval, and filtering by various criteria.
@@ -75,4 +76,10 @@ public interface IEventService : ICrudService<Event>
     /// <param name="id">The id of the event to delete.</param>
     /// <param name="user">The user performing the action (should be an admin).</param>
     Task DeleteAsync(int id, User user);
+
+    /// <summary>
+    /// Functional-style retrieval that returns a Result&lt;Event&gt; indicating success or failure.
+    /// This is a non-breaking addition to demonstrate applying a small functional pattern.
+    /// </summary>
+    Task<Result<Event>> GetByIdResultAsync(int id);
 }

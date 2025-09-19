@@ -1,4 +1,5 @@
 ﻿namespace TKDHubAPI.Application.Services;
+using TKDHubAPI.Application.Common;
 public class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
@@ -42,6 +43,13 @@ public class EventService : IEventService
     public async Task<Event?> GetByIdAsync(int id)
     {
         return await _eventRepository.GetByIdAsync(id);
+    }
+
+    public async Task<Result<Event>> GetByIdResultAsync(int id)
+    {
+        var ev = await _eventRepository.GetByIdAsync(id);
+        if (ev == null) return Result<Event>.Failure("Event not found");
+        return Result<Event>.Success(ev);
     }
 
     public async Task<IEnumerable<Event>> GetEventsByCoachIdAsync(int coachId)

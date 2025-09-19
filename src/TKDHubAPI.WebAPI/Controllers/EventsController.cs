@@ -41,10 +41,10 @@ public class EventsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
-        var ev = await _eventService.GetByIdAsync(id);
-        if (ev == null)
-            return ErrorResponse("Event not found.", 404);
-        var dto = _mapper.Map<EventDto>(ev);
+        var res = await _eventService.GetByIdResultAsync(id);
+        if (!res.IsSuccess)
+            return ErrorResponse(res.Error ?? "Event not found.", 404);
+        var dto = _mapper.Map<EventDto>(res.Value!);
         return SuccessResponse(dto);
     }
 
@@ -157,10 +157,10 @@ public class EventsController : BaseApiController
     [Authorize]
     public async Task<IActionResult> GetAttendanceForEvent(int eventId)
     {
-        var ev = await _eventService.GetByIdAsync(eventId);
-        if (ev == null)
-            return ErrorResponse("Event not found.", 404);
-        var dto = _mapper.Map<EventDto>(ev);
+        var res = await _eventService.GetByIdResultAsync(eventId);
+        if (!res.IsSuccess)
+            return ErrorResponse(res.Error ?? "Event not found.", 404);
+        var dto = _mapper.Map<EventDto>(res.Value!);
         return SuccessResponse(dto);
     }
 }
