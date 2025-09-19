@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { fetchJson, ApiError } from "../lib/api";
 import { useRole } from "../context/RoleContext";
 
-export function useApiItems(apiPath: string) {
+export function useApiItems<T = any>(apiPath: string) {
   const { token, roleLoading } = useRole();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -20,14 +20,14 @@ export function useApiItems(apiPath: string) {
         if (token) headers["Authorization"] = `Bearer ${token}`;
         const res = await fetchJson<any>(apiPath, { headers });
         // support several envelope shapes: array, { data: [...] }, { data: { data: [...] } }, { data: { items: [...] } }
-        let data: any[] = [];
+  let data: any[] = [];
         if (Array.isArray(res)) data = res;
         else if (Array.isArray(res?.data)) data = res.data;
         else if (Array.isArray(res?.data?.data)) data = res.data.data;
         else if (Array.isArray(res?.data?.items)) data = res.data.items;
         else data = [];
         if (!mounted) return;
-        setItems(data);
+  setItems(data as T[]);
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof ApiError ? e.message : String(e));

@@ -11,6 +11,11 @@ type RoleContextType = {
   setToken: (t: string | null) => void;
   setRole: (r: string | string[]) => void;
   getRole: () => string[];
+  hasRole: (r: string) => boolean;
+  isAdmin: () => boolean;
+  isTeacher: () => boolean;
+  isStudent: () => boolean;
+  effectiveRole: () => string; // Admin > Teacher > Student > Guest
   setDisplayName: (n: string | null) => void;
   setAvatarUrl: (u: string | null) => void;
   roleLoading: boolean;
@@ -59,6 +64,8 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
       else localStorage.removeItem("token");
     }
     setTokenState(t);
+    // If token is cleared (logout), set role to Guest
+    if (!t) setRole("Guest");
   };
 
   const setRole = (r: string | string[]) => {
@@ -74,6 +81,21 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const getRole = () => role;
+
+  const hasRole = (r: string) => Array.isArray(role) && role.includes(r);
+
+  const isAdmin = () => hasRole("Admin");
+
+  const isTeacher = () => hasRole("Teacher") || hasRole("Coach");
+
+  const isStudent = () => hasRole("Student");
+
+  const effectiveRole = () => {
+    if (isAdmin()) return "Admin";
+    if (isTeacher()) return "Teacher";
+    if (isStudent()) return "Student";
+    return "Guest";
+  };
 
   const setDisplayName = (n: string | null) => {
     if (typeof window !== "undefined") {
@@ -126,6 +148,11 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
         setToken,
         setRole,
         getRole,
+        hasRole,
+        isAdmin,
+        isTeacher,
+        isStudent,
+        effectiveRole,
         setDisplayName,
         setAvatarUrl,
         roleLoading,

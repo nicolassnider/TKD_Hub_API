@@ -44,7 +44,43 @@ export async function fetchJson<T = unknown>(
   init?: RequestInit,
 ): Promise<T> {
   const resolved = resolveUrl(input);
-  const res = await fetch(resolved, init);
+  // Ensure Authorization header is present when a token exists in localStorage
+  // and the caller didn't already provide an Authorization header.
+  const finalInit: RequestInit = { ...(init || {}) };
+  const finalHeaders: Record<string, string> = {};
+
+  // Copy any provided headers (Headers | Record | array) into a plain object
+  const provided = init?.headers;
+  if (provided instanceof Headers) {
+    provided.forEach((v, k) => (finalHeaders[k] = v));
+  } else if (Array.isArray(provided)) {
+    for (const [k, v] of provided as Array<[string, string]>) finalHeaders[k] = v;
+  } else if (provided && typeof provided === "object") {
+    Object.assign(finalHeaders, provided as Record<string, string>);
+  }
+
+  // If no Authorization was supplied, try to load token from localStorage.
+  try {
+    if (!finalHeaders["Authorization"]) {
+      const stored = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (stored) finalHeaders["Authorization"] = stored.startsWith("Bearer ") ? stored : `Bearer ${stored}`;
+    }
+  } catch {
+    // ignore any localStorage access errors
+  }
+
+  // Debug: help diagnose missing auth in dev by logging when we attach a token
+  try {
+    if (typeof window !== "undefined" && (resolved as string).toLowerCase().includes("/api")) {
+      console.debug("fetchJson: Authorization header present:", !!finalHeaders["Authorization"]);
+    }
+  } catch {
+    // ignore
+  }
+
+  finalInit.headers = finalHeaders;
+
+  const res = await fetch(resolved, finalInit);
 
   if (!res.ok) {
     let body: unknown = undefined;

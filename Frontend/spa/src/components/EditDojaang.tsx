@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useRole } from "../context/RoleContext";
 import Alert from "@mui/material/Alert";
+import Paper from "@mui/material/Paper";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 
 const baseUrl = "https://localhost:7046/api";
 
@@ -19,9 +26,11 @@ type DojaangPayload = {
 export default function EditDojaang({
   dojaangId,
   onClose,
+  title,
 }: {
   dojaangId: number;
   onClose: () => void;
+  title?: string;
 }) {
   const { token } = useRole();
   const [dojaang, setDojaang] = useState<DojaangPayload | null>(null);
@@ -33,7 +42,23 @@ export default function EditDojaang({
     const fetchOne = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${baseUrl}/Dojaang/${dojaangId}`, {
+        if (dojaangId === 0) {
+          // initialize empty payload for create
+          setDojaang({
+            id: 0,
+            name: "",
+            address: "",
+            location: "",
+            phoneNumber: "",
+            email: "",
+            koreanName: "",
+            koreanNamePhonetic: "",
+            coachId: null,
+          });
+          return;
+        }
+
+        const res = await fetch(`${baseUrl}/Dojaangs/${dojaangId}`, {
           headers: { Authorization: token ? `Bearer ${token}` : "" },
         });
         if (!res.ok) throw new Error(`Failed: ${res.status}`);
@@ -69,16 +94,42 @@ export default function EditDojaang({
         koreanNamePhonetic: dojaang.koreanNamePhonetic,
         coachId: dojaang.coachId ?? null,
       };
-      const res = await fetch(`${baseUrl}/Dojaang/${dojaang.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
-      onClose();
+      let res: Response;
+      if (dojaang.id === 0) {
+        // Create
+        const createPayload = { ...payload };
+        delete (createPayload as any).id; // Create DTO doesn't include id
+        res = await fetch(`${baseUrl}/Dojaangs`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          body: JSON.stringify(createPayload),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          const msg = body?.message || `Create failed: ${res.status}`;
+          throw new Error(msg);
+        }
+        onClose();
+      } else {
+        // Update
+        res = await fetch(`${baseUrl}/Dojaangs/${dojaang.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          const msg = body?.message || `Save failed: ${res.status}`;
+          throw new Error(msg);
+        }
+        onClose();
+      }
     } catch (err: any) {
       setError(err.message || "Save error");
     } finally {
@@ -86,98 +137,102 @@ export default function EditDojaang({
     }
   };
 
-  if (loading) return <div className="p-4">Loading...</div>;
-  if (!dojaang) return <div className="p-4">No data</div>;
+  if (loading) return <Box p={4}><CircularProgress /></Box>;
+  if (!dojaang) return <Box p={4}>No data</Box>;
+
+  const derivedTitle = dojaang.id === 0 ? "Create Dojaang" : "Edit Dojaang";
+  const effectiveTitle = title ?? derivedTitle;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-4 rounded w-full max-w-lg"
-      >
-        <h3 className="text-lg font-semibold mb-2">Edit Dojaang</h3>
+    <Paper elevation={2} sx={{ p: 3, mt: 1 }}>
+      <form onSubmit={handleSubmit}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6">{effectiveTitle}</Typography>
+          {saving && <CircularProgress size={20} />}
+        </Box>
+
         {error && (
-          <Alert severity="error" className="mb-2">
+          <Alert severity="error" className="mb-3">
             {error}
           </Alert>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label htmlFor="name">Name</label>
-            <input
-              id="name"
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Name"
               value={dojaang.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              className="block w-full border p-1 rounded"
+              fullWidth
+              size="small"
+              variant="outlined"
             />
-          </div>
-          <div>
-            <label htmlFor="koreanName">Korean Name</label>
-            <input
-              id="koreanName"
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Korean Name"
               value={dojaang.koreanName ?? ""}
               onChange={(e) => handleChange("koreanName", e.target.value)}
-              className="block w-full border p-1 rounded"
+              fullWidth
+              size="small"
+              variant="outlined"
             />
-          </div>
-          <div>
-            <label htmlFor="koreanNamePhonetic">Korean Name (Phonetic)</label>
-            <input
-              id="koreanNamePhonetic"
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Korean Name (Phonetic)"
               value={dojaang.koreanNamePhonetic ?? ""}
-              onChange={(e) =>
-                handleChange("koreanNamePhonetic", e.target.value)
-              }
-              className="block w-full border p-1 rounded"
+              onChange={(e) => handleChange("koreanNamePhonetic", e.target.value)}
+              fullWidth
+              size="small"
+              variant="outlined"
             />
-          </div>
-          <div>
-            <label htmlFor="address">Address</label>
-            <input
-              id="address"
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Address"
               value={dojaang.address ?? ""}
               onChange={(e) => handleChange("address", e.target.value)}
-              className="block w-full border p-1 rounded"
+              fullWidth
+              size="small"
+              variant="outlined"
             />
-          </div>
-          <div>
-            <label htmlFor="phoneNumber">Phone</label>
-            <input
-              id="phoneNumber"
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Phone"
               value={dojaang.phoneNumber ?? ""}
               onChange={(e) => handleChange("phoneNumber", e.target.value)}
-              className="block w-full border p-1 rounded"
+              fullWidth
+              size="small"
+              variant="outlined"
             />
-          </div>
-          <div>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Email"
               value={dojaang.email ?? ""}
               onChange={(e) => handleChange("email", e.target.value)}
-              className="block w-full border p-1 rounded"
+              fullWidth
+              size="small"
+              variant="outlined"
             />
-          </div>
-        </div>
+          </Grid>
+        </Grid>
 
-        <div className="flex justify-end mt-3">
-          <button
-            type="button"
-            className="mr-2 px-3 py-1 border rounded"
-            onClick={onClose}
-            disabled={saving}
-          >
+        <Box display="flex" justifyContent="flex-end" mt={3} gap={1}>
+          <Button variant="outlined" onClick={onClose} disabled={saving}>
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-3 py-1 bg-blue-600 text-white rounded"
-            disabled={saving}
-          >
-            {saving ? "Saving..." : "Save"}
-          </button>
-        </div>
+          </Button>
+          <Button type="submit" variant="contained" color="primary" disabled={saving}>
+            {saving ? <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}><CircularProgress size={16} /> Saving...</Box> : 'Save'}
+          </Button>
+        </Box>
       </form>
-    </div>
+    </Paper>
   );
 }

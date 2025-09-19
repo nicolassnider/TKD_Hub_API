@@ -16,6 +16,7 @@ import ClassDetail from "pages/ClassDetail";
 import CoachesList from "pages/CoachesList";
 import CoachDetail from "pages/CoachDetail";
 import DojaangsList from "pages/DojaangsList";
+import CreateDojaang from "pages/CreateDojaang";
 import DojaangDetail from "pages/DojaangDetail";
 import PromotionsList from "pages/PromotionsList";
 import PromotionDetail from "pages/PromotionDetail";
@@ -44,7 +45,14 @@ export default function App() {
                 </div>
               }
             />
-            <Route path="/login" element={<LoginForm />} />
+            <Route
+              path="/login"
+              element={
+                <div className="center-vh">
+                  <LoginForm />
+                </div>
+              }
+            />
             <Route path="/register" element={<Register />} />
             <Route path="/manage/dojaangs" element={<DojaangAdmin />} />
             <Route path="/manage" element={<DojaangAdmin />} />
@@ -65,6 +73,7 @@ export default function App() {
             <Route path="/coaches/:id" element={<CoachDetail />} />
 
             <Route path="/dojaangs" element={<DojaangsList />} />
+            <Route path="/dojaangs/new" element={<CreateDojaang />} />
             <Route path="/dojaangs/:id" element={<DojaangDetail />} />
 
             <Route path="/promotions" element={<PromotionsList />} />

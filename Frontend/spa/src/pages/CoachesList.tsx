@@ -17,7 +17,6 @@ export default function CoachesList() {
 }
 
 function CoachesTable() {
-  const { items, loading, error } = useApiItems("/api/Coaches");
   const navigate = useNavigate();
   const {
     items: rows,

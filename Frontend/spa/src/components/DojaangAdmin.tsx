@@ -23,28 +23,30 @@ export default function DojaangAdmin() {
   const [error, setError] = useState<string | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  // ...existing code...
+  
+  // fetchList is used in multiple places (initial load, refresh, after modal close)
+  const fetchList = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${baseUrl}/Dojaang`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+      const body = await res.json().catch(() => null);
+      const list = Array.isArray(body) ? body : (body?.data ?? []);
+      setDojaangs(list);
+    } catch (err: any) {
+      setError(err.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
-    const fetchList = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${baseUrl}/Dojaang`, {
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
-        });
-        if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
-        const body = await res.json().catch(() => null);
-        const list = Array.isArray(body) ? body : (body?.data ?? []);
-        setDojaangs(list);
-      } catch (err: any) {
-        setError(err.message || "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchList();
-  }, [token]);
+  }, [fetchList]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this Dojaang?")) return;
@@ -66,7 +68,24 @@ export default function DojaangAdmin() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-3">Dojaangs</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xl font-semibold">Dojaangs</h2>
+        <div className="flex items-center gap-2">
+          <button
+            className="px-3 py-1 border rounded"
+            onClick={() => fetchList()}
+            disabled={loading}
+          >
+            REFRESH
+          </button>
+          <button
+            className="px-3 py-1 bg-green-600 text-white rounded"
+            onClick={() => setEditId(0)}
+          >
+            Add Dojaang
+          </button>
+        </div>
+      </div>
       {loading && <div>Loading...</div>}
       {error && <Alert severity="error">{error}</Alert>}
       <table className="min-w-full bg-white">
@@ -107,8 +126,26 @@ export default function DojaangAdmin() {
         </tbody>
       </table>
 
-      {editId && (
-        <EditDojaang dojaangId={editId} onClose={() => setEditId(null)} />
+        <div className="mt-3">
+          {Array.isArray(role) && role.includes("Admin") && (
+            <button
+              className="px-3 py-1 bg-green-600 text-white rounded"
+              onClick={() => setEditId(0)}
+            >
+              Add Dojaang
+            </button>
+          )}
+        </div>
+
+      {editId !== null && (
+        <EditDojaang
+          dojaangId={editId}
+          onClose={() => {
+            setEditId(null);
+            // reuse fetchList to reload
+            fetchList();
+          }}
+        />
       )}
     </div>
   );

@@ -56,11 +56,8 @@ export default function LoginForm() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-md w-full p-4 bg-white rounded shadow"
-    >
-      <h2 className="text-xl font-semibold mb-4">Sign in</h2>
+    <form onSubmit={handleSubmit} className="auth-card">
+      <h2 className="text-2xl font-semibold mb-4">Sign in</h2>
       {error && (
         <Alert severity="error" className="mb-2">
           {error}
@@ -78,7 +75,7 @@ export default function LoginForm() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
+          className="mt-1 auth-input"
           placeholder="you@example.com"
           required
         />
@@ -95,17 +92,13 @@ export default function LoginForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
+          className="mt-1 auth-input"
           placeholder="Your password"
           required
         />
       </div>
       <div className="flex justify-end">
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-          disabled={loading}
-        >
+        <button type="submit" className="auth-button" disabled={loading}>
           {loading ? "Signing..." : "Sign in"}
         </button>
       </div>
