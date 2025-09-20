@@ -17,7 +17,7 @@ import {
   Add,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import { useState, MouseEvent } from "react";
 import PromotionFormDialog from "../components/PromotionFormDialog";
 import { usePromotionForm } from "../hooks/usePromotionForm";
 
@@ -49,7 +49,7 @@ function StudentsTable() {
   });
 
   const handleMenuClick = (
-    event: React.MouseEvent<HTMLElement>,
+    event: MouseEvent<HTMLElement>,
     student: any,
   ) => {
     event.stopPropagation();

@@ -1,9 +1,7 @@
 import ApiTable from "components/ApiTable";
 import { useApiItems } from "../hooks/useApiItems";
-
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
-import React from "react";
 import { TrainingClassDto } from "types/api";
 
 export default function ClassesList() {

@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams } from "react-router-dom";
 import {
   Card,
@@ -10,7 +9,6 @@ import {
   Divider,
 } from "@mui/material";
 import { EmojiEvents } from "@mui/icons-material";
-
 import { PromotionDto } from "../types/api";
 import { useApiItems } from "../hooks/useApiItems";
 

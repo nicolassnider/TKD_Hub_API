@@ -1,11 +1,10 @@
-import ApiList from "../components/ApiList";
 import ApiTable from "components/ApiTable";
 import { useApiItems } from "../hooks/useApiItems";
 import Button from "@mui/material/Button";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { useNavigate } from "react-router-dom";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useRole } from "../context/RoleContext";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
@@ -36,15 +35,19 @@ export default function CoachesList() {
 
 function CoachesTable() {
   const { items, loading, error, reload } = useApiItems("/api/Coaches");
-  const { isAdmin, roleLoading } = useRole();
+  const { role, roleLoading } = useRole();
   const [showInactive, setShowInactive] = useState<boolean>(() => false);
 
   // when roleLoading finishes, if user is admin set showInactive default to true
-  React.useEffect(() => {
+  useEffect(() => {
     if (!roleLoading) {
-      setShowInactive(isAdmin());
+      const isAdmin = Array.isArray(role) && role.includes("Admin");
+      setShowInactive(isAdmin);
     }
-  }, [roleLoading, isAdmin]);
+  }, [roleLoading, role]);
+
+  // Compute isAdmin for use in render and useMemo
+  const isAdmin = Array.isArray(role) && role.includes("Admin");
 
   const navigate = useNavigate();
   const theme = useTheme();
@@ -65,7 +68,7 @@ function CoachesTable() {
   const [selectedId, setSelectedId] = useState<string | number | null>(null);
 
   // normalize check for inactive values from API (boolean false or numeric 0)
-  const isInactive = React.useCallback((it: any) => {
+  const isInactive = useCallback((it: any) => {
     return it?.isActive === false || it?.isActive === 0;
   }, []);
 
@@ -270,9 +273,9 @@ function CoachesTable() {
   );
 
   // Filter rows based on showInactive and admin privilege. Non-admins must never see inactive rows.
-  const visibleItems = React.useMemo(() => {
+  const visibleItems = useMemo(() => {
     if (!items) return items;
-    if (isAdmin()) {
+    if (isAdmin) {
       return showInactive
         ? items
         : items.filter((it: any) => it.isActive !== false);
@@ -301,7 +304,7 @@ function CoachesTable() {
         >
           Create coach
         </Button>
-        {isAdmin() && (
+        {isAdmin && (
           <FormControlLabel
             control={
               <Switch

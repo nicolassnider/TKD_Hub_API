@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../context/RoleContext";
-import Alert from "@mui/material/Alert";
-
-const baseUrl = "https://localhost:7046/api";
+import { fetchJson } from "../lib/api";
+import {
+  Alert,
+  TextField,
+  Button,
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+} from "@mui/material";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -32,16 +39,11 @@ export default function Register() {
     if (v) return setError(v);
     setLoading(true);
     try {
-      const res = await fetch(`${baseUrl}/Auth/register`, {
+      const body = await fetchJson<any>("/api/Auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firstName, lastName, email, password }),
       });
-      const body = await res.json().catch(() => null);
-      if (!res.ok)
-        throw new Error(
-          (body && (body as any).message) || `Register failed: ${res.status}`,
-        );
 
       // If API returns a token we can auto-login; otherwise redirect to login
       const token = body?.token ?? body?.data?.token;
@@ -73,87 +75,160 @@ export default function Register() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-md w-full p-4 bg-white rounded shadow"
-    >
-      <h2 className="text-xl font-semibold mb-4">Register</h2>
-      {error && (
-        <Alert severity="error" className="mb-2">
-          {error}
-        </Alert>
-      )}
+    <div className="center-vh">
+      <form onSubmit={handleSubmit} className="auth-card">
+        <Typography variant="h4" component="h2" className="gradient-text" sx={{ mb: 3, textAlign: 'center' }}>
+          Join TKD Hub
+        </Typography>
+        
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700">
-          First name
-        </label>
-        <input
-          placeholder="First name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
-        />
-      </div>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <TextField
+            label="First Name"
+            placeholder="First name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            fullWidth
+            className="auth-input"
+            InputProps={{
+              style: {
+                background: 'var(--surface)',
+                color: 'var(--fg)',
+              }
+            }}
+            InputLabelProps={{
+              style: { color: 'var(--fg-muted)' }
+            }}
+          />
+          <TextField
+            label="Last Name"
+            placeholder="Last name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            fullWidth
+            className="auth-input"
+            InputProps={{
+              style: {
+                background: 'var(--surface)',
+                color: 'var(--fg)',
+              }
+            }}
+            InputLabelProps={{
+              style: { color: 'var(--fg-muted)' }
+            }}
+          />
+        </Box>
 
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700">
-          Last name
-        </label>
-        <input
-          placeholder="Last name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
-        />
-      </div>
-
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
+        <TextField
+          label="Email"
           placeholder="you@example.com"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
+          required
+          fullWidth
+          className="auth-input"
+          sx={{ mb: 3 }}
+          InputProps={{
+            style: {
+              background: 'var(--surface)',
+              color: 'var(--fg)',
+            }
+          }}
+          InputLabelProps={{
+            style: { color: 'var(--fg-muted)' }
+          }}
         />
-      </div>
 
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700">
-          Password
-        </label>
-        <input
+        <TextField
+          label="Password"
           placeholder="At least 6 characters"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
+          required
+          fullWidth
+          className="auth-input"
+          sx={{ mb: 3 }}
+          InputProps={{
+            style: {
+              background: 'var(--surface)',
+              color: 'var(--fg)',
+            }
+          }}
+          InputLabelProps={{
+            style: { color: 'var(--fg-muted)' }
+          }}
         />
-      </div>
 
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700">
-          Confirm password
-        </label>
-        <input
+        <TextField
+          label="Confirm Password"
           placeholder="Confirm password"
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="mt-1 block w-full border rounded p-2"
+          required
+          fullWidth
+          className="auth-input"
+          sx={{ mb: 4 }}
+          InputProps={{
+            style: {
+              background: 'var(--surface)',
+              color: 'var(--fg)',
+            }
+          }}
+          InputLabelProps={{
+            style: { color: 'var(--fg-muted)' }
+          }}
         />
-      </div>
 
-      <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
+          className="auth-button"
           disabled={loading}
+          fullWidth
+          size="large"
+          sx={{ mb: 2 }}
         >
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </div>
-    </form>
+          {loading ? (
+            <>
+              <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
+              Creating Account...
+            </>
+          ) : (
+            'Create Account'
+          )}
+        </Button>
+
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="body2" sx={{ color: 'var(--fg-muted)' }}>
+            Already have an account?{' '}
+            <Button
+              variant="text"
+              onClick={() => navigate('/login')}
+              sx={{ 
+                color: 'var(--primary)',
+                textTransform: 'none',
+                p: 0,
+                minWidth: 'auto',
+                '&:hover': {
+                  background: 'transparent',
+                  color: 'var(--primary-600)'
+                }
+              }}
+            >
+              Sign in
+            </Button>
+          </Typography>
+        </Box>
+      </form>
+    </div>
   );
 }
