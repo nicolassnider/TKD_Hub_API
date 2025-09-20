@@ -1,8 +1,10 @@
-import React from "react";
-import ApiDetail from "../components/ApiDetail";
-import { useParams } from "react-router-dom";
+import ApiList from "../components/ApiList";
 
-export default function UserDetail() {
-  const { id } = useParams();
-  return <ApiDetail apiPath="/api/Users" id={id} />;
+export default function UsersList() {
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Users</h2>
+      <ApiList apiPath="/api/Users" titleField="fullName" />
+    </div>
+  );
 }

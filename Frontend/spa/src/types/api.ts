@@ -125,6 +125,15 @@ export interface PromotionDto {
   dojaangId: ID;
 }
 
+export interface CreatePromotionDto {
+  studentId: ID;
+  rankId: ID;
+  promotionDate: string; // ISO date
+  coachId: ID;
+  notes?: string | null;
+  dojaangId: ID;
+}
+
 export interface UserDto {
   id: ID;
   firstName: string;

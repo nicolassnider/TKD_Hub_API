@@ -1,0 +1,363 @@
+import React, { useState, useEffect } from "react";
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Typography,
+  Box,
+  Autocomplete,
+} from "@mui/material";
+import { CreatePromotionDto, PromotionDto } from "../types/api";
+import {
+  useFormData,
+  Student,
+  Coach,
+  Dojaang,
+  Rank,
+} from "../hooks/useFormData";
+import { CoachSelect, DojaangSelect, RankSelect } from "./FormFields";
+
+interface PromotionFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (promotionData: CreatePromotionDto) => Promise<void>;
+  initialData?: PromotionDto | null;
+  title: string;
+  preselectedStudentId?: number;
+}
+
+export default function PromotionForm({
+  open,
+  onClose,
+  onSubmit,
+  initialData,
+  title,
+  preselectedStudentId,
+}: PromotionFormProps) {
+  const [formData, setFormData] = useState<CreatePromotionDto>({
+    studentId: 0,
+    rankId: 0,
+    promotionDate: new Date().toISOString().split("T")[0],
+    coachId: 0,
+    notes: "",
+    dojaangId: 0,
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+  // Use the centralized form data hook
+  const { students, coaches, dojaangs, ranks } = useFormData({
+    includeStudents: true,
+    includeCoaches: true,
+    includeDojaangs: true,
+    includeRanks: true,
+    trigger: [open],
+  });
+
+  // Set initial data when editing
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        studentId: initialData.studentId,
+        rankId: initialData.rankId,
+        promotionDate: initialData.promotionDate.split("T")[0], // Convert to date input format
+        coachId: initialData.coachId,
+        notes: initialData.notes || "",
+        dojaangId: initialData.dojaangId,
+      });
+
+      // Find and set selected student
+      const student = students.find((s) => s.id === initialData.studentId);
+      setSelectedStudent(student || null);
+    } else {
+      setFormData({
+        studentId: preselectedStudentId || 0,
+        rankId: 0,
+        promotionDate: new Date().toISOString().split("T")[0],
+        coachId: 0,
+        notes: "",
+        dojaangId: 0,
+      });
+      setSelectedStudent(null);
+    }
+    setErrors({});
+  }, [initialData, open, students, preselectedStudentId]);
+
+  // Handle preselected student and auto-suggest next rank
+  useEffect(() => {
+    if (
+      preselectedStudentId &&
+      students.length > 0 &&
+      ranks.length > 0 &&
+      !initialData
+    ) {
+      const student = students.find((s) => s.id === preselectedStudentId);
+      if (student) {
+        setSelectedStudent(student);
+        setFormData((prev) => ({
+          ...prev,
+          studentId: student.id,
+        }));
+
+        // Auto-suggest next rank if student has a current rank
+        if (student.currentRankId) {
+          const currentRank = ranks.find(
+            (rank) => rank.id === student.currentRankId,
+          );
+          if (currentRank) {
+            // Find the next rank (assuming ranks are ordered by level/order)
+            const sortedRanks = ranks
+              .filter((rank) => rank.order !== undefined)
+              .sort(
+                (firstRank, secondRank) =>
+                  (firstRank.order || 0) - (secondRank.order || 0),
+              );
+
+            const currentRankIndex = sortedRanks.findIndex(
+              (rank) => rank.id === student.currentRankId,
+            );
+            const nextRank = sortedRanks[currentRankIndex + 1];
+
+            if (nextRank) {
+              setFormData((prev) => ({
+                ...prev,
+                rankId: nextRank.id,
+              }));
+            }
+          }
+        }
+      }
+    }
+  }, [preselectedStudentId, students, ranks, initialData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    const newErrors: Record<string, string> = {};
+    if (!formData.studentId) {
+      newErrors.studentId = "Student is required";
+    }
+    if (!formData.rankId) {
+      newErrors.rankId = "Rank is required";
+    }
+    if (!formData.coachId) {
+      newErrors.coachId = "Coach is required";
+    }
+    if (!formData.dojaangId) {
+      newErrors.dojaangId = "Dojaang is required";
+    }
+    if (!formData.promotionDate) {
+      newErrors.promotionDate = "Promotion date is required";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSubmit(formData);
+      onClose();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStudentChange = (student: Student | null) => {
+    setSelectedStudent(student);
+    setFormData((prev) => ({
+      ...prev,
+      studentId: student?.id || 0,
+      dojaangId: 0, // Reset dojaang when student changes
+    }));
+  };
+
+  // Get available ranks (higher than current rank)
+  const getAvailableRanks = () => {
+    if (!selectedStudent?.currentRankId) return ranks;
+
+    const currentRank = ranks.find(
+      (rank) => rank.id === selectedStudent.currentRankId,
+    );
+    if (!currentRank || currentRank.level === undefined) return ranks;
+
+    const currentRankLevel = currentRank.level;
+    return ranks.filter(
+      (rank) => rank.level !== undefined && rank.level > currentRankLevel,
+    );
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <form onSubmit={handleSubmit}>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <Autocomplete
+                options={students}
+                getOptionLabel={(student) =>
+                  `${student.firstName} ${student.lastName}${student.currentRankName ? ` (${student.currentRankName})` : ""}`
+                }
+                value={selectedStudent}
+                onChange={(_, newValue) => handleStudentChange(newValue)}
+                disabled={!!preselectedStudentId && !initialData}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      preselectedStudentId && !initialData
+                        ? "Student (Selected)"
+                        : "Student"
+                    }
+                    error={!!errors.studentId}
+                    helperText={errors.studentId}
+                    required
+                  />
+                )}
+                renderOption={(props, student) => (
+                  <Box component="li" {...props}>
+                    <Box>
+                      <Typography variant="body1">
+                        {student.firstName} {student.lastName}
+                      </Typography>
+                      {student.email && (
+                        <Typography variant="body2" color="text.secondary">
+                          {student.email}
+                        </Typography>
+                      )}
+                      {student.currentRankName && (
+                        <Typography variant="body2" color="primary">
+                          Current Rank: {student.currentRankName}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                )}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <RankSelect
+                ranks={ranks}
+                availableRanks={getAvailableRanks()}
+                value={formData.rankId}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, rankId: value }))
+                }
+                error={errors.rankId}
+                label="New Rank"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Promotion Date"
+                type="date"
+                fullWidth
+                value={formData.promotionDate}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    promotionDate: e.target.value,
+                  }))
+                }
+                error={!!errors.promotionDate}
+                helperText={errors.promotionDate}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <CoachSelect
+                coaches={coaches}
+                value={formData.coachId}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, coachId: value }))
+                }
+                error={errors.coachId}
+                label="Promoting Coach"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <DojaangSelect
+                dojaangs={dojaangs}
+                value={formData.dojaangId}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, dojaangId: value }))
+                }
+                error={errors.dojaangId}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Notes (Optional)"
+                fullWidth
+                multiline
+                rows={3}
+                value={formData.notes}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                }
+                placeholder="Add any notes about this promotion..."
+              />
+            </Grid>
+
+            {selectedStudent && (
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: "background.paper",
+                    borderRadius: 1,
+                    border: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Student Information
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Current Rank:</strong>{" "}
+                    {selectedStudent.currentRankName || "No rank assigned"}
+                  </Typography>
+                  {selectedStudent.email && (
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Email:</strong> {selectedStudent.email}
+                    </Typography>
+                  )}
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained" disabled={loading}>
+            {loading ? "Saving..." : initialData ? "Update" : "Create"}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
+}

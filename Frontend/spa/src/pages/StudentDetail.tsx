@@ -3,7 +3,10 @@ import { useParams } from "react-router-dom";
 import { fetchJson, ApiError } from "../lib/api";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 import { useRole } from "../context/RoleContext";
+import PromotionFormDialog from "../components/PromotionFormDialog";
+import { usePromotionForm } from "../hooks/usePromotionForm";
 
 type Student = {
   id: number;
@@ -17,6 +20,13 @@ export default function StudentDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { token } = useRole();
+
+  const {
+    promotionFormOpen,
+    openPromotionForm,
+    closePromotionForm,
+    handlePromotionSubmit,
+  } = usePromotionForm();
 
   useEffect(() => {
     if (!id) return;
@@ -54,7 +64,27 @@ export default function StudentDetail() {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-2">{student.fullName}</h2>
-      <div className="text-sm text-gray-700">Email: {student.email ?? "—"}</div>
+      <div className="text-sm text-gray-700 mb-4">
+        Email: {student.email ?? "—"}
+      </div>
+
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => openPromotionForm()}
+        >
+          Add Promotion
+        </Button>
+      </div>
+
+      <PromotionFormDialog
+        open={promotionFormOpen}
+        onClose={closePromotionForm}
+        onSubmit={handlePromotionSubmit}
+        preselectedStudentId={student.id}
+      />
+
       {/* placeholder for class enrollment actions */}
     </div>
   );

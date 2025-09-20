@@ -13,6 +13,9 @@ import Register from "pages/Register";
 // wrapper pages
 import ClassesList from "pages/ClassesList";
 import ClassDetail from "pages/ClassDetail";
+import ClassesManagement from "pages/ClassesManagement";
+import ClassStudentManagement from "pages/ClassStudentManagement";
+import ClassAttendanceManagement from "pages/ClassAttendanceManagement";
 import CoachesList from "pages/CoachesList";
 import CoachDetail from "pages/CoachDetail";
 import CreateCoach from "pages/CreateCoach";
@@ -20,6 +23,7 @@ import DojaangsList from "pages/DojaangsList";
 import CreateDojaang from "pages/CreateDojaang";
 import DojaangDetail from "pages/DojaangDetail";
 import PromotionsList from "pages/PromotionsList";
+import PromotionsManagement from "pages/PromotionsManagement";
 import PromotionDetail from "pages/PromotionDetail";
 import RanksList from "pages/RanksList";
 import RankDetail from "pages/RankDetail";
@@ -30,6 +34,7 @@ import UserDetail from "pages/UserDetail";
 import Dashboard from "pages/Dashboard";
 import MercadoPagoDebug from "pages/MercadoPagoDebug";
 import LoginForm from "./components/LoginForm";
+import StudentPromotionHistory from "pages/StudentPRomotionHistory";
 
 export default function App() {
   return (
@@ -59,6 +64,10 @@ export default function App() {
             <Route path="/manage" element={<DojaangAdmin />} />
 
             <Route path="/students" element={<StudentsList />} />
+            <Route
+              path="/students/:studentId/promotions"
+              element={<StudentPromotionHistory />}
+            />
             <Route path="/students/:id" element={<StudentDetail />} />
 
             <Route path="/events" element={<EventsList />} />
@@ -68,6 +77,15 @@ export default function App() {
             <Route path="/blog/:id" element={<BlogDetail />} />
 
             <Route path="/classes" element={<ClassesList />} />
+            <Route path="/classes/manage" element={<ClassesManagement />} />
+            <Route
+              path="/classes/:classId/students"
+              element={<ClassStudentManagement />}
+            />
+            <Route
+              path="/classes/:classId/attendance"
+              element={<ClassAttendanceManagement />}
+            />
             <Route path="/classes/:id" element={<ClassDetail />} />
 
             <Route path="/coaches" element={<CoachesList />} />
@@ -79,6 +97,10 @@ export default function App() {
             <Route path="/dojaangs/:id" element={<DojaangDetail />} />
 
             <Route path="/promotions" element={<PromotionsList />} />
+            <Route
+              path="/promotions/manage"
+              element={<PromotionsManagement />}
+            />
             <Route path="/promotions/:id" element={<PromotionDetail />} />
 
             <Route path="/ranks" element={<RanksList />} />

@@ -9,10 +9,8 @@ import { TrainingClassDto } from "types/api";
 export default function ClassesList() {
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Classes</h2>
-      <div className="mt-6">
-        <ClassesTable />
-      </div>
+      <h2 className="page-title">Classes</h2>
+      <ClassesTable />
     </div>
   );
 }

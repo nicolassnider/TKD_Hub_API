@@ -147,6 +147,14 @@ export default function Header() {
                 <MenuItem
                   onClick={() => {
                     handleClose();
+                    navigate("/classes/manage");
+                  }}
+                >
+                  Manage Classes
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
                     navigate("/coaches");
                   }}
                 >
@@ -167,6 +175,14 @@ export default function Header() {
                   }}
                 >
                   Promotions
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/promotions/manage");
+                  }}
+                >
+                  Manage Promotions
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
