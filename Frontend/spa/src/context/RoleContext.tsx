@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { isTokenExpired } from "../lib/auth";
+import { fetchJson, ApiError } from "../lib/api";
 
 type RoleContextType = {
   token: string | null;
@@ -120,22 +121,85 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
       setRoleLoading(false);
       return;
     }
+    // First try to validate the token with the backend 'me' endpoint so we
+    // observe server-side session state and get authoritative profile/roles.
+    (async () => {
+      try {
+        // Try common profile endpoints. Backend may expose /api/Account/me or /api/Users/me.
+        const tryPaths = [
+          "/api/Account/me",
+          "/api/Users/me",
+          "/api/Account/profile",
+        ];
+        let profile: any = null;
+        for (const p of tryPaths) {
+          try {
+            profile = await fetchJson(p);
+            if (profile) break;
+          } catch (err) {
+            // If it's a 404 just try the next path; on 401/403 we'll handle below
+            if (
+              err instanceof ApiError &&
+              (err.status === 404 || err.status === 400)
+            ) {
+              continue;
+            }
+            throw err;
+          }
+        }
 
-    // Try to parse roles from JWT if present (claims: role, roles)
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      if (payload && (payload.roles || payload.role)) {
-        const rolesFromToken: string[] = Array.isArray(payload.roles)
-          ? payload.roles
-          : typeof payload.role === "string"
-            ? [payload.role]
-            : [];
-        if (rolesFromToken.length > 0) setRole(rolesFromToken);
+        // If we received a profile, map fields to context and localStorage.
+        if (profile) {
+          // roles may be roles[] or role
+          const roles: string[] = Array.isArray(profile.roles)
+            ? profile.roles
+            : profile.role
+              ? Array.isArray(profile.role)
+                ? profile.role
+                : [profile.role]
+              : [];
+          if (roles.length > 0) setRole(roles);
+
+          const name =
+            profile.displayName ?? profile.name ?? profile.userName ?? null;
+          if (name) setDisplayName(name);
+
+          const avatar = profile.avatarUrl ?? profile.avatar ?? null;
+          if (avatar) setAvatarUrl(avatar);
+        } else {
+          // If backend didn't expose a profile, fall back to parsing JWT claims.
+          try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            if (payload && (payload.roles || payload.role)) {
+              const rolesFromToken: string[] = Array.isArray(payload.roles)
+                ? payload.roles
+                : typeof payload.role === "string"
+                  ? [payload.role]
+                  : [];
+              if (rolesFromToken.length > 0) setRole(rolesFromToken);
+            }
+            if (payload && (payload.displayName || payload.name)) {
+              setDisplayName(payload.displayName ?? payload.name ?? null);
+            }
+          } catch {
+            // ignore malformed token
+          }
+        }
+      } catch (err) {
+        // If the server rejects the token (unauthorized), clear it locally so UI updates.
+        if (
+          err instanceof ApiError &&
+          (err.status === 401 || err.status === 403)
+        ) {
+          setToken(null);
+        } else {
+          // other errors are non-fatal for startup; keep existing token and roles
+          console.warn("RoleProvider: profile validation failed:", err);
+        }
+      } finally {
+        setRoleLoading(false);
       }
-    } catch {
-      // ignore malformed token
-    }
-    setRoleLoading(false);
+    })();
   }, [token]);
 
   return (

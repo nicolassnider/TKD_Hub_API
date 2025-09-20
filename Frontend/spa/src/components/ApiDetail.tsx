@@ -15,9 +15,10 @@ import Divider from "@mui/material/Divider";
 type Props = {
   apiPath: string; // e.g. /api/Students
   id: string | number | undefined;
+  hideKeys?: string[];
 };
 
-export default function ApiDetail({ apiPath, id }: Props) {
+export default function ApiDetail({ apiPath, id, hideKeys }: Props) {
   const { token, roleLoading } = useRole();
   const [item, setItem] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,18 @@ export default function ApiDetail({ apiPath, id }: Props) {
     );
   if (error) return <Alert severity="error">Error: {error}</Alert>;
   if (!item) return <Alert severity="info">Not found.</Alert>;
+  // If the API returned a wrapper like { dojaang: { ... } } or { coach: { ... } }
+  // unwrap it for display so the details table shows the inner fields.
+  // create a displayItem which may be an unwrapped inner object when the API
+  // returns a single-key wrapper like { dojaang: { ... } }
+  let displayItem: any = item;
+  if (typeof item === "object" && !Array.isArray(item)) {
+    const keys = Object.keys(item);
+    if (keys.length === 1 && typeof (item as any)[keys[0]] === "object") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      displayItem = (item as any)[keys[0]] as any;
+    }
+  }
   const isIsoDate = (s: string) => {
     // crude ISO date detection
     return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s);
@@ -128,21 +141,23 @@ export default function ApiDetail({ apiPath, id }: Props) {
         Details
       </Typography>
       <Grid container spacing={1}>
-        {Object.entries(item).map(([k, v]) => (
-          <React.Fragment key={k}>
-            <Grid item xs={12} sm={3} md={2} sx={{ pr: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                {k}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={9} md={10}>
-              {renderValue(v)}
-            </Grid>
-            <Grid item xs={12}>
-              <Divider sx={{ my: 1 }} />
-            </Grid>
-          </React.Fragment>
-        ))}
+        {Object.entries(displayItem)
+          .filter(([k]) => !(hideKeys ?? []).includes(k))
+          .map(([k, v]) => (
+            <React.Fragment key={k}>
+              <Grid item xs={12} sm={3} md={2} sx={{ pr: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {k}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={9} md={10}>
+                {renderValue(v)}
+              </Grid>
+              <Grid item xs={12}>
+                <Divider sx={{ my: 1 }} />
+              </Grid>
+            </React.Fragment>
+          ))}
       </Grid>
     </Paper>
   );

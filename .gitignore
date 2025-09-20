@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 Frontend/spa/.env
+/Frontend/spa/src/.env

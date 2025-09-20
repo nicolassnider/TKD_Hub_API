@@ -21,6 +21,8 @@ type Props = {
   rows: any[];
   columns: Column[];
   onRowClick?: (row: any) => void;
+  onRowSelect?: (row: any) => void;
+  selectedRowId?: string | number | null;
   pageSizeOptions?: number[];
   defaultPageSize?: number;
 };
@@ -39,6 +41,8 @@ export default function ApiTable({
   onRowClick,
   pageSizeOptions = [5, 10, 25],
   defaultPageSize = 10,
+  onRowSelect,
+  selectedRowId,
 }: Props) {
   const navigate = useNavigate();
   const [orderBy, setOrderBy] = useState<string | null>(null);
@@ -102,9 +106,18 @@ export default function ApiTable({
             <TableRow
               key={r.id ?? idx}
               hover
-              style={{ cursor: onRowClick || r.id ? "pointer" : "default" }}
+              selected={
+                selectedRowId !== undefined && selectedRowId !== null
+                  ? selectedRowId === (r.id ?? idx)
+                  : false
+              }
+              style={{
+                cursor:
+                  onRowClick || onRowSelect || r.id ? "pointer" : "default",
+              }}
               onClick={() => {
                 if (onRowClick) return onRowClick(r);
+                if (onRowSelect) return onRowSelect(r);
                 if (r.id) return navigate(`${String(r.id)}`);
               }}
             >

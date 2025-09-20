@@ -20,14 +20,14 @@ export function useApiItems<T = any>(apiPath: string) {
         if (token) headers["Authorization"] = `Bearer ${token}`;
         const res = await fetchJson<any>(apiPath, { headers });
         // support several envelope shapes: array, { data: [...] }, { data: { data: [...] } }, { data: { items: [...] } }
-  let data: any[] = [];
+        let data: any[] = [];
         if (Array.isArray(res)) data = res;
         else if (Array.isArray(res?.data)) data = res.data;
         else if (Array.isArray(res?.data?.data)) data = res.data.data;
         else if (Array.isArray(res?.data?.items)) data = res.data.items;
         else data = [];
         if (!mounted) return;
-  setItems(data as T[]);
+        setItems(data as T[]);
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof ApiError ? e.message : String(e));

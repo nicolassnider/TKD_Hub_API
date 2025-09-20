@@ -54,6 +54,22 @@ export default function ManageDojaangs({ coachId }: Props) {
     let mounted = true;
     (async () => {
       try {
+        const storageKey = `manageDojaangs:${coachId}`;
+        // try to restore cached selection first
+        let cached: number[] | null = null;
+        try {
+          const raw =
+            typeof window !== "undefined"
+              ? localStorage.getItem(storageKey)
+              : null;
+          if (raw) cached = JSON.parse(raw);
+        } catch {
+          cached = null;
+        }
+        if (cached && Array.isArray(cached) && cached.length) {
+          setManaged(cached.map((x) => Number(x)).filter(Boolean));
+        }
+
         const headers = getAuthHeaders();
         const res = await fetchJson<any>(`/api/Coaches/${coachId}`, {
           headers,
@@ -69,7 +85,15 @@ export default function ManageDojaangs({ coachId }: Props) {
             .map((d: any) => Number(d?.id))
             .filter(Boolean);
         }
-        setManaged(ids);
+        // if cached exists, merge server ids with cached so new options are not lost
+        if (cached && Array.isArray(cached) && cached.length) {
+          const merged = Array.from(
+            new Set([...cached.map(Number).filter(Boolean), ...ids]),
+          );
+          setManaged(merged);
+        } else {
+          setManaged(ids);
+        }
       } catch (e) {
         // ignore — coach detail already shown elsewhere
       }
@@ -80,9 +104,19 @@ export default function ManageDojaangs({ coachId }: Props) {
   }, [coachId, token]);
 
   const toggle = (id: number) => {
-    setManaged((m) =>
-      m.includes(id) ? m.filter((x) => x !== id) : [...m, id],
-    );
+    setManaged((m) => {
+      const next = m.includes(id) ? m.filter((x) => x !== id) : [...m, id];
+      // persist current selection to localStorage so dialog preserves previous values
+      try {
+        if (typeof window !== "undefined") {
+          const storageKey = `manageDojaangs:${coachId}`;
+          localStorage.setItem(storageKey, JSON.stringify(next));
+        }
+      } catch {
+        // ignore localStorage issues
+      }
+      return next;
+    });
   };
 
   const save = async () => {
@@ -95,6 +129,13 @@ export default function ManageDojaangs({ coachId }: Props) {
         headers,
         body: JSON.stringify(managed),
       });
+      // persist saved selection
+      try {
+        if (typeof window !== "undefined") {
+          const storageKey = `manageDojaangs:${coachId}`;
+          localStorage.setItem(storageKey, JSON.stringify(managed));
+        }
+      } catch {}
       reload();
       setOpen(false);
     } catch (e) {
@@ -120,7 +161,25 @@ export default function ManageDojaangs({ coachId }: Props) {
           ids = c.managedDojaangs
             .map((d: any) => Number(d?.id))
             .filter(Boolean);
-        setManaged(ids);
+        // merge with any cached selection so previous user choices are not lost
+        try {
+          const storageKey = `manageDojaangs:${coachId}`;
+          const raw =
+            typeof window !== "undefined"
+              ? localStorage.getItem(storageKey)
+              : null;
+          const cached = raw ? JSON.parse(raw) : null;
+          if (cached && Array.isArray(cached) && cached.length) {
+            const merged = Array.from(
+              new Set([...cached.map(Number).filter(Boolean), ...ids]),
+            );
+            setManaged(merged);
+          } else {
+            setManaged(ids);
+          }
+        } catch {
+          setManaged(ids);
+        }
       } catch (e) {
         // ignore
       }

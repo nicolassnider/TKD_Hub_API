@@ -1,17 +1,17 @@
 import React from "react";
-import EditDojaang from "components/EditDojaang";
+import EditCoach from "components/EditCoach";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 
-export default function CreateDojaang() {
+export default function CreateCoach() {
   const navigate = useNavigate();
   return (
     <Box sx={{ pt: 2 }}>
       <Box sx={{ maxWidth: 1000, mx: "auto" }}>
-        <EditDojaang
-          title="Create Dojaang"
-          dojaangId={0}
-          onClose={() => navigate("/dojaangs")}
+        <EditCoach
+          title="Create Coach"
+          coachId={0}
+          onClose={() => navigate("/coaches")}
         />
       </Box>
     </Box>

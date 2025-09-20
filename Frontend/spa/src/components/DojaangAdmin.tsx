@@ -24,7 +24,7 @@ export default function DojaangAdmin() {
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   // ...existing code...
-  
+
   // fetchList is used in multiple places (initial load, refresh, after modal close)
   const fetchList = React.useCallback(async () => {
     setLoading(true);
@@ -126,16 +126,16 @@ export default function DojaangAdmin() {
         </tbody>
       </table>
 
-        <div className="mt-3">
-          {Array.isArray(role) && role.includes("Admin") && (
-            <button
-              className="px-3 py-1 bg-green-600 text-white rounded"
-              onClick={() => setEditId(0)}
-            >
-              Add Dojaang
-            </button>
-          )}
-        </div>
+      <div className="mt-3">
+        {Array.isArray(role) && role.includes("Admin") && (
+          <button
+            className="px-3 py-1 bg-green-600 text-white rounded"
+            onClick={() => setEditId(0)}
+          >
+            Add Dojaang
+          </button>
+        )}
+      </div>
 
       {editId !== null && (
         <EditDojaang

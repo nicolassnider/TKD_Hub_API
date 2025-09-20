@@ -1,8 +1,196 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button, Box, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { fetchJson, ApiError } from "../lib/api";
 import ApiDetail from "../components/ApiDetail";
-import { useParams } from "react-router-dom";
+import EditDojaang from "../components/EditDojaang";
 
 export default function DojaangDetail() {
   const { id } = useParams();
-  return <ApiDetail apiPath="/api/Dojaangs" id={id} />;
+  const navigate = useNavigate();
+  const [item, setItem] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
+  const [snack, setSnack] = useState<{
+    open: boolean;
+    severity?: "success" | "error";
+    message?: string;
+  }>({ open: false });
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetchJson<any>(`/api/Dojaangs/${id}`);
+        if (!mounted) return;
+        setItem(res?.data ?? res);
+      } catch (e) {
+        if (!mounted) return;
+        setSnack({
+          open: true,
+          severity: "error",
+          message: e instanceof ApiError ? e.message : String(e),
+        });
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  const handleReactivate = async () => {
+    if (!id) return;
+    setReactivating(true);
+    try {
+      // Preferred: call a dedicated reactivate endpoint
+      try {
+        await fetchJson(`/api/Dojaangs/${id}/reactivate`, { method: "POST" });
+      } catch (e: any) {
+        // fallback: try patch/update isActive=true
+        if (e instanceof ApiError && e.status === 404) {
+          await fetchJson(`/api/Dojaangs/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isActive: true }),
+          });
+        } else {
+          throw e;
+        }
+      }
+      setSnack({
+        open: true,
+        severity: "success",
+        message: "Dojaang reactivated",
+      });
+      // refresh detail
+      const refreshed = await fetchJson<any>(`/api/Dojaangs/${id}`);
+      setItem(refreshed?.data ?? refreshed);
+    } catch (e: any) {
+      setSnack({
+        open: true,
+        severity: "error",
+        message: e instanceof ApiError ? e.message : String(e),
+      });
+    } finally {
+      setReactivating(false);
+    }
+  };
+
+  return (
+    <Box>
+      <Box mb={2} display="flex" gap={1} alignItems="center">
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => navigate("/dojaangs")}
+        >
+          ← Back to Dojaangs
+        </Button>
+        {loading && <CircularProgress size={18} />}
+        {item && item.isActive === false ? (
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={handleReactivate}
+            disabled={reactivating}
+          >
+            {reactivating ? (
+              <CircularProgress size={16} />
+            ) : (
+              "Reactivate dojaang"
+            )}
+          </Button>
+        ) : null}
+      </Box>
+
+      {/* Title with optional inactive pill and edit action */}
+      {item ? (
+        <Box
+          mb={2}
+          display="flex"
+          alignItems="center"
+          gap={1}
+          justifyContent="space-between"
+        >
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box component="h2" sx={{ m: 0, fontSize: 20 }}>
+              {item.name}
+            </Box>
+            {item.isActive === false ? (
+              <Box>
+                <Alert
+                  severity="warning"
+                  sx={{ py: 0.4, px: 1, display: "inline-block" }}
+                >
+                  INACTIVE
+                </Alert>
+              </Box>
+            ) : null}
+          </Box>
+          <Box>
+            {!editing ? (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setEditing(true)}
+              >
+                Edit
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setEditing(false)}
+              >
+                Viewing
+              </Button>
+            )}
+          </Box>
+        </Box>
+      ) : null}
+
+      {/* Reuse EditDojaang in readOnly mode to show the same UI for details/new */}
+      <Box sx={{ pt: 2 }}>
+        <Box sx={{ maxWidth: 1000, mx: "auto" }}>
+          <EditDojaang
+            dojaangId={Number(id)}
+            initialItem={item}
+            readOnly={!editing}
+            onClose={async () => {
+              // when the editor closes (after save or cancel), re-fetch and exit edit mode
+              setEditing(false);
+              try {
+                const refreshed = await fetchJson<any>(`/api/Dojaangs/${id}`);
+                setItem(refreshed?.data ?? refreshed);
+              } catch (e) {
+                // ignore here; snack will show errors if any from other flows
+              }
+            }}
+            title={item ? item.name : undefined}
+          />
+        </Box>
+      </Box>
+
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={() => setSnack({ open: false })}
+      >
+        {snack.severity ? (
+          <Alert
+            severity={snack.severity}
+            onClose={() => setSnack({ open: false })}
+          >
+            {snack.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
+    </Box>
+  );
 }

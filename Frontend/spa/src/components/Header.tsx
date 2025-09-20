@@ -65,118 +65,201 @@ export default function Header() {
             <MenuIcon />
           </IconButton>
           <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/");
-              }}
-            >
-              Home
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/students");
-              }}
-            >
-              Students
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/events");
-              }}
-            >
-              Events
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/blog");
-              }}
-            >
-              Blog
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/classes");
-              }}
-            >
-              Classes
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/coaches");
-              }}
-            >
-              Coaches
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/dojaangs");
-              }}
-            >
-              Dojaangs
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/promotions");
-              }}
-            >
-              Promotions
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/ranks");
-              }}
-            >
-              Ranks
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/tuls");
-              }}
-            >
-              Tuls
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/users");
-              }}
-            >
-              Users
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/dashboard");
-              }}
-            >
-              Dashboard
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/payments/mercadopago");
-              }}
-            >
-              Payments
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                handleClose();
-                navigate("/manage");
-              }}
-            >
-              Manage
-            </MenuItem>
+            {/* Guests only see Events and Blog */}
+            {Array.isArray(role) && role.length === 1 && role[0] === "Guest" ? (
+              <>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/events");
+                  }}
+                >
+                  Events
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/blog");
+                  }}
+                >
+                  Blog
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/register");
+                  }}
+                >
+                  Register
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/login");
+                  }}
+                >
+                  Login
+                </MenuItem>
+              </>
+            ) : (
+              // Authenticated users: full menu
+              <>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/");
+                  }}
+                >
+                  Home
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/students");
+                  }}
+                >
+                  Students
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/events");
+                  }}
+                >
+                  Events
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/blog");
+                  }}
+                >
+                  Blog
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/classes");
+                  }}
+                >
+                  Classes
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/coaches");
+                  }}
+                >
+                  Coaches
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/dojaangs");
+                  }}
+                >
+                  Dojaangs
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/promotions");
+                  }}
+                >
+                  Promotions
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/ranks");
+                  }}
+                >
+                  Ranks
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/tuls");
+                  }}
+                >
+                  Tuls
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/users");
+                  }}
+                >
+                  Users
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/dashboard");
+                  }}
+                >
+                  Dashboard
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/payments/mercadopago");
+                  }}
+                >
+                  Payments
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/manage");
+                  }}
+                >
+                  Manage
+                </MenuItem>
+                {/* Auth actions in menu: mirror the top-right */}
+                {token ? (
+                  <>
+                    <MenuItem
+                      onClick={() => {
+                        handleClose();
+                        navigate("/");
+                      }}
+                    >
+                      {displayName ??
+                        (Array.isArray(role) ? role[0] : role) ??
+                        "User"}
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleClose();
+                        confirmLogout();
+                      }}
+                    >
+                      Logout
+                    </MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem
+                      onClick={() => {
+                        handleClose();
+                        navigate("/register");
+                      }}
+                    >
+                      Register
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleClose();
+                        navigate("/login");
+                      }}
+                    >
+                      Login
+                    </MenuItem>
+                  </>
+                )}
+              </>
+            )}
           </Menu>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             TKD Hub
@@ -188,24 +271,37 @@ export default function Header() {
               alignItems: "center",
             }}
           >
-            <Button color="inherit" onClick={() => navigate("/students")}>
-              Students
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/events")}>
-              Events
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/blog")}>
-              Blog
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/classes")}>
-              Classes
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/coaches")}>
-              Coaches
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/dojaangs")}>
-              Dojaangs
-            </Button>
+            {Array.isArray(role) && role.length === 1 && role[0] === "Guest" ? (
+              <>
+                <Button color="inherit" onClick={() => navigate("/events")}>
+                  Events
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/blog")}>
+                  Blog
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button color="inherit" onClick={() => navigate("/students")}>
+                  Students
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/events")}>
+                  Events
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/blog")}>
+                  Blog
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/classes")}>
+                  Classes
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/coaches")}>
+                  Coaches
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/dojaangs")}>
+                  Dojaangs
+                </Button>
+              </>
+            )}
           </Box>
 
           {token ? (

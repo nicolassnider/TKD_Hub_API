@@ -3,41 +3,38 @@ import { useRole } from "../context/RoleContext";
 import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
-import CoachSelector from "./CoachSelector";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import { fetchJson } from "../lib/api";
+import { fetchJson, ApiError } from "../lib/api";
 
-type DojaangPayload = {
+type CoachPayload = {
   id: number;
-  name: string;
-  address?: string;
-  location?: string;
-  phoneNumber?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  koreanName?: string;
-  koreanNamePhonetic?: string;
-  coachId?: number | null;
+  phoneNumber?: string;
+  isActive?: boolean;
+  applicationUserId?: string | null;
 };
 
-export default function EditDojaang({
-  dojaangId,
+export default function EditCoach({
+  coachId,
   onClose,
   title,
   readOnly,
   initialItem,
 }: {
-  dojaangId: number;
+  coachId: number;
   onClose: () => void;
   title?: string;
   readOnly?: boolean;
   initialItem?: any;
 }) {
   const { token } = useRole();
-  const [dojaang, setDojaang] = useState<DojaangPayload | null>(null);
+  const [coach, setCoach] = useState<CoachPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,27 +44,25 @@ export default function EditDojaang({
       setLoading(true);
       try {
         if (initialItem) {
-          setDojaang(initialItem);
+          setCoach(initialItem);
           return;
         }
-        if (dojaangId === 0) {
-          setDojaang({
+        if (coachId === 0) {
+          setCoach({
             id: 0,
-            name: "",
-            address: "",
-            location: "",
-            phoneNumber: "",
+            firstName: "",
+            lastName: "",
             email: "",
-            koreanName: "",
-            koreanNamePhonetic: "",
-            coachId: null,
+            phoneNumber: "",
+            isActive: true,
+            applicationUserId: null,
           });
           return;
         }
-
-        const fetched = await fetchJson<any>(`/api/Dojaangs/${dojaangId}`);
+        const fetched = await fetchJson<any>(`/api/Coaches/${coachId}`);
         const data = fetched?.data ?? fetched;
-        setDojaang(data);
+        const coachObj = data?.coach ?? data;
+        setCoach(coachObj);
       } catch (err: any) {
         setError(err.message || "Error");
       } finally {
@@ -75,39 +70,39 @@ export default function EditDojaang({
       }
     };
     fetchOne();
-  }, [dojaangId, token, initialItem]);
+  }, [coachId, token, initialItem]);
 
-  const handleChange = (k: keyof DojaangPayload, v: any) =>
-    setDojaang((d) => (d ? { ...d, [k]: v } : d));
+  const handleChange = (k: keyof CoachPayload, v: any) =>
+    setCoach((c) => (c ? { ...c, [k]: v } : c));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!dojaang) return;
+    if (!coach) return;
     setSaving(true);
     setError(null);
     try {
-      const payload: DojaangPayload = {
-        id: dojaang.id,
-        name: dojaang.name,
-        address: dojaang.address,
-        location: dojaang.location,
-        phoneNumber: dojaang.phoneNumber,
-        email: dojaang.email,
-        koreanName: dojaang.koreanName,
-        koreanNamePhonetic: dojaang.koreanNamePhonetic,
-        coachId: dojaang.coachId ?? null,
+      const payload: CoachPayload = {
+        id: coach.id,
+        firstName: coach.firstName,
+        lastName: coach.lastName,
+        email: coach.email,
+        phoneNumber: coach.phoneNumber,
+        isActive: coach.isActive,
+        applicationUserId: coach.applicationUserId ?? null,
       };
-      if (dojaang.id === 0) {
+
+      let res: Response;
+      if (coach.id === 0) {
         const createPayload = { ...payload } as any;
-        delete (createPayload as any).id;
-        await fetchJson(`/api/Dojaangs`, {
+        delete createPayload.id;
+        await fetchJson(`/api/Coaches`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(createPayload),
         });
         onClose();
       } else {
-        await fetchJson(`/api/Dojaangs/${dojaang.id}`, {
+        await fetchJson(`/api/Coaches/${coach.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -127,9 +122,9 @@ export default function EditDojaang({
         <CircularProgress />
       </Box>
     );
-  if (!dojaang) return <Box p={4}>No data</Box>;
+  if (!coach) return <Box p={4}>No data</Box>;
 
-  const derivedTitle = dojaang.id === 0 ? "Create Dojaang" : "Edit Dojaang";
+  const derivedTitle = coach.id === 0 ? "Create Coach" : "Edit Coach";
   const effectiveTitle = title ?? derivedTitle;
 
   return (
@@ -156,9 +151,9 @@ export default function EditDojaang({
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <TextField
-              label="Name"
-              value={dojaang.name}
-              onChange={(e) => handleChange("name", e.target.value)}
+              label="First name"
+              value={coach.firstName ?? ""}
+              onChange={(e) => handleChange("firstName", e.target.value)}
               fullWidth
               size="small"
               variant="outlined"
@@ -167,44 +162,9 @@ export default function EditDojaang({
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField
-              label="Korean Name"
-              value={dojaang.koreanName ?? ""}
-              onChange={(e) => handleChange("koreanName", e.target.value)}
-              fullWidth
-              size="small"
-              variant="outlined"
-              InputProps={{ readOnly: !!readOnly }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Korean Name (Phonetic)"
-              value={dojaang.koreanNamePhonetic ?? ""}
-              onChange={(e) =>
-                handleChange("koreanNamePhonetic", e.target.value)
-              }
-              fullWidth
-              size="small"
-              variant="outlined"
-              InputProps={{ readOnly: !!readOnly }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Address"
-              value={dojaang.address ?? ""}
-              onChange={(e) => handleChange("address", e.target.value)}
-              fullWidth
-              size="small"
-              variant="outlined"
-              InputProps={{ readOnly: !!readOnly }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Phone"
-              value={dojaang.phoneNumber ?? ""}
-              onChange={(e) => handleChange("phoneNumber", e.target.value)}
+              label="Last name"
+              value={coach.lastName ?? ""}
+              onChange={(e) => handleChange("lastName", e.target.value)}
               fullWidth
               size="small"
               variant="outlined"
@@ -214,7 +174,7 @@ export default function EditDojaang({
           <Grid item xs={12} md={6}>
             <TextField
               label="Email"
-              value={dojaang.email ?? ""}
+              value={coach.email ?? ""}
               onChange={(e) => handleChange("email", e.target.value)}
               fullWidth
               size="small"
@@ -223,11 +183,14 @@ export default function EditDojaang({
             />
           </Grid>
           <Grid item xs={12} md={6}>
-            <CoachSelector
-              value={dojaang.coachId ?? null}
-              onChange={(id) => handleChange("coachId", id)}
-              label="Assigned Coach"
-              readOnly={!!readOnly}
+            <TextField
+              label="Phone"
+              value={coach.phoneNumber ?? ""}
+              onChange={(e) => handleChange("phoneNumber", e.target.value)}
+              fullWidth
+              size="small"
+              variant="outlined"
+              InputProps={{ readOnly: !!readOnly }}
             />
           </Grid>
         </Grid>

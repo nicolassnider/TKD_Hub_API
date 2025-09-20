@@ -16,6 +16,19 @@ function getApiBase(): string {
     if (typeof window !== "undefined") {
       const env = (import.meta as any).env;
       const v = env && (env.VITE_PUBLIC_API_URL || env.VITE_API_HOST || "");
+      // Debug: show what Vite client env provides and what base we will use
+      try {
+        // avoid throwing if console is unavailable in some environments
+        // eslint-disable-next-line no-console
+        console.debug(
+          "getApiBase: import.meta.env.VITE_PUBLIC_API_URL=",
+          env?.VITE_PUBLIC_API_URL,
+          "resolvedBaseCandidate=",
+          v,
+        );
+      } catch (e) {
+        // ignore
+      }
       return (v || "").replace(/\/$/, "");
     }
   } catch {
@@ -54,7 +67,8 @@ export async function fetchJson<T = unknown>(
   if (provided instanceof Headers) {
     provided.forEach((v, k) => (finalHeaders[k] = v));
   } else if (Array.isArray(provided)) {
-    for (const [k, v] of provided as Array<[string, string]>) finalHeaders[k] = v;
+    for (const [k, v] of provided as Array<[string, string]>)
+      finalHeaders[k] = v;
   } else if (provided && typeof provided === "object") {
     Object.assign(finalHeaders, provided as Record<string, string>);
   }
@@ -62,8 +76,12 @@ export async function fetchJson<T = unknown>(
   // If no Authorization was supplied, try to load token from localStorage.
   try {
     if (!finalHeaders["Authorization"]) {
-      const stored = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      if (stored) finalHeaders["Authorization"] = stored.startsWith("Bearer ") ? stored : `Bearer ${stored}`;
+      const stored =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (stored)
+        finalHeaders["Authorization"] = stored.startsWith("Bearer ")
+          ? stored
+          : `Bearer ${stored}`;
     }
   } catch {
     // ignore any localStorage access errors
@@ -71,8 +89,23 @@ export async function fetchJson<T = unknown>(
 
   // Debug: help diagnose missing auth in dev by logging when we attach a token
   try {
-    if (typeof window !== "undefined" && (resolved as string).toLowerCase().includes("/api")) {
-      console.debug("fetchJson: Authorization header present:", !!finalHeaders["Authorization"]);
+    if (
+      typeof window !== "undefined" &&
+      (resolved as string).toLowerCase().includes("/api")
+    ) {
+      // Log presence and length (avoid printing the token itself) to help diagnose missing auth in dev
+      const authPresent = !!finalHeaders["Authorization"];
+      const authLen = finalHeaders["Authorization"]
+        ? String(finalHeaders["Authorization"]).length
+        : 0;
+      console.debug(
+        "fetchJson: url=",
+        resolved,
+        "authPresent=",
+        authPresent,
+        "authLen=",
+        authLen,
+      );
     }
   } catch {
     // ignore

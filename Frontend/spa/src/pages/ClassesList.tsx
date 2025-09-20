@@ -19,7 +19,12 @@ export default function ClassesList() {
 
 function ClassesTable() {
   const navigate = useNavigate();
-  const { items: rows, loading, error, reload } = useApiItems<TrainingClassDto>("/api/Classes");
+  const {
+    items: rows,
+    loading,
+    error,
+    reload,
+  } = useApiItems<TrainingClassDto>("/api/Classes");
 
   const weekday = (n: number) => {
     const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -29,8 +34,16 @@ function ClassesTable() {
   const cols = [
     { key: "id", label: "ID", sortable: true },
     { key: "name", label: "Name", sortable: true },
-    { key: "dojaangName", label: "Dojaang", render: (r: any) => r.dojaangName ?? "-" },
-    { key: "coachName", label: "Coach", render: (r: any) => r.coachName ?? "-" },
+    {
+      key: "dojaangName",
+      label: "Dojaang",
+      render: (r: any) => r.dojaangName ?? "-",
+    },
+    {
+      key: "coachName",
+      label: "Coach",
+      render: (r: any) => r.coachName ?? "-",
+    },
     {
       key: "schedules",
       label: "Schedules",

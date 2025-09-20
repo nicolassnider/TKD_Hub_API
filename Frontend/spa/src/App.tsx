@@ -15,6 +15,7 @@ import ClassesList from "pages/ClassesList";
 import ClassDetail from "pages/ClassDetail";
 import CoachesList from "pages/CoachesList";
 import CoachDetail from "pages/CoachDetail";
+import CreateCoach from "pages/CreateCoach";
 import DojaangsList from "pages/DojaangsList";
 import CreateDojaang from "pages/CreateDojaang";
 import DojaangDetail from "pages/DojaangDetail";
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/classes/:id" element={<ClassDetail />} />
 
             <Route path="/coaches" element={<CoachesList />} />
+            <Route path="/coaches/new" element={<CreateCoach />} />
             <Route path="/coaches/:id" element={<CoachDetail />} />
 
             <Route path="/dojaangs" element={<DojaangsList />} />
