@@ -48,10 +48,7 @@ function StudentsTable() {
     onSuccess: reload, // Refresh students list after successful promotion
   });
 
-  const handleMenuClick = (
-    event: MouseEvent<HTMLElement>,
-    student: any,
-  ) => {
+  const handleMenuClick = (event: MouseEvent<HTMLElement>, student: any) => {
     event.stopPropagation();
     setSelectedStudent(student);
     setMenuAnchor(event.currentTarget);

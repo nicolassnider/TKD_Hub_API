@@ -46,10 +46,10 @@ function DojaangsTable() {
       setShowInactive(isAdmin);
     }
   }, [roleLoading, role]);
-  
+
   // Compute isAdmin for use in render and useMemo
   const isAdmin = Array.isArray(role) && role.includes("Admin");
-  
+
   const navigate = useNavigate();
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));

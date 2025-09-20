@@ -42,7 +42,7 @@ export function truncateText(text: string, maxLength: number): string {
 // Get preview text from HTML content
 export function getHtmlPreview(
   htmlContent: string,
-  maxLength: number = 200
+  maxLength: number = 200,
 ): string {
   const plainText = stripHtml(htmlContent);
   return truncateText(plainText, maxLength);

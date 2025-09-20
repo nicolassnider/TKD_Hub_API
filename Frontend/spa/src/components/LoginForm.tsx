@@ -22,7 +22,7 @@ export default function LoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      
+
       const token = body.token ?? body.data?.token;
       const user = body.user ?? body.data?.user;
       const role = user?.role ?? (user?.roles && user.roles[0]) ?? null;

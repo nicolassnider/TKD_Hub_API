@@ -88,7 +88,7 @@ export function useFormData(
     includeCoaches?: boolean;
     includeDojaangs?: boolean;
     includeRanks?: boolean;
-  } = {}
+  } = {},
 ) {
   const {
     includeStudents = false,

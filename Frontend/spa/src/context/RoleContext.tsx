@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { isTokenExpired } from "../lib/auth";
 import { fetchJson, ApiError } from "../lib/api";
 
@@ -34,12 +40,12 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+
     const t = localStorage.getItem("token");
     const r = localStorage.getItem("role");
     const n = localStorage.getItem("displayName");
     const a = localStorage.getItem("avatarUrl");
-    
+
     // Validate token before setting it
     if (t) {
       if (isTokenExpired(t)) {
@@ -57,12 +63,13 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
         setTokenState(t);
         if (n) setDisplayNameState(n);
         if (a) setAvatarUrlState(a);
-        
+
         // Load role from localStorage if present
         if (r) {
           try {
             const parsed = JSON.parse(r);
-            if (Array.isArray(parsed) && parsed.length > 0) setRoleState(parsed);
+            if (Array.isArray(parsed) && parsed.length > 0)
+              setRoleState(parsed);
             else if (typeof parsed === "string" && parsed.length > 0)
               setRoleState([parsed]);
           } catch {
@@ -103,11 +110,17 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const getRole = useCallback(() => role, [role]);
 
-  const hasRole = useCallback((r: string) => Array.isArray(role) && role.includes(r), [role]);
+  const hasRole = useCallback(
+    (r: string) => Array.isArray(role) && role.includes(r),
+    [role],
+  );
 
   const isAdmin = useCallback(() => hasRole("Admin"), [hasRole]);
 
-  const isTeacher = useCallback(() => hasRole("Teacher") || hasRole("Coach"), [hasRole]);
+  const isTeacher = useCallback(
+    () => hasRole("Teacher") || hasRole("Coach"),
+    [hasRole],
+  );
 
   const isStudent = useCallback(() => hasRole("Student"), [hasRole]);
 

@@ -22,7 +22,7 @@ export default defineConfig({
       "..",
       "src",
       "TKDHubAPI.WebAPI",
-      "wwwroot"
+      "wwwroot",
     ),
     // Clean the output directory before building to avoid stale assets.
     emptyOutDir: true,
@@ -50,7 +50,7 @@ export default defineConfig({
               req.method,
               req.url,
               "→",
-              options.target + proxyReq.path
+              options.target + proxyReq.path,
             );
           });
         },

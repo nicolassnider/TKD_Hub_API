@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -15,7 +15,7 @@ import {
   Skeleton,
   Avatar,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   MoreVert as MoreVertIcon,
@@ -26,30 +26,34 @@ import {
   Home as HomeIcon,
   Groups as GroupsIcon,
   School as SchoolIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useClassContext } from '../context/ClassContext';
-import { EnhancedClassForm } from './EnhancedClassForm';
-import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
-import { TrainingClass, DAYS_OF_WEEK } from '../types/classes';
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { useClassContext } from "../context/ClassContext";
+import { EnhancedClassForm } from "./EnhancedClassForm";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { TrainingClass, DAYS_OF_WEEK } from "../types/classes";
 
 export const ClassList: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    classes, 
-    loading, 
-    error, 
-    fetchClasses, 
-    deleteClass, 
+  const {
+    classes,
+    loading,
+    error,
+    fetchClasses,
+    deleteClass,
     getPermissions,
-    formatScheduleDisplay 
+    formatScheduleDisplay,
   } = useClassContext();
-  
+
   const [formOpen, setFormOpen] = useState(false);
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
-  const [selectedClass, setSelectedClass] = useState<TrainingClass | null>(null);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [selectedClass, setSelectedClass] = useState<TrainingClass | null>(
+    null,
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [classToDelete, setClassToDelete] = useState<TrainingClass | null>(null);
+  const [classToDelete, setClassToDelete] = useState<TrainingClass | null>(
+    null,
+  );
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuClass, setMenuClass] = useState<TrainingClass | null>(null);
 
@@ -61,13 +65,13 @@ export const ClassList: React.FC = () => {
 
   const handleCreateClass = () => {
     setSelectedClass(null);
-    setFormMode('create');
+    setFormMode("create");
     setFormOpen(true);
   };
 
   const handleEditClass = (trainingClass: TrainingClass) => {
     setSelectedClass(trainingClass);
-    setFormMode('edit');
+    setFormMode("edit");
     setFormOpen(true);
     handleCloseMenu();
   };
@@ -86,7 +90,10 @@ export const ClassList: React.FC = () => {
     }
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, trainingClass: TrainingClass) => {
+  const handleMenuClick = (
+    event: React.MouseEvent<HTMLElement>,
+    trainingClass: TrainingClass,
+  ) => {
     setAnchorEl(event.currentTarget);
     setMenuClass(trainingClass);
   };
@@ -106,8 +113,8 @@ export const ClassList: React.FC = () => {
   };
 
   const getDayName = (day: number, short: boolean = true) => {
-    const dayInfo = DAYS_OF_WEEK.find(d => d.value === day);
-    return dayInfo ? (short ? dayInfo.short : dayInfo.label) : 'Unknown';
+    const dayInfo = DAYS_OF_WEEK.find((d) => d.value === day);
+    return dayInfo ? (short ? dayInfo.short : dayInfo.label) : "Unknown";
   };
 
   const getScheduleChips = (schedules: any[]) => {
@@ -154,9 +161,14 @@ export const ClassList: React.FC = () => {
               <Card>
                 <CardContent>
                   <Skeleton variant="text" width="60%" height={32} />
-                  <Skeleton variant="text" width="40%" height={20} sx={{ mt: 1 }} />
+                  <Skeleton
+                    variant="text"
+                    width="40%"
+                    height={20}
+                    sx={{ mt: 1 }}
+                  />
                   <Skeleton variant="rectangular" height={60} sx={{ mt: 2 }} />
-                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                  <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
                     <Skeleton variant="rectangular" width={80} height={24} />
                     <Skeleton variant="rectangular" width={60} height={24} />
                   </Box>
@@ -171,16 +183,21 @@ export const ClassList: React.FC = () => {
 
   return (
     <Box sx={{ p: 3, pb: 10 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          Training Classes
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography variant="h4">Training Classes</Typography>
         {permissions.canCreate && (
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleCreateClass}
-            sx={{ display: { xs: 'none', sm: 'flex' } }}
+            sx={{ display: { xs: "none", sm: "flex" } }}
           >
             New Class
           </Button>
@@ -195,13 +212,14 @@ export const ClassList: React.FC = () => {
 
       {classes.length === 0 && !loading ? (
         <Card>
-          <CardContent sx={{ textAlign: 'center', py: 6 }}>
-            <SchoolIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <CardContent sx={{ textAlign: "center", py: 6 }}>
+            <SchoolIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No training classes yet
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Classes are where students learn and practice. Each class has a schedule, a coach, and a location.
+              Classes are where students learn and practice. Each class has a
+              schedule, a coach, and a location.
             </Typography>
             {permissions.canCreate && (
               <Button
@@ -219,23 +237,34 @@ export const ClassList: React.FC = () => {
         <Grid container spacing={3}>
           {classes.map((trainingClass) => (
             <Grid item xs={12} md={6} lg={4} key={trainingClass.id}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  cursor: "pointer",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
                     boxShadow: 3,
-                  }
+                  },
                 }}
                 onClick={() => handleViewClass(trainingClass)}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography variant="h6" component="h2" sx={{ flexGrow: 1, mr: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      component="h2"
+                      sx={{ flexGrow: 1, mr: 1 }}
+                    >
                       {trainingClass.name}
                     </Typography>
                     <IconButton
@@ -251,23 +280,36 @@ export const ClassList: React.FC = () => {
                   </Box>
 
                   {/* Class Info */}
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <HomeIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1.5,
+                      mb: 2,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <HomeIcon
+                        sx={{ fontSize: 18, color: "text.secondary" }}
+                      />
                       <Typography variant="body2" color="text.secondary">
-                        {trainingClass.dojaangName || 'No location assigned'}
+                        {trainingClass.dojaangName || "No location assigned"}
                       </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <PersonIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <PersonIcon
+                        sx={{ fontSize: 18, color: "text.secondary" }}
+                      />
                       <Typography variant="body2" color="text.secondary">
-                        {trainingClass.coachName || 'No coach assigned'}
+                        {trainingClass.coachName || "No coach assigned"}
                       </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <GroupsIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <GroupsIcon
+                        sx={{ fontSize: 18, color: "text.secondary" }}
+                      />
                       <Typography variant="body2" color="text.secondary">
                         {trainingClass.studentCount || 0} students
                       </Typography>
@@ -278,13 +320,26 @@ export const ClassList: React.FC = () => {
 
                   {/* Schedules */}
                   <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <ScheduleIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 1,
+                      }}
+                    >
+                      <ScheduleIcon
+                        sx={{ fontSize: 18, color: "text.secondary" }}
+                      />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        fontWeight="medium"
+                      >
                         Schedule
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                    <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                       {getScheduleChips(trainingClass.schedules)}
                     </Box>
                   </Box>
@@ -302,10 +357,10 @@ export const ClassList: React.FC = () => {
           aria-label="add class"
           onClick={handleCreateClass}
           sx={{
-            position: 'fixed',
+            position: "fixed",
             bottom: 16,
             right: 16,
-            display: { xs: 'flex', sm: 'none' }
+            display: { xs: "flex", sm: "none" },
           }}
         >
           <AddIcon />
@@ -323,7 +378,9 @@ export const ClassList: React.FC = () => {
           View Details
         </MenuItem>
         {menuClass && canManageStudents(menuClass) && (
-          <MenuItem onClick={() => menuClass && handleManageStudents(menuClass)}>
+          <MenuItem
+            onClick={() => menuClass && handleManageStudents(menuClass)}
+          >
             <GroupsIcon sx={{ mr: 1 }} />
             Manage Students
           </MenuItem>
@@ -356,7 +413,7 @@ export const ClassList: React.FC = () => {
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirm}
         entityName="training class"
-        entityDescription={classToDelete?.name || ''}
+        entityDescription={classToDelete?.name || ""}
       />
     </Box>
   );

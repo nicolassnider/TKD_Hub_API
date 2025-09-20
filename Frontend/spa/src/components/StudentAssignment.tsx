@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -22,7 +22,7 @@ import {
   Grid,
   Divider,
   Avatar,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
@@ -31,9 +31,9 @@ import {
   School as SchoolIcon,
   CheckCircle as CheckCircleIcon,
   PersonAdd as PersonAddIcon,
-} from '@mui/icons-material';
-import { useClassContext } from '../context/ClassContext';
-import { StudentForAssignment } from '../types/classes';
+} from "@mui/icons-material";
+import { useClassContext } from "../context/ClassContext";
+import { StudentForAssignment } from "../types/classes";
 
 interface StudentAssignmentProps {
   open: boolean;
@@ -46,7 +46,7 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
   open,
   onClose,
   classId,
-  className
+  className,
 }) => {
   const {
     enrolledStudents,
@@ -59,8 +59,8 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
     removeStudentFromClass,
   } = useClassContext();
 
-  const [searchEnrolled, setSearchEnrolled] = useState('');
-  const [searchAvailable, setSearchAvailable] = useState('');
+  const [searchEnrolled, setSearchEnrolled] = useState("");
+  const [searchAvailable, setSearchAvailable] = useState("");
   const [assigningStudent, setAssigningStudent] = useState<number | null>(null);
   const [removingStudent, setRemovingStudent] = useState<number | null>(null);
 
@@ -76,7 +76,7 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
       setAssigningStudent(studentId);
       await assignStudentToClass(studentId, classId);
     } catch (error) {
-      console.error('Error assigning student:', error);
+      console.error("Error assigning student:", error);
     } finally {
       setAssigningStudent(null);
     }
@@ -87,33 +87,43 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
       setRemovingStudent(studentId);
       await removeStudentFromClass(studentId, classId);
     } catch (error) {
-      console.error('Error removing student:', error);
+      console.error("Error removing student:", error);
     } finally {
       setRemovingStudent(null);
     }
   };
 
-  const filterStudents = (students: StudentForAssignment[], searchTerm: string) => {
+  const filterStudents = (
+    students: StudentForAssignment[],
+    searchTerm: string,
+  ) => {
     if (!searchTerm) return students;
-    
+
     const term = searchTerm.toLowerCase();
-    return students.filter(student => 
-      student.firstName.toLowerCase().includes(term) ||
-      student.lastName.toLowerCase().includes(term) ||
-      student.email?.toLowerCase().includes(term) ||
-      student.dojaangName?.toLowerCase().includes(term)
+    return students.filter(
+      (student) =>
+        student.firstName.toLowerCase().includes(term) ||
+        student.lastName.toLowerCase().includes(term) ||
+        student.email?.toLowerCase().includes(term) ||
+        student.dojaangName?.toLowerCase().includes(term),
     );
   };
 
-  const filteredEnrolledStudents = filterStudents(enrolledStudents, searchEnrolled);
-  const filteredAvailableStudents = filterStudents(availableStudents, searchAvailable);
+  const filteredEnrolledStudents = filterStudents(
+    enrolledStudents,
+    searchEnrolled,
+  );
+  const filteredAvailableStudents = filterStudents(
+    availableStudents,
+    searchAvailable,
+  );
 
   const getStudentInitials = (student: StudentForAssignment) => {
     return `${student.firstName.charAt(0)}${student.lastName.charAt(0)}`;
   };
 
   const formatEnrollmentDate = (dateString?: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     return new Date(dateString).toLocaleDateString();
   };
 
@@ -124,28 +134,42 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
       maxWidth="lg"
       fullWidth
       PaperProps={{
-        sx: { height: '80vh' }
+        sx: { height: "80vh" },
       }}
     >
       <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <PersonAddIcon />
           Manage Students - {className}
         </Box>
       </DialogTitle>
-      
-      <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+
+      <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column" }}>
         {error && (
           <Alert severity="error" sx={{ m: 2 }}>
             {error}
           </Alert>
         )}
 
-        <Grid container sx={{ flexGrow: 1, height: '100%' }}>
+        <Grid container sx={{ flexGrow: 1, height: "100%" }}>
           {/* Enrolled Students */}
-          <Grid item xs={12} md={6} sx={{ borderRight: { md: 1 }, borderColor: 'divider' }}>
-            <Box sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{ borderRight: { md: 1 }, borderColor: "divider" }}
+          >
+            <Box
+              sx={{
+                p: 2,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
                 <CheckCircleIcon color="success" />
                 <Typography variant="h6">
                   Enrolled Students ({enrolledStudents.length})
@@ -171,7 +195,15 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
               {loading ? (
                 <Box>
                   {[...Array(3)].map((_, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 2,
+                      }}
+                    >
                       <Skeleton variant="circular" width={40} height={40} />
                       <Box sx={{ flexGrow: 1 }}>
                         <Skeleton variant="text" width="60%" />
@@ -182,26 +214,30 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                   ))}
                 </Box>
               ) : filteredEnrolledStudents.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                <Box
+                  sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
+                >
                   <SchoolIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
                   <Typography variant="body2">
-                    {searchEnrolled ? 'No students match your search' : 'No students enrolled yet'}
+                    {searchEnrolled
+                      ? "No students match your search"
+                      : "No students enrolled yet"}
                   </Typography>
                 </Box>
               ) : (
-                <List sx={{ flexGrow: 1, overflow: 'auto' }}>
+                <List sx={{ flexGrow: 1, overflow: "auto" }}>
                   {filteredEnrolledStudents.map((student) => (
                     <ListItem
                       key={student.id}
                       sx={{
                         border: 1,
-                        borderColor: 'divider',
+                        borderColor: "divider",
                         borderRadius: 1,
                         mb: 1,
-                        bgcolor: 'success.50',
+                        bgcolor: "success.50",
                       }}
                     >
-                      <Avatar sx={{ mr: 2, bgcolor: 'success.main' }}>
+                      <Avatar sx={{ mr: 2, bgcolor: "success.main" }}>
                         {getStudentInitials(student)}
                       </Avatar>
                       <ListItemText
@@ -214,16 +250,21 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                               </Typography>
                             )}
                             {student.dojaangName && (
-                              <Chip 
-                                label={student.dojaangName} 
-                                size="small" 
+                              <Chip
+                                label={student.dojaangName}
+                                size="small"
                                 variant="outlined"
                                 sx={{ mt: 0.5 }}
                               />
                             )}
                             {student.enrolledAt && (
-                              <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                                Enrolled: {formatEnrollmentDate(student.enrolledAt)}
+                              <Typography
+                                variant="caption"
+                                display="block"
+                                sx={{ mt: 0.5 }}
+                              >
+                                Enrolled:{" "}
+                                {formatEnrollmentDate(student.enrolledAt)}
                               </Typography>
                             )}
                           </Box>
@@ -249,8 +290,17 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
 
           {/* Available Students */}
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Box
+              sx={{
+                p: 2,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
                 <PersonIcon color="primary" />
                 <Typography variant="h6">
                   Available Students ({availableStudents.length})
@@ -276,7 +326,15 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
               {loading ? (
                 <Box>
                   {[...Array(3)].map((_, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 2,
+                      }}
+                    >
                       <Skeleton variant="circular" width={40} height={40} />
                       <Box sx={{ flexGrow: 1 }}>
                         <Skeleton variant="text" width="60%" />
@@ -287,26 +345,30 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                   ))}
                 </Box>
               ) : filteredAvailableStudents.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                <Box
+                  sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
+                >
                   <PersonIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
                   <Typography variant="body2">
-                    {searchAvailable ? 'No students match your search' : 'No available students'}
+                    {searchAvailable
+                      ? "No students match your search"
+                      : "No available students"}
                   </Typography>
                 </Box>
               ) : (
-                <List sx={{ flexGrow: 1, overflow: 'auto' }}>
+                <List sx={{ flexGrow: 1, overflow: "auto" }}>
                   {filteredAvailableStudents.map((student) => (
                     <ListItem
                       key={student.id}
                       sx={{
                         border: 1,
-                        borderColor: 'divider',
+                        borderColor: "divider",
                         borderRadius: 1,
                         mb: 1,
-                        bgcolor: 'background.default',
+                        bgcolor: "background.default",
                       }}
                     >
-                      <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                      <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
                         {getStudentInitials(student)}
                       </Avatar>
                       <ListItemText
@@ -319,9 +381,9 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                               </Typography>
                             )}
                             {student.dojaangName && (
-                              <Chip 
-                                label={student.dojaangName} 
-                                size="small" 
+                              <Chip
+                                label={student.dojaangName}
+                                size="small"
                                 variant="outlined"
                                 sx={{ mt: 0.5 }}
                               />
@@ -348,11 +410,9 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
           </Grid>
         </Grid>
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose}>
-          Close
-        </Button>
+        <Button onClick={onClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );

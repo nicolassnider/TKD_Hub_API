@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -13,7 +13,7 @@ import {
   MenuItem,
   Alert,
   Skeleton,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   MoreVert as MoreVertIcon,
@@ -21,19 +21,20 @@ import {
   Delete as DeleteIcon,
   Person as PersonIcon,
   AccessTime as TimeIcon,
-} from '@mui/icons-material';
-import { useBlogContext } from '../context/BlogContext';
-import { useRole } from '../context/RoleContext';
-import { BlogEditor } from './BlogEditor';
-import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
-import { BlogPost } from '../types/blog';
-import { decodeHtml, getHtmlPreview } from '../utils/htmlUtils';
+} from "@mui/icons-material";
+import { useBlogContext } from "../context/BlogContext";
+import { useRole } from "../context/RoleContext";
+import { BlogEditor } from "./BlogEditor";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { BlogPost } from "../types/blog";
+import { decodeHtml, getHtmlPreview } from "../utils/htmlUtils";
 
 export const BlogList: React.FC = () => {
-  const { posts, loading, error, deletePost, getPermissions } = useBlogContext();
+  const { posts, loading, error, deletePost, getPermissions } =
+    useBlogContext();
   const { hasRole, isAdmin, displayName } = useRole();
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
+  const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
@@ -45,13 +46,13 @@ export const BlogList: React.FC = () => {
 
   const handleCreatePost = () => {
     setSelectedPost(null);
-    setEditorMode('create');
+    setEditorMode("create");
     setEditorOpen(true);
   };
 
   const handleEditPost = (post: BlogPost) => {
     setSelectedPost(post);
-    setEditorMode('edit');
+    setEditorMode("edit");
     setEditorOpen(true);
     handleCloseMenu();
   };
@@ -70,7 +71,10 @@ export const BlogList: React.FC = () => {
     }
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, post: BlogPost) => {
+  const handleMenuClick = (
+    event: React.MouseEvent<HTMLElement>,
+    post: BlogPost,
+  ) => {
     setAnchorEl(event.currentTarget);
     setMenuPost(post);
   };
@@ -91,13 +95,13 @@ export const BlogList: React.FC = () => {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Unknown date';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    if (!dateString) return "Unknown date";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -113,9 +117,14 @@ export const BlogList: React.FC = () => {
               <Card>
                 <CardContent>
                   <Skeleton variant="text" width="60%" height={32} />
-                  <Skeleton variant="text" width="40%" height={20} sx={{ mt: 1 }} />
+                  <Skeleton
+                    variant="text"
+                    width="40%"
+                    height={20}
+                    sx={{ mt: 1 }}
+                  />
                   <Skeleton variant="rectangular" height={100} sx={{ mt: 2 }} />
-                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                  <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
                     <Skeleton variant="rectangular" width={60} height={20} />
                     <Skeleton variant="rectangular" width={80} height={20} />
                   </Box>
@@ -130,16 +139,21 @@ export const BlogList: React.FC = () => {
 
   return (
     <Box sx={{ p: 3, pb: 10 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          Blog Posts
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography variant="h4">Blog Posts</Typography>
         {permissions.canCreate && (
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleCreatePost}
-            sx={{ display: { xs: 'none', sm: 'flex' } }}
+            sx={{ display: { xs: "none", sm: "flex" } }}
           >
             New Post
           </Button>
@@ -154,7 +168,7 @@ export const BlogList: React.FC = () => {
 
       {posts.length === 0 && !loading ? (
         <Card>
-          <CardContent sx={{ textAlign: 'center', py: 6 }}>
+          <CardContent sx={{ textAlign: "center", py: 6 }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No blog posts yet
             </Typography>
@@ -174,21 +188,32 @@ export const BlogList: React.FC = () => {
         <Grid container spacing={3}>
           {posts.map((post) => (
             <Grid item xs={12} md={6} lg={4} key={post.id}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
                     boxShadow: 3,
-                  }
+                  },
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography variant="h6" component="h2" sx={{ flexGrow: 1, mr: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      component="h2"
+                      sx={{ flexGrow: 1, mr: 1 }}
+                    >
                       {decodeHtml(post.title)}
                     </Typography>
                     {(canEditPost(post) || canDeletePost(post)) && (
@@ -201,35 +226,57 @@ export const BlogList: React.FC = () => {
                     )}
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 2,
+                    }}
+                  >
+                    <PersonIcon
+                      sx={{ fontSize: 16, color: "text.secondary" }}
+                    />
                     <Typography variant="body2" color="text.secondary">
                       {post.authorName}
                     </Typography>
-                    <Chip 
-                      label={hasRole('Admin') ? 'Admin' : hasRole('Coach') ? 'Coach' : 'Member'} 
-                      size="small" 
+                    <Chip
+                      label={
+                        hasRole("Admin")
+                          ? "Admin"
+                          : hasRole("Coach")
+                            ? "Coach"
+                            : "Member"
+                      }
+                      size="small"
                       variant="outlined"
-                      sx={{ ml: 'auto' }}
+                      sx={{ ml: "auto" }}
                     />
                   </Box>
 
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
                       mb: 2,
-                      display: '-webkit-box',
+                      display: "-webkit-box",
                       WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
                     }}
                   >
                     {getHtmlPreview(post.content, 150)}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto' }}>
-                    <TimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mt: "auto",
+                    }}
+                  >
+                    <TimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                     <Typography variant="caption" color="text.secondary">
                       {formatDate(post.createdAt)}
                     </Typography>
@@ -248,10 +295,10 @@ export const BlogList: React.FC = () => {
           aria-label="add post"
           onClick={handleCreatePost}
           sx={{
-            position: 'fixed',
+            position: "fixed",
             bottom: 16,
             right: 16,
-            display: { xs: 'flex', sm: 'none' }
+            display: { xs: "flex", sm: "none" },
           }}
         >
           <AddIcon />
@@ -292,7 +339,7 @@ export const BlogList: React.FC = () => {
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirm}
         entityName="blog post"
-        entityDescription={postToDelete?.title || ''}
+        entityDescription={postToDelete?.title || ""}
       />
     </Box>
   );

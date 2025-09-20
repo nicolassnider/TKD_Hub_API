@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -13,7 +13,7 @@ import {
   MenuItem,
   Breadcrumbs,
   Link,
-} from '@mui/material';
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   MoreVert as MoreVertIcon,
@@ -22,19 +22,20 @@ import {
   Person as PersonIcon,
   AccessTime as AccessTimeIcon,
   CalendarToday as CalendarIcon,
-} from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useBlogContext } from '../context/BlogContext';
-import { useRole } from '../context/RoleContext';
-import { BlogEditor } from './BlogEditor';
-import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
-import { BlogPost } from '../types/blog';
-import { decodeHtml } from '../utils/htmlUtils';
+} from "@mui/icons-material";
+import { useNavigate, useParams } from "react-router-dom";
+import { useBlogContext } from "../context/BlogContext";
+import { useRole } from "../context/RoleContext";
+import { BlogEditor } from "./BlogEditor";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { BlogPost } from "../types/blog";
+import { decodeHtml } from "../utils/htmlUtils";
 
 export const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentPost, loading, error, fetchPost, deletePost, getPermissions } = useBlogContext();
+  const { currentPost, loading, error, fetchPost, deletePost, getPermissions } =
+    useBlogContext();
   const { hasRole, displayName } = useRole();
   const [editorOpen, setEditorOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -47,7 +48,7 @@ export const BlogDetail: React.FC = () => {
   }, [id, fetchPost]);
 
   const handleBack = () => {
-    navigate('/blog');
+    navigate("/blog");
   };
 
   const handleEdit = () => {
@@ -64,7 +65,7 @@ export const BlogDetail: React.FC = () => {
     if (currentPost) {
       await deletePost(currentPost.id);
       setDeleteDialogOpen(false);
-      navigate('/blog');
+      navigate("/blog");
     }
   };
 
@@ -77,28 +78,28 @@ export const BlogDetail: React.FC = () => {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Unknown date';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    if (!dateString) return "Unknown date";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const formatDateOnly = (dateString?: string) => {
-    if (!dateString) return 'Unknown date';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    if (!dateString) return "Unknown date";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   if (loading) {
     return (
-      <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+      <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
         <Skeleton variant="text" width={200} height={32} sx={{ mb: 2 }} />
         <Skeleton variant="text" width="100%" height={48} sx={{ mb: 2 }} />
         <Skeleton variant="text" width="60%" height={24} sx={{ mb: 3 }} />
@@ -109,7 +110,7 @@ export const BlogDetail: React.FC = () => {
 
   if (error) {
     return (
-      <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+      <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
@@ -122,7 +123,7 @@ export const BlogDetail: React.FC = () => {
 
   if (!currentPost) {
     return (
-      <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+      <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
         <Alert severity="info" sx={{ mb: 2 }}>
           Blog post not found
         </Alert>
@@ -136,7 +137,7 @@ export const BlogDetail: React.FC = () => {
   const permissions = getPermissions(currentPost);
 
   return (
-    <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+    <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 3 }}>
         <Link
@@ -146,7 +147,7 @@ export const BlogDetail: React.FC = () => {
             e.preventDefault();
             handleBack();
           }}
-          sx={{ cursor: 'pointer' }}
+          sx={{ cursor: "pointer" }}
         >
           Blog
         </Link>
@@ -156,44 +157,66 @@ export const BlogDetail: React.FC = () => {
       </Breadcrumbs>
 
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3 }}>
         <IconButton onClick={handleBack} sx={{ mt: -1 }}>
           <ArrowBackIcon />
         </IconButton>
-        
+
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="h4" component="h1" gutterBottom>
             {decodeHtml(currentPost.title)}
           </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PersonIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <PersonIcon sx={{ fontSize: 20, color: "text.secondary" }} />
               <Typography variant="body2" color="text.secondary">
-                {currentPost.authorName || 'Unknown Author'}
+                {currentPost.authorName || "Unknown Author"}
               </Typography>
-              <Chip 
-                label={hasRole('Admin') ? 'Admin' : hasRole('Coach') ? 'Coach' : 'Member'} 
-                size="small" 
-                color={hasRole('Admin') ? 'error' : hasRole('Coach') ? 'primary' : 'default'}
+              <Chip
+                label={
+                  hasRole("Admin")
+                    ? "Admin"
+                    : hasRole("Coach")
+                      ? "Coach"
+                      : "Member"
+                }
+                size="small"
+                color={
+                  hasRole("Admin")
+                    ? "error"
+                    : hasRole("Coach")
+                      ? "primary"
+                      : "default"
+                }
               />
             </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CalendarIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <CalendarIcon sx={{ fontSize: 20, color: "text.secondary" }} />
               <Typography variant="body2" color="text.secondary">
                 {formatDateOnly(currentPost.createdAt)}
               </Typography>
             </Box>
-            
-            {currentPost.updatedAt && currentPost.updatedAt !== currentPost.createdAt && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <AccessTimeIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
-                  Updated {formatDate(currentPost.updatedAt)}
-                </Typography>
-              </Box>
-            )}
+
+            {currentPost.updatedAt &&
+              currentPost.updatedAt !== currentPost.createdAt && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <AccessTimeIcon
+                    sx={{ fontSize: 20, color: "text.secondary" }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    Updated {formatDate(currentPost.updatedAt)}
+                  </Typography>
+                </Box>
+              )}
           </Box>
         </Box>
 
@@ -207,43 +230,43 @@ export const BlogDetail: React.FC = () => {
       <Divider sx={{ mb: 3 }} />
 
       {/* Content */}
-      <Paper 
-        variant="outlined" 
-        sx={{ 
+      <Paper
+        variant="outlined"
+        sx={{
           p: 4,
           minHeight: 300,
-          '& p': { mb: 2 },
-          '& h1, & h2, & h3, & h4, & h5, & h6': { mt: 3, mb: 1.5 },
-          '& ul, & ol': { pl: 3, mb: 2 },
-          '& li': { mb: 0.5 },
-          '& blockquote': { 
-            borderLeft: '4px solid #ccc', 
-            pl: 2, 
-            ml: 1, 
-            fontStyle: 'italic',
-            color: 'text.secondary'
+          "& p": { mb: 2 },
+          "& h1, & h2, & h3, & h4, & h5, & h6": { mt: 3, mb: 1.5 },
+          "& ul, & ol": { pl: 3, mb: 2 },
+          "& li": { mb: 0.5 },
+          "& blockquote": {
+            borderLeft: "4px solid #ccc",
+            pl: 2,
+            ml: 1,
+            fontStyle: "italic",
+            color: "text.secondary",
           },
-          '& code': { 
-            backgroundColor: 'grey.100', 
-            px: 1, 
-            py: 0.5, 
+          "& code": {
+            backgroundColor: "grey.100",
+            px: 1,
+            py: 0.5,
             borderRadius: 1,
-            fontSize: '0.875em',
-            fontFamily: 'monospace'
+            fontSize: "0.875em",
+            fontFamily: "monospace",
           },
-          '& pre': { 
-            backgroundColor: 'grey.100', 
-            p: 2, 
-            borderRadius: 1, 
-            overflow: 'auto',
-            mb: 2
+          "& pre": {
+            backgroundColor: "grey.100",
+            p: 2,
+            borderRadius: 1,
+            overflow: "auto",
+            mb: 2,
           },
-          '& a': { 
-            color: 'primary.main',
-            textDecoration: 'none',
-            '&:hover': { textDecoration: 'underline' }
+          "& a": {
+            color: "primary.main",
+            textDecoration: "none",
+            "&:hover": { textDecoration: "underline" },
           },
-          '& img': { maxWidth: '100%', height: 'auto' }
+          "& img": { maxWidth: "100%", height: "auto" },
         }}
       >
         <div dangerouslySetInnerHTML={{ __html: currentPost.content }} />

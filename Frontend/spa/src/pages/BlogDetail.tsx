@@ -92,7 +92,10 @@ export default function BlogDetail() {
   };
 
   const handleDelete = async () => {
-    if (!post || !window.confirm("Are you sure you want to delete this blog post?")) {
+    if (
+      !post ||
+      !window.confirm("Are you sure you want to delete this blog post?")
+    ) {
       return;
     }
     try {
@@ -104,12 +107,12 @@ export default function BlogDetail() {
   };
 
   if (loading) return <BlogDetailSkeleton />;
-  
+
   if (error) {
     return (
       <Box>
-        <Button 
-          startIcon={<ArrowBack />} 
+        <Button
+          startIcon={<ArrowBack />}
           onClick={() => navigate("/blog")}
           sx={{ mb: 3 }}
         >
@@ -119,12 +122,12 @@ export default function BlogDetail() {
       </Box>
     );
   }
-  
+
   if (!post) {
     return (
       <Box>
-        <Button 
-          startIcon={<ArrowBack />} 
+        <Button
+          startIcon={<ArrowBack />}
           onClick={() => navigate("/blog")}
           sx={{ mb: 3 }}
         >
@@ -138,8 +141,8 @@ export default function BlogDetail() {
   return (
     <Box>
       {/* Back button */}
-      <Button 
-        startIcon={<ArrowBack />} 
+      <Button
+        startIcon={<ArrowBack />}
         onClick={() => navigate("/blog")}
         sx={{ mb: 3 }}
       >
@@ -147,24 +150,29 @@ export default function BlogDetail() {
       </Button>
 
       {/* Main content */}
-      <Paper 
+      <Paper
         elevation={0}
-        sx={{ 
+        sx={{
           p: { xs: 3, sm: 4 },
           border: 1,
-          borderColor: 'divider',
-          borderRadius: 2
+          borderColor: "divider",
+          borderRadius: 2,
         }}
       >
         {/* Author info and metadata */}
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={3}
+        >
           <Box display="flex" alignItems="center">
-            <Avatar 
-              sx={{ 
-                width: 48, 
-                height: 48, 
-                mr: 2, 
-                bgcolor: 'primary.main' 
+            <Avatar
+              sx={{
+                width: 48,
+                height: 48,
+                mr: 2,
+                bgcolor: "primary.main",
               }}
             >
               <Person />
@@ -174,21 +182,25 @@ export default function BlogDetail() {
                 {post.authorName}
               </Typography>
               <Box display="flex" alignItems="center" gap={1}>
-                <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <CalendarToday sx={{ fontSize: 16, color: "text.secondary" }} />
                 <Typography variant="body2" color="text.secondary">
-                  {post.createdAt && new Date(post.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {post.createdAt &&
+                    new Date(post.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   {post.updatedAt && post.updatedAt !== post.createdAt && (
-                    <span> (Updated {new Date(post.updatedAt).toLocaleDateString()})</span>
+                    <span>
+                      {" "}
+                      (Updated {new Date(post.updatedAt).toLocaleDateString()})
+                    </span>
                   )}
                 </Typography>
               </Box>
             </Box>
           </Box>
-          
+
           <Box display="flex" alignItems="center" gap={1}>
             {!post.isActive && (
               <Chip label="Inactive" size="small" color="warning" />
@@ -209,15 +221,15 @@ export default function BlogDetail() {
         <Divider sx={{ mb: 3 }} />
 
         {/* Title */}
-        <Typography 
-          variant="h3" 
-          component="h1" 
+        <Typography
+          variant="h3"
+          component="h1"
           gutterBottom
-          sx={{ 
+          sx={{
             fontWeight: 700,
             lineHeight: 1.2,
             mb: 3,
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+            fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
           }}
         >
           {post.title}
@@ -226,55 +238,55 @@ export default function BlogDetail() {
         {/* Content */}
         <Box
           sx={{
-            '& p': { 
-              mb: 2, 
+            "& p": {
+              mb: 2,
               lineHeight: 1.7,
-              fontSize: '1.1rem'
+              fontSize: "1.1rem",
             },
-            '& h1, & h2, & h3, & h4, & h5, & h6': {
+            "& h1, & h2, & h3, & h4, & h5, & h6": {
               mt: 3,
               mb: 2,
-              fontWeight: 600
+              fontWeight: 600,
             },
-            '& ul, & ol': {
+            "& ul, & ol": {
               mb: 2,
-              pl: 3
+              pl: 3,
             },
-            '& li': {
-              mb: 0.5
+            "& li": {
+              mb: 0.5,
             },
-            '& blockquote': {
+            "& blockquote": {
               borderLeft: 4,
-              borderColor: 'primary.main',
+              borderColor: "primary.main",
               pl: 2,
               ml: 0,
-              fontStyle: 'italic',
-              bgcolor: 'grey.50',
+              fontStyle: "italic",
+              bgcolor: "grey.50",
               p: 2,
-              borderRadius: 1
+              borderRadius: 1,
             },
-            '& code': {
-              bgcolor: 'grey.100',
+            "& code": {
+              bgcolor: "grey.100",
               px: 1,
               py: 0.5,
               borderRadius: 1,
-              fontFamily: 'monospace'
+              fontFamily: "monospace",
             },
-            '& pre': {
-              bgcolor: 'grey.100',
+            "& pre": {
+              bgcolor: "grey.100",
               p: 2,
               borderRadius: 1,
-              overflow: 'auto',
-              '& code': {
-                bgcolor: 'transparent',
-                p: 0
-              }
+              overflow: "auto",
+              "& code": {
+                bgcolor: "transparent",
+                p: 0,
+              },
             },
-            '& img': {
-              maxWidth: '100%',
-              height: 'auto',
-              borderRadius: 1
-            }
+            "& img": {
+              maxWidth: "100%",
+              height: "auto",
+              borderRadius: 1,
+            },
           }}
           dangerouslySetInnerHTML={{ __html: post.content }}
         />

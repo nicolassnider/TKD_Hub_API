@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -15,7 +15,7 @@ import {
   CardContent,
   Chip,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Person as PersonIcon,
   Edit as EditIcon,
@@ -25,16 +25,15 @@ import {
   Groups as GroupsIcon,
   CalendarToday as CalendarIcon,
   TrendingUp as TrendingUpIcon,
-} from '@mui/icons-material';
-import { useProfile } from '../context/ProfileContext';
-import { useRole } from '../context/RoleContext';
+} from "@mui/icons-material";
+import { useProfile } from "../context/ProfileContext";
+import { useRole } from "../context/RoleContext";
 
 // We'll create these components in the next steps
 
-
-import { CoachClassesSection } from 'components/CoachClassesSection';
-import { StudentClassSection } from 'components/StudentClassSection';
-import { PaymentSection } from 'components/PaymentSection';
+import { CoachClassesSection } from "components/CoachClassesSection";
+import { StudentClassSection } from "components/StudentClassSection";
+import { PaymentSection } from "components/PaymentSection";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -42,7 +41,12 @@ interface TabPanelProps {
   value: number;
 }
 
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other }) => {
+const TabPanel: React.FC<TabPanelProps> = ({
+  children,
+  value,
+  index,
+  ...other
+}) => {
   return (
     <div
       role="tabpanel"
@@ -51,11 +55,7 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
       aria-labelledby={`profile-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
 };
@@ -72,7 +72,7 @@ export const ProfilePage: React.FC = () => {
     getDisplayName,
     getProfilePicture,
   } = useProfile();
-  
+
   const { effectiveRole } = useRole();
   const [tabValue, setTabValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
@@ -82,22 +82,22 @@ export const ProfilePage: React.FC = () => {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Not set';
+    if (!dateString) return "Not set";
     return new Date(dateString).toLocaleDateString();
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
-      case 'Paid':
-        return 'success';
-      case 'Pending':
-        return 'warning';
-      case 'Overdue':
-      case 'Suspended':
-        return 'error';
+      case "Active":
+      case "Paid":
+        return "success";
+      case "Pending":
+        return "warning";
+      case "Overdue":
+      case "Suspended":
+        return "error";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -107,9 +107,20 @@ export const ProfilePage: React.FC = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
                 <Skeleton variant="circular" width={120} height={120} />
-                <Skeleton variant="text" width={200} height={32} sx={{ mt: 2 }} />
+                <Skeleton
+                  variant="text"
+                  width={200}
+                  height={32}
+                  sx={{ mt: 2 }}
+                />
                 <Skeleton variant="text" width={150} height={24} />
               </Box>
             </Paper>
@@ -138,23 +149,21 @@ export const ProfilePage: React.FC = () => {
   if (!profile) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="info">
-          Profile information not available
-        </Alert>
+        <Alert severity="info">Profile information not available</Alert>
       </Container>
     );
   }
 
   // Determine which tabs to show based on user roles
   const tabs = [];
-  
+
   if (isCoach()) {
-    tabs.push({ label: 'My Classes', icon: <ClassIcon />, value: 'coach' });
+    tabs.push({ label: "My Classes", icon: <ClassIcon />, value: "coach" });
   }
-  
+
   if (isStudent()) {
-    tabs.push({ label: 'My Class', icon: <SchoolIcon />, value: 'student' });
-    tabs.push({ label: 'Payments', icon: <PaymentIcon />, value: 'payments' });
+    tabs.push({ label: "My Class", icon: <SchoolIcon />, value: "student" });
+    tabs.push({ label: "Payments", icon: <PaymentIcon />, value: "payments" });
   }
 
   return (
@@ -163,30 +172,49 @@ export const ProfilePage: React.FC = () => {
         {/* Profile Header */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <Avatar
                 src={getProfilePicture()}
                 sx={{ width: 120, height: 120, mb: 2 }}
               >
                 <PersonIcon sx={{ fontSize: 60 }} />
               </Avatar>
-              
-              <Typography variant="h5" component="h1" gutterBottom textAlign="center">
+
+              <Typography
+                variant="h5"
+                component="h1"
+                gutterBottom
+                textAlign="center"
+              >
                 {getDisplayName()}
               </Typography>
-              
-              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  mb: 2,
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                }}
+              >
                 {profile.roles.map((role) => (
                   <Chip
                     key={role}
                     label={role}
-                    color={role === effectiveRole() ? 'primary' : 'default'}
+                    color={role === effectiveRole() ? "primary" : "default"}
                     size="small"
                   />
                 ))}
               </Box>
-              
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+
+              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                 <Chip
                   label={profile.membershipStatus}
                   color={getStatusColor(profile.membershipStatus) as any}
@@ -212,23 +240,26 @@ export const ProfilePage: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 Quick Stats
               </Typography>
-              
+
               {profileStats && (
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <Card variant="outlined" sx={{ textAlign: 'center', p: 1 }}>
+                    <Card variant="outlined" sx={{ textAlign: "center", p: 1 }}>
                       <Typography variant="h6" color="primary">
                         {profileStats.totalClasses}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {isCoach() ? 'Classes Managed' : 'Classes Enrolled'}
+                        {isCoach() ? "Classes Managed" : "Classes Enrolled"}
                       </Typography>
                     </Card>
                   </Grid>
-                  
+
                   {isCoach() && profileStats.totalStudents && (
                     <Grid item xs={6}>
-                      <Card variant="outlined" sx={{ textAlign: 'center', p: 1 }}>
+                      <Card
+                        variant="outlined"
+                        sx={{ textAlign: "center", p: 1 }}
+                      >
                         <Typography variant="h6" color="primary">
                           {profileStats.totalStudents}
                         </Typography>
@@ -238,10 +269,13 @@ export const ProfilePage: React.FC = () => {
                       </Card>
                     </Grid>
                   )}
-                  
+
                   {isStudent() && (
                     <Grid item xs={6}>
-                      <Card variant="outlined" sx={{ textAlign: 'center', p: 1 }}>
+                      <Card
+                        variant="outlined"
+                        sx={{ textAlign: "center", p: 1 }}
+                      >
                         <Typography variant="h6" color="primary">
                           {Math.round(profileStats.attendanceRate || 0)}%
                         </Typography>
@@ -261,32 +295,33 @@ export const ProfilePage: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Contact Information
             </Typography>
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
               <Typography variant="body2">
                 <strong>Email:</strong> {profile.email}
               </Typography>
-              
+
               {profile.phoneNumber && (
                 <Typography variant="body2">
                   <strong>Phone:</strong> {profile.phoneNumber}
                 </Typography>
               )}
-              
+
               {profile.dojaangName && (
                 <Typography variant="body2">
                   <strong>Dojaang:</strong> {profile.dojaangName}
                 </Typography>
               )}
-              
+
               {profile.beltLevel && (
                 <Typography variant="body2">
                   <strong>Belt Level:</strong> {profile.beltLevel}
                 </Typography>
               )}
-              
+
               <Typography variant="body2">
-                <strong>Member Since:</strong> {formatDate(profile.membershipStartDate)}
+                <strong>Member Since:</strong>{" "}
+                {formatDate(profile.membershipStartDate)}
               </Typography>
             </Box>
           </Paper>
@@ -294,11 +329,15 @@ export const ProfilePage: React.FC = () => {
 
         {/* Main Content */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ height: 'fit-content' }}>
+          <Paper sx={{ height: "fit-content" }}>
             {tabs.length > 0 && (
               <>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <Tabs value={tabValue} onChange={handleTabChange} aria-label="profile tabs">
+                <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                  <Tabs
+                    value={tabValue}
+                    onChange={handleTabChange}
+                    aria-label="profile tabs"
+                  >
                     {tabs.map((tab, index) => (
                       <Tab
                         key={tab.value}
@@ -314,21 +353,30 @@ export const ProfilePage: React.FC = () => {
 
                 {/* Coach Classes Tab */}
                 {isCoach() && (
-                  <TabPanel value={tabValue} index={tabs.findIndex(t => t.value === 'coach')}>
+                  <TabPanel
+                    value={tabValue}
+                    index={tabs.findIndex((t) => t.value === "coach")}
+                  >
                     <CoachClassesSection />
                   </TabPanel>
                 )}
 
                 {/* Student Class Tab */}
                 {isStudent() && (
-                  <TabPanel value={tabValue} index={tabs.findIndex(t => t.value === 'student')}>
+                  <TabPanel
+                    value={tabValue}
+                    index={tabs.findIndex((t) => t.value === "student")}
+                  >
                     <StudentClassSection />
                   </TabPanel>
                 )}
 
                 {/* Payments Tab */}
                 {isStudent() && (
-                  <TabPanel value={tabValue} index={tabs.findIndex(t => t.value === 'payments')}>
+                  <TabPanel
+                    value={tabValue}
+                    index={tabs.findIndex((t) => t.value === "payments")}
+                  >
                     <PaymentSection />
                   </TabPanel>
                 )}
@@ -337,8 +385,10 @@ export const ProfilePage: React.FC = () => {
 
             {/* No Role-Specific Content */}
             {tabs.length === 0 && (
-              <Box sx={{ p: 3, textAlign: 'center' }}>
-                <PersonIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Box sx={{ p: 3, textAlign: "center" }}>
+                <PersonIcon
+                  sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   Welcome to Your Profile
                 </Typography>

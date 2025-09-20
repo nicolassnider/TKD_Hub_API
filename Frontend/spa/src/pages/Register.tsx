@@ -77,17 +77,22 @@ export default function Register() {
   return (
     <div className="center-vh">
       <form onSubmit={handleSubmit} className="auth-card">
-        <Typography variant="h4" component="h2" className="gradient-text" sx={{ mb: 3, textAlign: 'center' }}>
+        <Typography
+          variant="h4"
+          component="h2"
+          className="gradient-text"
+          sx={{ mb: 3, textAlign: "center" }}
+        >
           Join TKD Hub
         </Typography>
-        
+
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
           <TextField
             label="First Name"
             placeholder="First name"
@@ -98,12 +103,12 @@ export default function Register() {
             className="auth-input"
             InputProps={{
               style: {
-                background: 'var(--surface)',
-                color: 'var(--fg)',
-              }
+                background: "var(--surface)",
+                color: "var(--fg)",
+              },
             }}
             InputLabelProps={{
-              style: { color: 'var(--fg-muted)' }
+              style: { color: "var(--fg-muted)" },
             }}
           />
           <TextField
@@ -116,12 +121,12 @@ export default function Register() {
             className="auth-input"
             InputProps={{
               style: {
-                background: 'var(--surface)',
-                color: 'var(--fg)',
-              }
+                background: "var(--surface)",
+                color: "var(--fg)",
+              },
             }}
             InputLabelProps={{
-              style: { color: 'var(--fg-muted)' }
+              style: { color: "var(--fg-muted)" },
             }}
           />
         </Box>
@@ -138,12 +143,12 @@ export default function Register() {
           sx={{ mb: 3 }}
           InputProps={{
             style: {
-              background: 'var(--surface)',
-              color: 'var(--fg)',
-            }
+              background: "var(--surface)",
+              color: "var(--fg)",
+            },
           }}
           InputLabelProps={{
-            style: { color: 'var(--fg-muted)' }
+            style: { color: "var(--fg-muted)" },
           }}
         />
 
@@ -159,12 +164,12 @@ export default function Register() {
           sx={{ mb: 3 }}
           InputProps={{
             style: {
-              background: 'var(--surface)',
-              color: 'var(--fg)',
-            }
+              background: "var(--surface)",
+              color: "var(--fg)",
+            },
           }}
           InputLabelProps={{
-            style: { color: 'var(--fg-muted)' }
+            style: { color: "var(--fg-muted)" },
           }}
         />
 
@@ -180,12 +185,12 @@ export default function Register() {
           sx={{ mb: 4 }}
           InputProps={{
             style: {
-              background: 'var(--surface)',
-              color: 'var(--fg)',
-            }
+              background: "var(--surface)",
+              color: "var(--fg)",
+            },
           }}
           InputLabelProps={{
-            style: { color: 'var(--fg-muted)' }
+            style: { color: "var(--fg-muted)" },
           }}
         />
 
@@ -199,29 +204,29 @@ export default function Register() {
         >
           {loading ? (
             <>
-              <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
+              <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
               Creating Account...
             </>
           ) : (
-            'Create Account'
+            "Create Account"
           )}
         </Button>
 
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="body2" sx={{ color: 'var(--fg-muted)' }}>
-            Already have an account?{' '}
+        <Box sx={{ textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "var(--fg-muted)" }}>
+            Already have an account?{" "}
             <Button
               variant="text"
-              onClick={() => navigate('/login')}
-              sx={{ 
-                color: 'var(--primary)',
-                textTransform: 'none',
+              onClick={() => navigate("/login")}
+              sx={{
+                color: "var(--primary)",
+                textTransform: "none",
                 p: 0,
-                minWidth: 'auto',
-                '&:hover': {
-                  background: 'transparent',
-                  color: 'var(--primary-600)'
-                }
+                minWidth: "auto",
+                "&:hover": {
+                  background: "transparent",
+                  color: "var(--primary-600)",
+                },
               }}
             >
               Sign in
