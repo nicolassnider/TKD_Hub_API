@@ -1,5 +1,4 @@
-"use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { isTokenExpired } from "../lib/auth";
 import { fetchJson, ApiError } from "../lib/api";
 
@@ -35,25 +34,46 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
     const t = localStorage.getItem("token");
     const r = localStorage.getItem("role");
     const n = localStorage.getItem("displayName");
     const a = localStorage.getItem("avatarUrl");
-    if (t) setTokenState(t);
-    if (n) setDisplayNameState(n);
-    if (a) setAvatarUrlState(a);
-
-    // Load role from localStorage if present
-    if (r) {
-      try {
-        const parsed = JSON.parse(r);
-        if (Array.isArray(parsed) && parsed.length > 0) setRoleState(parsed);
-        else if (typeof parsed === "string" && parsed.length > 0)
-          setRoleState([parsed]);
-      } catch {
-        // fallback to string value
-        setRoleState([r]);
+    
+    // Validate token before setting it
+    if (t) {
+      if (isTokenExpired(t)) {
+        // Token is expired, clear all auth data
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("displayName");
+        localStorage.removeItem("avatarUrl");
+        setTokenState(null);
+        setRoleState(["Guest"]);
+        setDisplayNameState(null);
+        setAvatarUrlState(null);
+      } else {
+        // Token is valid, restore auth state
+        setTokenState(t);
+        if (n) setDisplayNameState(n);
+        if (a) setAvatarUrlState(a);
+        
+        // Load role from localStorage if present
+        if (r) {
+          try {
+            const parsed = JSON.parse(r);
+            if (Array.isArray(parsed) && parsed.length > 0) setRoleState(parsed);
+            else if (typeof parsed === "string" && parsed.length > 0)
+              setRoleState([parsed]);
+          } catch {
+            // fallback to string value
+            setRoleState([r]);
+          }
+        }
       }
+    } else {
+      // No token found, ensure we're in guest state
+      setRoleState(["Guest"]);
     }
 
     setRoleLoading(false);
@@ -81,22 +101,22 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getRole = () => role;
+  const getRole = useCallback(() => role, [role]);
 
-  const hasRole = (r: string) => Array.isArray(role) && role.includes(r);
+  const hasRole = useCallback((r: string) => Array.isArray(role) && role.includes(r), [role]);
 
-  const isAdmin = () => hasRole("Admin");
+  const isAdmin = useCallback(() => hasRole("Admin"), [hasRole]);
 
-  const isTeacher = () => hasRole("Teacher") || hasRole("Coach");
+  const isTeacher = useCallback(() => hasRole("Teacher") || hasRole("Coach"), [hasRole]);
 
-  const isStudent = () => hasRole("Student");
+  const isStudent = useCallback(() => hasRole("Student"), [hasRole]);
 
-  const effectiveRole = () => {
+  const effectiveRole = useCallback(() => {
     if (isAdmin()) return "Admin";
     if (isTeacher()) return "Teacher";
     if (isStudent()) return "Student";
     return "Guest";
-  };
+  }, [isAdmin, isTeacher, isStudent]);
 
   const setDisplayName = (n: string | null) => {
     if (typeof window !== "undefined") {
