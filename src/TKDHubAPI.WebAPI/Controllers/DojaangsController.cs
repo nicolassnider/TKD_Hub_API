@@ -180,4 +180,34 @@ public class DojaangsController : BaseApiController
         await _dojaangService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Reactivates a previously deactivated dojaang. Only admins are allowed to perform this action.
+    /// </summary>
+    /// <param name="id">The dojaang ID.</param>
+    /// <response code="200">Returns the reactivated dojaang.</response>
+    /// <response code="401">Unauthorized - user is not authenticated.</response>
+    /// <response code="404">Dojaang not found.</response>
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{dojaangId}/reactivate")]
+    [ProducesResponseType(typeof(DojaangDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reactivate(int dojaangId)
+    {
+        var existingDojaang = await _dojaangService.GetByIdAsync(dojaangId);
+        if (existingDojaang == null)
+        {
+            return ErrorResponse("Dojaang not found", 404);
+        }
+
+        await _dojaangService.ReactivateAsync(dojaangId);
+
+        var updated = await _dojaangService.GetByIdAsync(dojaangId);
+        if (updated == null)
+        {
+            return ErrorResponse("Dojaang not found after reactivation", 404);
+        }
+        return SuccessResponse(updated);
+    }
 }

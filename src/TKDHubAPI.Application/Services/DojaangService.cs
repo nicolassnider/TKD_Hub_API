@@ -278,4 +278,16 @@ public class DojaangService : IDojaangService
         MapCoachNames(dojaangs, dtos);
         return dtos;
     }
+
+    public async Task ReactivateAsync(int id)
+    {
+        var dojaang = await _dojaangRepository.GetByIdAsync(id);
+        if (dojaang == null)
+            throw new InvalidOperationException("Dojaang not found.");
+
+        // Set as active and persist
+        dojaang.IsActive = true;
+        _dojaangRepository.Update(dojaang);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

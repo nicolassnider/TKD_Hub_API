@@ -49,11 +49,35 @@ public static class DependencyInjection
                 "AllowFrontend",
                 policy =>
                 {
-                    policy
-                        .WithOrigins(corsSettings.AllowedOrigins ?? Array.Empty<string>())
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                    //.AllowCredentials();
+                    var origins = corsSettings.AllowedOrigins ?? Array.Empty<string>();
+
+                    // If configuration contains a single wildcard '*' we allow any origin (useful for local dev).
+                    if (origins.Length == 1 && (origins[0] == "*" || string.IsNullOrWhiteSpace(origins[0])))
+                    {
+                        // In development it's OK to allow any origin, but credentials cannot be allowed together with AnyOrigin.
+                        if (corsSettings.AllowCredentials)
+                        {
+                            // When AllowCredentials is true but origins is '*', fall back to echoing the Origin header at runtime.
+                            // We'll set up the policy to allow any header/method and use a custom policy for credentials at runtime in middleware.
+                            policy.SetIsOriginAllowed(_ => true)
+                                  .AllowAnyHeader()
+                                  .AllowAnyMethod()
+                                  .AllowCredentials();
+                        }
+                        else
+                        {
+                            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                        }
+                    }
+                    else
+                    {
+                        // Use explicit origins. When credentials are allowed, this is the correct pattern.
+                        policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+                        if (corsSettings.AllowCredentials)
+                        {
+                            policy.AllowCredentials();
+                        }
+                    }
                 }
             );
         });

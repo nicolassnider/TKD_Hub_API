@@ -39,4 +39,11 @@ public interface IDojaangService : ICrudService<DojaangDto>
     /// </summary>
     /// <returns>A task that represents the asynchronous operation, containing a collection of DojaangDto.</returns>
     Task<IEnumerable<DojaangDto>> GetDojaangsForCurrentCoachAsync();
+
+    /// <summary>
+    /// Reactivates a previously deactivated dojaang (sets IsActive = true).
+    /// </summary>
+    /// <param name="id">The dojaang ID to reactivate.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ReactivateAsync(int id);
 }

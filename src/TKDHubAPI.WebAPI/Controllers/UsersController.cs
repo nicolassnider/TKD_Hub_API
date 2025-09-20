@@ -266,6 +266,36 @@ public partial class UsersController : BaseApiController
     }
 
     /// <summary>
+    /// Returns the currently authenticated user's profile information.
+    /// </summary>
+    /// <returns>The UserDto for the current user, or an error response if not authenticated.</returns>
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return ErrorResponse("Invalid user context.", 401);
+        }
+
+        try
+        {
+            var user = await _userService.GetByIdAsync(userId);
+            if (user == null)
+                return ErrorResponse("User not found.", 404);
+
+            // Map to DTO for returning via standardized SuccessResponse
+            var userDto = _mapper.Map<UserDto>(user);
+            return SuccessResponse(userDto);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error retrieving current user profile.");
+            return ErrorResponse("An error occurred while retrieving the current user.", 500);
+        }
+    }
+
+    /// <summary>
     /// Reactivates a user by setting their IsActive status to true.
     /// This endpoint allows authorized users to restore a previously deactivated user account.
     /// </summary>
