@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { fetchJson, ApiError } from "../lib/api";
 import { useRole } from "../context/RoleContext";
 
@@ -10,15 +10,19 @@ export function useApiItems<T = any>(apiPath: string) {
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    // Wait for role loading to complete before making API calls
+    if (roleLoading) {
+      setLoading(true);
+      return;
+    }
+
     let mounted = true;
     (async () => {
       setLoading(true);
       setError(null);
       setItems([]);
       try {
-        const headers: Record<string, string> = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        const res = await fetchJson<any>(apiPath, { headers });
+        const res = await fetchJson<any>(apiPath);
         // support several envelope shapes: array, { data: [...] }, { data: { data: [...] } }, { data: { items: [...] } }
         let data: any[] = [];
         if (Array.isArray(res)) data = res;
@@ -38,7 +42,7 @@ export function useApiItems<T = any>(apiPath: string) {
     return () => {
       mounted = false;
     };
-  }, [apiPath, token, reloadKey]);
+  }, [apiPath, roleLoading, reloadKey]);
 
   return { items, loading, error, reload: () => setReloadKey((k) => k + 1) };
 }

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { fetchJson } from "../lib/api";
 
 // Shared interfaces - move these to a separate types file in the future
 export interface Student {
@@ -30,23 +31,25 @@ export interface Rank {
 }
 
 // Generic hook for fetching API data
-function useApiData<T>(endpoint: string, dependencies: any[] = []) {
+function useApiData<T>(endpoint: string, shouldFetch: boolean = true) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!shouldFetch) {
+      setData([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(endpoint);
-        if (response.ok) {
-          const fetchedData = await response.json();
-          setData(fetchedData);
-        } else {
-          setError(`Failed to fetch data from ${endpoint}`);
-        }
+        const fetchedData = await fetchJson<T[]>(endpoint);
+        setData(fetchedData);
       } catch (err) {
         setError(`Error fetching ${endpoint}: ${err}`);
         console.error(`Error fetching ${endpoint}:`, err);
@@ -56,26 +59,26 @@ function useApiData<T>(endpoint: string, dependencies: any[] = []) {
     };
 
     fetchData();
-  }, dependencies);
+  }, [endpoint, shouldFetch]);
 
   return { data, loading, error, setData };
 }
 
 // Specific hooks for each resource type
-export function useStudents(trigger: any[] = []) {
-  return useApiData<Student>("/api/Students", trigger);
+export function useStudents(shouldFetch: boolean = true) {
+  return useApiData<Student>("/api/Students", shouldFetch);
 }
 
-export function useCoaches(trigger: any[] = []) {
-  return useApiData<Coach>("/api/Coaches", trigger);
+export function useCoaches(shouldFetch: boolean = true) {
+  return useApiData<Coach>("/api/Coaches", shouldFetch);
 }
 
-export function useDojaangs(trigger: any[] = []) {
-  return useApiData<Dojaang>("/api/Dojaangs", trigger);
+export function useDojaangs(shouldFetch: boolean = true) {
+  return useApiData<Dojaang>("/api/Dojaangs", shouldFetch);
 }
 
-export function useRanks(trigger: any[] = []) {
-  return useApiData<Rank>("/api/Ranks", trigger);
+export function useRanks(shouldFetch: boolean = true) {
+  return useApiData<Rank>("/api/Ranks", shouldFetch);
 }
 
 // Combined hook for forms that need multiple resources
@@ -85,21 +88,19 @@ export function useFormData(
     includeCoaches?: boolean;
     includeDojaangs?: boolean;
     includeRanks?: boolean;
-    trigger?: any[];
-  } = {},
+  } = {}
 ) {
   const {
     includeStudents = false,
     includeCoaches = false,
     includeDojaangs = false,
     includeRanks = false,
-    trigger = [],
   } = options;
 
-  const studentsResult = useStudents(includeStudents ? trigger : []);
-  const coachesResult = useCoaches(includeCoaches ? trigger : []);
-  const dojaangsResult = useDojaangs(includeDojaangs ? trigger : []);
-  const ranksResult = useRanks(includeRanks ? trigger : []);
+  const studentsResult = useStudents(includeStudents);
+  const coachesResult = useCoaches(includeCoaches);
+  const dojaangsResult = useDojaangs(includeDojaangs);
+  const ranksResult = useRanks(includeRanks);
 
   const loading =
     (includeStudents && studentsResult.loading) ||
