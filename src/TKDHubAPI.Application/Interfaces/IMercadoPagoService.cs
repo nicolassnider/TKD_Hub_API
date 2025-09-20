@@ -5,8 +5,33 @@ using TKDHubAPI.Application.DTOs.Payment;
 public interface IMercadoPagoService
 {
     /// <summary>
-    /// Creates a MercadoPago payment preference and returns a structured response with the payment URL or an error.
+    /// Creates a MercadoPago payment preference with enhanced options.
     /// </summary>
-    Task<CreatePreferenceResponse> CreatePreferenceAsync(decimal amount, string description, string payerEmail, CancellationToken cancellationToken = default);
-    // Add more methods as needed, e.g., GetPaymentStatusAsync, etc.
+    Task<CreatePreferenceResponse> CreatePreferenceAsync(
+        CreatePreferenceRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets payment details by payment ID.
+    /// </summary>
+    Task<PaymentDetailsResponse?> GetPaymentAsync(
+        string paymentId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a refund for a payment.
+    /// </summary>
+    Task<RefundResponse> CreateRefundAsync(
+        CreateRefundRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Legacy method for backward compatibility.
+    /// </summary>
+    [Obsolete("Use CreatePreferenceAsync(CreatePreferenceRequest) instead")]
+    Task<CreatePreferenceResponse> CreatePreferenceAsync(
+        decimal amount,
+        string description,
+        string payerEmail,
+        CancellationToken cancellationToken = default);
 }
