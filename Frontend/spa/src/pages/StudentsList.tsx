@@ -1,5 +1,5 @@
 import ApiTable from "components/ApiTable";
-import { useApiItems } from "components/useApiItems";
+import { useApiItems } from "../hooks/useApiItems";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";

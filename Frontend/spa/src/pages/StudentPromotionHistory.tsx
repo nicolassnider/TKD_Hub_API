@@ -12,7 +12,7 @@ import {
 import { EmojiEvents } from "@mui/icons-material";
 
 import { PromotionDto } from "../types/api";
-import { useApiItems } from "hooks/useApiItems";
+import { useApiItems } from "../hooks/useApiItems";
 
 export default function StudentPromotionHistory() {
   const { studentId } = useParams<{ studentId: string }>();

@@ -1,6 +1,6 @@
 import ApiList from "../components/ApiList";
 import ApiTable from "components/ApiTable";
-import { useApiItems } from "components/useApiItems";
+import { useApiItems } from "../hooks/useApiItems";
 import Button from "@mui/material/Button";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
