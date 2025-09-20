@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRole } from "../context/RoleContext";
 import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
-
-const baseUrl = "https://localhost:7046/api";
+import { fetchJson } from "../lib/api";
 
 export default function LoginForm() {
   const { setToken, setRole, setDisplayName, setAvatarUrl } = useRole();
@@ -18,18 +17,12 @@ export default function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`${baseUrl}/Auth/login`, {
+      const body = await fetchJson<any>("/api/Auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(
-          (body && (body as any).message) || `Login failed: ${res.status}`,
-        );
-      }
-      const body = await res.json();
+      
       const token = body.token ?? body.data?.token;
       const user = body.user ?? body.data?.user;
       const role = user?.role ?? (user?.roles && user.roles[0]) ?? null;

@@ -51,13 +51,12 @@ export default function PromotionForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
-  // Use the centralized form data hook
+  // Use the centralized form data hook - only fetch when dialog is open
   const { students, coaches, dojaangs, ranks } = useFormData({
-    includeStudents: true,
-    includeCoaches: true,
-    includeDojaangs: true,
-    includeRanks: true,
-    trigger: [open],
+    includeStudents: open,
+    includeCoaches: open,
+    includeDojaangs: open,
+    includeRanks: open,
   });
 
   // Set initial data when editing

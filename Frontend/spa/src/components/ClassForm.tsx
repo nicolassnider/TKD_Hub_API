@@ -60,11 +60,10 @@ export default function ClassForm({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Use the centralized form data hook
+  // Use the centralized form data hook - only fetch when dialog is open
   const { coaches, dojaangs } = useFormData({
-    includeCoaches: true,
-    includeDojaangs: true,
-    trigger: [open],
+    includeCoaches: open,
+    includeDojaangs: open,
   });
 
   // Set initial data when editing
