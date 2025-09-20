@@ -22,7 +22,7 @@ export default defineConfig({
       "..",
       "src",
       "TKDHubAPI.WebAPI",
-      "wwwroot",
+      "wwwroot"
     ),
     // Clean the output directory before building to avoid stale assets.
     emptyOutDir: true,
@@ -31,11 +31,38 @@ export default defineConfig({
     },
   },
   server: {
-    port: 4173,
+    port: 4174, // Use a different port to avoid conflicts with preview
     proxy: {
       // forward API calls to the backend during development
       "/api": {
-        target: process.env.API_HOST || "http://localhost:5000",
+        target: process.env.API_HOST || "https://localhost:7046",
+        changeOrigin: true,
+        secure: false, // Allow self-signed certificates in development
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
+        configure: (proxy, options) => {
+          // Add additional logging for debugging
+          proxy.on("error", (err, req, res) => {
+            console.log("Proxy error:", err);
+          });
+          proxy.on("proxyReq", (proxyReq, req, res) => {
+            console.log(
+              "Proxying request:",
+              req.method,
+              req.url,
+              "→",
+              options.target + proxyReq.path
+            );
+          });
+        },
+      },
+    },
+  },
+  preview: {
+    port: 4173, // Keep preview on the original port
+    proxy: {
+      // Same proxy configuration for preview mode
+      "/api": {
+        target: process.env.API_HOST || "https://localhost:7046",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
