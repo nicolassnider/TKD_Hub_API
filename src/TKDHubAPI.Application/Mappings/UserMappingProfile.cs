@@ -6,6 +6,11 @@ public class UserMappingProfile : Profile
         CreateMap<CreateUserDto, User>()
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
+        CreateMap<RegisterDto, CreateUserDto>()
+            .ForMember(dest => dest.RoleIds, opt => opt.Ignore()) // Will be set manually
+            .ForMember(dest => dest.JoinDate, opt => opt.MapFrom(src => DateTime.UtcNow))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber ?? string.Empty));
+
         CreateMap<User, UserDto>()
             .ForMember(dest => dest.ManagedDojaangIds,
             opt => opt.MapFrom(src => src.UserDojaangs.Select(ud => ud.DojaangId).ToList()))

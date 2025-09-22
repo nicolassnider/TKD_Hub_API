@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useRole } from "../context/RoleContext";
 import { fetchJson } from "../lib/api";
 import {
@@ -63,12 +64,22 @@ export default function Register() {
         const avatarUrl = user?.avatarUrl ?? user?.picture ?? null;
         setDisplayName(displayName);
         setAvatarUrl(avatarUrl);
+        toast.success("Welcome to TKD Hub! Registration successful.");
         navigate("/");
       } else {
-        navigate("/login");
+        // Show success toast and redirect to login
+        toast.success(
+          "Registration successful! Please log in with your credentials.",
+        );
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000); // Wait 2 seconds for user to read the toast
       }
     } catch (err: any) {
-      setError(err.message || "Unknown error");
+      const errorMessage =
+        err.message || "Registration failed. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -184,4 +184,12 @@ public interface IUserService : ICrudService<User>
     /// Gets all users as DTOs with their roles.
     /// </summary>
     Task<IEnumerable<UserDto>> GetAllWithRolesAsync();
+
+    /// <summary>
+    /// Updates a user using the provided DTO.
+    /// </summary>
+    /// <param name="id">The ID of the user to update.</param>
+    /// <param name="updateUserDto">The DTO containing updated user information.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task UpdateUserFromDtoAsync(int id, UpdateUserDto updateUserDto);
 }

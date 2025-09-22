@@ -34,33 +34,31 @@ public class MercadoPagoSettings
     /// <summary>
     /// Webhook secret for signature verification.
     /// </summary>
-    [Required]
-    public string WebhookSecret { get; set; } = string.Empty;
+    public string? WebhookSecret { get; set; }
 
     /// <summary>
     /// Webhook URL for MercadoPago notifications.
     /// </summary>
-    [Required]
     [Url]
-    public string WebhookUrl { get; set; } = string.Empty;
+    public string? WebhookUrl { get; set; }
 
     /// <summary>
     /// Default success URL for payment redirects.
     /// </summary>
     [Url]
-    public string DefaultSuccessUrl { get; set; } = string.Empty;
+    public string? DefaultSuccessUrl { get; set; }
 
     /// <summary>
     /// Default failure URL for payment redirects.
     /// </summary>
     [Url]
-    public string DefaultFailureUrl { get; set; } = string.Empty;
+    public string? DefaultFailureUrl { get; set; }
 
     /// <summary>
     /// Default pending URL for payment redirects.
     /// </summary>
     [Url]
-    public string DefaultPendingUrl { get; set; } = string.Empty;
+    public string? DefaultPendingUrl { get; set; }
 
     /// <summary>
     /// Enable sandbox mode for testing.

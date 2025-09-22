@@ -60,9 +60,8 @@ public class UserService : IUserService
 
         var normalizedDojaangId = NormalizeDojaangId(createUserDto.DojaangId);
 
-        // Enforce: Student must belong to only one dojaang
-        if (await IsStudentRoleAsync(createUserDto.RoleIds) && normalizedDojaangId == null)
-            throw new Exception("A student must be assigned to exactly one Dojaang.");
+        // For public registration, allow students without Dojaang assignment
+        // They can be assigned to a Dojaang later by an admin
 
         var user = new User
         {
@@ -74,7 +73,7 @@ public class UserService : IUserService
             DojaangId = normalizedDojaangId,
             CurrentRankId = createUserDto.RankId,
             JoinDate = DateTime.UtcNow,
-            PasswordHash = _passwordHasher.HashPassword(null, password)
+            PasswordHash = _passwordHasher.HashPassword(new User(), password)
         };
 
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);

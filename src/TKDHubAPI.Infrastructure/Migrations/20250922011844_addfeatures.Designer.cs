@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TKDHubAPI.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TKDHubAPI.Infrastructure.Data;
 namespace TKDHubAPI.Infrastructure.Migrations
 {
     [DbContext(typeof(TkdHubDbContext))]
-    partial class TkdHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250922011844_addfeatures")]
+    partial class addfeatures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

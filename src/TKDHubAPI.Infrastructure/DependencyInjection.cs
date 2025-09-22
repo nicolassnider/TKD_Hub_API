@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Infrastructure.External;
 using TKDHubAPI.Infrastructure.Repositories;
+using TKDHubAPI.Infrastructure.Services;
 using TKDHubAPI.Infrastructure.Settings;
 
 namespace TKDHubAPI.Infrastructure;
@@ -27,7 +27,7 @@ public static class DependencyInjection
                 bool valid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(settings, context, validationResults, true);
                 if (!valid) return false;
 
-                // Additional predicate validation
+                // Additional predicate validation - only check required fields
                 return !string.IsNullOrWhiteSpace(settings.AccessToken) && !string.IsNullOrWhiteSpace(settings.PublicKey);
             }, "MercadoPago AccessToken and PublicKey must be provided and valid")
             .ValidateOnStart();
@@ -52,8 +52,8 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<UserUserRole>, GenericRepository<UserUserRole>>();
 
 
-
-        services.AddScoped<IMercadoPagoService, MercadoPagoService>();
+        // Register MercadoPago implementation using typed HttpClient for EnhancedMercadoPagoService
+        services.AddHttpClient<IMercadoPagoService, EnhancedMercadoPagoService>();
 
         // Register specific repositories
         services.AddScoped<IUserRepository, UserRepository>();

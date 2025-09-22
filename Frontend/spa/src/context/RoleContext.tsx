@@ -49,6 +49,7 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
     // Validate token before setting it
     if (t) {
       if (isTokenExpired(t)) {
+        console.warn("RoleContext: Token expired on startup, clearing session");
         // Token is expired, clear all auth data
         localStorage.removeItem("token");
         localStorage.removeItem("role");
@@ -59,6 +60,7 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
         setDisplayNameState(null);
         setAvatarUrlState(null);
       } else {
+        console.log("RoleContext: Valid token found, restoring session");
         // Token is valid, restore auth state
         setTokenState(t);
         if (n) setDisplayNameState(n);
@@ -158,16 +160,19 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
     // observe server-side session state and get authoritative profile/roles.
     (async () => {
       try {
-        // Try common profile endpoints. Backend may expose /api/Account/me or /api/Users/me.
+        // Try the endpoints in order of preference
         const tryPaths = [
-          "/api/Account/me",
           "/api/Users/me",
+          "/api/Account/me",
+          "/api/profile",
           "/api/Account/profile",
         ];
         let profile: any = null;
         for (const p of tryPaths) {
           try {
-            profile = await fetchJson(p);
+            const response = await fetchJson(p);
+            // Handle the { data: {...} } wrapper format
+            profile = (response as any)?.data || response;
             if (profile) break;
           } catch (err) {
             // If it's a 404 just try the next path; on 401/403 we'll handle below
@@ -193,8 +198,15 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
               : [];
           if (roles.length > 0) setRole(roles);
 
+          // Handle the API response format with firstName/lastName
           const name =
-            profile.displayName ?? profile.name ?? profile.userName ?? null;
+            profile.displayName ??
+            profile.name ??
+            profile.userName ??
+            (profile.firstName && profile.lastName
+              ? `${profile.firstName} ${profile.lastName}`
+              : profile.firstName || profile.lastName) ??
+            null;
           if (name) setDisplayName(name);
 
           const avatar = profile.avatarUrl ?? profile.avatar ?? null;
@@ -224,6 +236,10 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({
           err instanceof ApiError &&
           (err.status === 401 || err.status === 403)
         ) {
+          console.warn(
+            "RoleContext: Server rejected token (401/403), clearing session",
+            err,
+          );
           setToken(null);
         } else {
           // other errors are non-fatal for startup; keep existing token and roles

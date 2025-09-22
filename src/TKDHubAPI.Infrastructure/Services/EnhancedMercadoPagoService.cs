@@ -78,13 +78,13 @@ public class EnhancedMercadoPagoService : IMercadoPagoService
                 },
                 back_urls = new
                 {
-                    success = request.BackUrls?.Success ?? _settings.DefaultSuccessUrl,
-                    failure = request.BackUrls?.Failure ?? _settings.DefaultFailureUrl,
-                    pending = request.BackUrls?.Pending ?? _settings.DefaultPendingUrl
+                    success = request.BackUrls?.Success ?? _settings.DefaultSuccessUrl ?? "https://localhost:3000/payment/success",
+                    failure = request.BackUrls?.Failure ?? _settings.DefaultFailureUrl ?? "https://localhost:3000/payment/failure",
+                    pending = request.BackUrls?.Pending ?? _settings.DefaultPendingUrl ?? "https://localhost:3000/payment/pending"
                 },
                 auto_return = "approved",
                 external_reference = request.ExternalReference,
-                notification_url = _settings.WebhookUrl,
+                notification_url = !string.IsNullOrEmpty(_settings.WebhookUrl) ? _settings.WebhookUrl : null,
                 expires = request.ExpirationDate.HasValue,
                 expiration_date_from = request.ExpirationDate?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
                 expiration_date_to = request.ExpirationDate?.AddHours(24).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),

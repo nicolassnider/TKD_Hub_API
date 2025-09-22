@@ -18,6 +18,61 @@ import DialogActions from "@mui/material/DialogActions";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../context/RoleContext";
 
+// Route configuration
+interface RouteConfig {
+  path: string;
+  label: string;
+  roles?: string[]; // If undefined, available to all authenticated users
+}
+
+const guestRoutes: RouteConfig[] = [
+  { path: "/events", label: "Events" },
+  { path: "/blog", label: "Blog" },
+  { path: "/register", label: "Register" },
+  { path: "/login", label: "Login" },
+];
+
+const authenticatedRoutes: RouteConfig[] = [
+  { path: "/", label: "Home" },
+  { path: "/students", label: "Students" },
+  { path: "/events", label: "Events" },
+  { path: "/blog", label: "Blog" },
+  { path: "/classes", label: "Classes" },
+  {
+    path: "/classes/manage",
+    label: "Manage Classes",
+    roles: ["Admin", "Coach"],
+  },
+  { path: "/coaches", label: "Coaches" },
+  { path: "/dojaangs", label: "Dojaangs" },
+  { path: "/promotions", label: "Promotions" },
+  {
+    path: "/promotions/manage",
+    label: "Manage Promotions",
+    roles: ["Admin", "Coach"],
+  },
+  { path: "/ranks", label: "Ranks" },
+  { path: "/tuls", label: "Tuls" },
+  { path: "/users", label: "User Administration", roles: ["Admin"] },
+  { path: "/dashboard", label: "Dashboard" },
+  { path: "/payments/mercadopago", label: "Payments" },
+  { path: "/manage", label: "Manage", roles: ["Admin"] },
+];
+
+const desktopRoutes: RouteConfig[] = [
+  { path: "/students", label: "Students" },
+  { path: "/events", label: "Events" },
+  { path: "/blog", label: "Blog" },
+  { path: "/classes", label: "Classes" },
+  { path: "/coaches", label: "Coaches" },
+  { path: "/dojaangs", label: "Dojaangs" },
+];
+
+const desktopGuestRoutes: RouteConfig[] = [
+  { path: "/events", label: "Events" },
+  { path: "/blog", label: "Blog" },
+];
+
 export default function Header() {
   const navigate = useNavigate();
   const {
@@ -29,6 +84,7 @@ export default function Header() {
     setRole,
     setDisplayName,
     setAvatarUrl,
+    hasRole,
   } = useRole();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -37,6 +93,9 @@ export default function Header() {
   const handleClose = () => setAnchorEl(null);
 
   const [logoutOpen, setLogoutOpen] = React.useState(false);
+
+  const isGuest =
+    Array.isArray(role) && role.length === 1 && role[0] === "Guest";
 
   const logout = () => {
     setToken(null);
@@ -49,6 +108,48 @@ export default function Header() {
 
   const confirmLogout = () => setLogoutOpen(true);
   const cancelLogout = () => setLogoutOpen(false);
+
+  // Helper function to check if user can access a route
+  const canAccessRoute = (route: RouteConfig) => {
+    if (!route.roles || route.roles.length === 0) {
+      return true; // No role restriction
+    }
+    return route.roles.some((requiredRole) => hasRole(requiredRole));
+  };
+
+  // Helper function to create menu items
+  const createMenuItem = (route: RouteConfig) => {
+    if (!canAccessRoute(route)) {
+      return null;
+    }
+    return (
+      <MenuItem
+        key={route.path}
+        onClick={() => {
+          handleClose();
+          navigate(route.path);
+        }}
+      >
+        {route.label}
+      </MenuItem>
+    );
+  };
+
+  // Helper function to create buttons
+  const createButton = (route: RouteConfig) => {
+    if (!canAccessRoute(route)) {
+      return null;
+    }
+    return (
+      <Button
+        key={route.path}
+        color="inherit"
+        onClick={() => navigate(route.path)}
+      >
+        {route.label}
+      </Button>
+    );
+  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -65,180 +166,19 @@ export default function Header() {
             <MenuIcon />
           </IconButton>
           <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-            {/* Guests only see Events and Blog */}
-            {Array.isArray(role) && role.length === 1 && role[0] === "Guest" ? (
-              <>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/events");
-                  }}
-                >
-                  Events
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/blog");
-                  }}
-                >
-                  Blog
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/register");
-                  }}
-                >
-                  Register
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/login");
-                  }}
-                >
-                  Login
-                </MenuItem>
-              </>
+            {/* Render routes based on user role */}
+            {isGuest ? (
+              <>{guestRoutes.map(createMenuItem)}</>
             ) : (
-              // Authenticated users: full menu
               <>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/");
-                  }}
-                >
-                  Home
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/students");
-                  }}
-                >
-                  Students
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/events");
-                  }}
-                >
-                  Events
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/blog");
-                  }}
-                >
-                  Blog
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/classes");
-                  }}
-                >
-                  Classes
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/classes/manage");
-                  }}
-                >
-                  Manage Classes
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/coaches");
-                  }}
-                >
-                  Coaches
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/dojaangs");
-                  }}
-                >
-                  Dojaangs
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/promotions");
-                  }}
-                >
-                  Promotions
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/promotions/manage");
-                  }}
-                >
-                  Manage Promotions
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/ranks");
-                  }}
-                >
-                  Ranks
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/tuls");
-                  }}
-                >
-                  Tuls
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/users");
-                  }}
-                >
-                  Users
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/dashboard");
-                  }}
-                >
-                  Dashboard
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/payments/mercadopago");
-                  }}
-                >
-                  Payments
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/manage");
-                  }}
-                >
-                  Manage
-                </MenuItem>
-                {/* Auth actions in menu: mirror the top-right */}
+                {authenticatedRoutes.map(createMenuItem).filter(Boolean)}
+                {/* Auth actions in menu */}
                 {token ? (
                   <>
                     <MenuItem
                       onClick={() => {
                         handleClose();
-                        navigate("/");
+                        navigate("/profile");
                       }}
                     >
                       {displayName ??
@@ -287,36 +227,10 @@ export default function Header() {
               alignItems: "center",
             }}
           >
-            {Array.isArray(role) && role.length === 1 && role[0] === "Guest" ? (
-              <>
-                <Button color="inherit" onClick={() => navigate("/events")}>
-                  Events
-                </Button>
-                <Button color="inherit" onClick={() => navigate("/blog")}>
-                  Blog
-                </Button>
-              </>
+            {isGuest ? (
+              <>{desktopGuestRoutes.map(createButton)}</>
             ) : (
-              <>
-                <Button color="inherit" onClick={() => navigate("/students")}>
-                  Students
-                </Button>
-                <Button color="inherit" onClick={() => navigate("/events")}>
-                  Events
-                </Button>
-                <Button color="inherit" onClick={() => navigate("/blog")}>
-                  Blog
-                </Button>
-                <Button color="inherit" onClick={() => navigate("/classes")}>
-                  Classes
-                </Button>
-                <Button color="inherit" onClick={() => navigate("/coaches")}>
-                  Coaches
-                </Button>
-                <Button color="inherit" onClick={() => navigate("/dojaangs")}>
-                  Dojaangs
-                </Button>
-              </>
+              <>{desktopRoutes.map(createButton).filter(Boolean)}</>
             )}
           </Box>
 
@@ -337,7 +251,14 @@ export default function Header() {
                   "User"
                 }
                 variant="outlined"
-                sx={{ mr: 1 }}
+                sx={{
+                  mr: 1,
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                }}
+                onClick={() => navigate("/profile")}
               />
               <Button color="inherit" onClick={confirmLogout}>
                 Logout
