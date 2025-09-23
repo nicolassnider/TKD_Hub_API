@@ -114,7 +114,7 @@ $sqlDbName = "TKDHubDb"
 $sqlAdminUser = "tkdhub-admin"
 $sqlAdminPassword = "SecurePassword123!"
 $signalRName = "tkd-hub-signalr-$randomSuffix"
-$staticWebAppName = "tkd-hub-app-$randomSuffix"
+$staticWebAppName = "tkd-hub-app-8515535"
 
 
 # GitHub repository (CHANGE THIS TO YOUR REPO)
@@ -604,6 +604,42 @@ Write-Host "══════════════════════�
 Write-Host "🎯 94% Cost Reduction Achieved! From ~$88/month to $5-15/month" -ForegroundColor Green
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Green
 
+
+
+# =============================================================================
+# STEP 11: DEPLOY BACKEND API TO AZURE APP SERVICE
+# =============================================================================
+Write-Host "`n🚀 Step 11: Deploying Backend API to Azure App Service..." -ForegroundColor Cyan
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
+
+# Define App Service Plan and Web App names
+$apiAppServicePlan = "tkd-hub-api-plan"
+$apiWebAppName = "tkd-hub-app-8515535-api"
+
+# Create App Service Plan (if not exists)
+Write-Host "🔧 Creating App Service Plan: $apiAppServicePlan..." -ForegroundColor White
+az appservice plan create --name $apiAppServicePlan --resource-group $resourceGroup --sku FREE --is-linux
+
+
+# Create Web App for API (if not exists) with correct runtime string
+Write-Host "🔧 Creating Web App: $apiWebAppName..." -ForegroundColor White
+az webapp create --resource-group $resourceGroup --plan $apiAppServicePlan --name $apiWebAppName --runtime "DOTNET:8"
+
+# Use absolute path for the API project and publish folder
+$apiProjectPath = Join-Path $PSScriptRoot "src/TKDHubAPI.WebAPI/TKDHubAPI.WebAPI.csproj"
+$publishFolder = Join-Path $PSScriptRoot "publish-api"
+Write-Host "📦 Publishing API project from $apiProjectPath..." -ForegroundColor White
+dotnet publish $apiProjectPath -c Release -o $publishFolder
+
+# Deploy to Azure Web App
+Write-Host "🚀 Deploying API to Azure Web App from $publishFolder..." -ForegroundColor White
+az webapp deploy --resource-group $resourceGroup --name $apiWebAppName --src-path $publishFolder
+
+# Set environment variables for the API
+Write-Host "🔧 Setting environment variables for API..." -ForegroundColor White
+az webapp config appsettings set --resource-group $resourceGroup --name $apiWebAppName --settings "ASPNETCORE_ENVIRONMENT=Production"
+
+Write-Host "✅ API deployed! Your API endpoint is: https://$apiWebAppName.azurewebsites.net" -ForegroundColor Green
 
 # Pause to let user read the results
 Write-Host ""
