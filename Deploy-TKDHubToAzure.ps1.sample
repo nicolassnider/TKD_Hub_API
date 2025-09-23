@@ -391,9 +391,8 @@ Pop-Location
 #   --source "https://github.com/nicolassnider/TKD_Hub_API" \
 #   --location "Central US" \
 #   --branch "master" \
-#   --app-location "/frontend/spa" \
-#   --api-location "/AzureFunctions/TKDHubFunctions" \
-#   --output-location "dist" \
+#   --app-location "wwwroot" \
+#   --output-location "" \
 #   --token <YOUR_CLASSIC_GITHUB_PAT>
 #
 # Replace <YOUR_CLASSIC_GITHUB_PAT> with your actual GitHub Personal Access Token (classic, repo+workflow scopes).
@@ -442,9 +441,8 @@ if ($staticWebAppExists) {
       --source "https://github.com/$githubRepo" `
       --location $location `
       --branch "master" `
-      --app-location "/frontend/spa" `
-      --api-location "/AzureFunctions/TKDHubFunctions" `
-      --output-location "dist" `
+    --app-location "wwwroot" `
+    --output-location "" `
       --token $githubPatPlain
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ Static Web App created successfully" -ForegroundColor Green
