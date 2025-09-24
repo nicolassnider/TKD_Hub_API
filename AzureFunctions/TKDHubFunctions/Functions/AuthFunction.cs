@@ -71,7 +71,7 @@ public class AuthFunction
 
     [Function("Login")]
     public async Task<HttpResponseData> Login(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Auth/login")] HttpRequestData req)
     {
         try
         {
