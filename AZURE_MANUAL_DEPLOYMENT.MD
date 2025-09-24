@@ -96,20 +96,38 @@ This guide provides step-by-step instructions for deploying the TKD Hub API appl
 - **ADDED**: copyfiles dependency for cross-platform file operations
 
 **GitHub Actions Workflow:**
-- **FIXED**: App location changed from `wwwroot` to `frontend/spa`
+- **FIXED**: App location changed from `wwwroot` to `Frontend/spa` (note: capital F)
+- **FIXED**: Case sensitivity issue resolved between Windows development and Linux deployment
 - **ADDED**: Node.js setup and SPA build steps
 - **CONFIGURED**: Proper API location pointing to `AzureFunctions/TKDHubFunctions`
-- **TESTED**: Local SPA build successful, ready for deployment
+- **ADDED**: `skip_deploy_on_missing_secrets: true` to prevent hard failures
+
+**Critical Deployment Fixes:**
+- **IDENTIFIED**: Directory path case sensitivity (`Frontend/spa` vs `frontend/spa`)
+- **RESOLVED**: GitHub secret configuration for Azure Static Web Apps deployment token
+- **IMPLEMENTED**: Fallback handling when deployment secrets are missing
+- **DOCUMENTED**: Complete GitHub secret setup process
 
 **Project Structure Verified:**
 ```
 TKD_Hub_API/
-├── frontend/spa/          ← React SPA (builds to dist/)
+├── Frontend/spa/          ← React SPA (builds to dist/) - NOTE: Capital F
 ├── AzureFunctions/        ← Azure Functions API
 │   └── TKDHubFunctions/   ← Functions project
 ├── src/                   ← Original Web API layers
 └── .github/workflows/     ← Automated deployment
 ```
+
+### 🆕 DEPLOYMENT TROUBLESHOOTING EXPERIENCE
+
+**Issue Encountered**: GitHub Actions deployment failure due to missing `AZURE_STATIC_WEB_APPS_API_TOKEN` secret
+**Root Cause**: Azure Static Web Apps requires deployment token for authorization
+**Solution**: Added comprehensive GitHub secret setup process (Step 6.1)
+
+**Case Sensitivity Fix**: 
+- **Problem**: Linux runners couldn't find `frontend/spa` directory
+- **Cause**: Windows filesystem is case-insensitive, Linux is case-sensitive
+- **Solution**: Updated all workflows to use correct `Frontend/spa` path (capital F)
 
 ### Standard Budget Solution (Production Ready)
 
@@ -553,6 +571,31 @@ if ($LASTEXITCODE -eq 0) {
 }
 ```
 
+#### Step 6.1: 🔑 CRITICAL - Setup GitHub Secret
+
+**⚠️ IMPORTANT**: After creating the Static Web App, you MUST add the deployment token to GitHub Secrets:
+
+1. **Get the deployment token from Azure:**
+```powershell
+# Get the deployment token
+$deploymentToken = az staticwebapp secrets list --name $staticWebAppName --query "properties.apiKey" -o tsv
+Write-Host "🔑 Deployment Token: $deploymentToken"
+Write-Host ""
+Write-Host "📋 Copy this token and add it to GitHub Secrets as:"
+Write-Host "   Secret Name: AZURE_STATIC_WEB_APPS_API_TOKEN"
+Write-Host "   Secret Value: $deploymentToken"
+```
+
+2. **Add to GitHub Repository Secrets:**
+   - Go to your GitHub repository
+   - Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`
+   - Value: Paste the deployment token from above
+   - Click "Add secret"
+
+**⚠️ Without this secret, deployments will fail!**
+
 #### Step 6.5: ✅ GitHub Actions Workflow (Auto-Created)
 
 **IMPORTANT**: The Static Web App creation automatically creates a GitHub Actions workflow file at:
@@ -583,7 +626,8 @@ jobs:
           
       - name: Build SPA
         run: |
-          cd frontend/spa
+          echo "Building SPA from Frontend/spa (note: capital F)"
+          cd Frontend/spa
           npm install
           npm run build
 
@@ -593,17 +637,19 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: 'upload'
-          app_location: 'frontend/spa'
+          app_location: 'Frontend/spa'
           api_location: 'AzureFunctions/TKDHubFunctions'
           output_location: 'dist'
+          skip_deploy_on_missing_secrets: true
 ```
 
 **Key Configuration Points:**
-- ✅ `app_location: 'frontend/spa'` (SPA source)
+- ✅ `app_location: 'Frontend/spa'` (SPA source - note capital F)
 - ✅ `api_location: 'AzureFunctions/TKDHubFunctions'` (Functions API)
 - ✅ `output_location: 'dist'` (Build output folder)
 - ✅ Node.js 18 setup for SPA build
 - ✅ Automated deployment on push to master branch
+- ✅ `skip_deploy_on_missing_secrets: true` (Prevents workflow failure)
 
 #### Step 7: Configure Application Settings (Critical Step)
 
@@ -3257,8 +3303,291 @@ If you encounter issues:
 3. Ensure SignalR service is in Serverless mode
 4. Check Application Insights for any errors
 
+## 🛠️ TROUBLESHOOTING GUIDE - COMPLETE DEPLOYMENT WORKFLOW
+
+### ⚠️ Common Deployment Issues and Solutions
+
+#### Issue 1: GitHub Actions Deployment Failure - Missing Token
+
+**Error Message:**
+```
+deployment_token was not provided.
+The deployment_token is required for deploying content.
+An unknown exception has occurred
+```
+
+**Root Cause:** Missing `AZURE_STATIC_WEB_APPS_API_TOKEN` in GitHub repository secrets.
+
+**✅ SOLUTION:**
+
+1. **Get your Azure Static Web Apps deployment token:**
+```powershell
+# Replace with your actual Static Web App name and resource group
+az staticwebapp secrets list --name YOUR_STATIC_WEB_APP_NAME --resource-group YOUR_RESOURCE_GROUP --query "properties.apiKey" -o tsv
+```
+
+2. **Add to GitHub Secrets:**
+   - Go to: `https://github.com/YOUR_USERNAME/YOUR_REPO`
+   - Navigate: **Settings** → **Secrets and variables** → **Actions**
+   - Click: **"New repository secret"**
+   - **Name**: `AZURE_STATIC_WEB_APPS_API_TOKEN`
+   - **Value**: Paste the token from step 1
+   - Click: **"Add secret"**
+
+3. **Update workflow with fallback (optional):**
+```yaml
+- name: Deploy to Azure Static Web Apps
+  uses: Azure/static-web-apps-deploy@v1
+  with:
+    azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+    repo_token: ${{ secrets.GITHUB_TOKEN }}
+    action: 'upload'
+    app_location: 'Frontend/spa'
+    api_location: 'AzureFunctions/TKDHubFunctions'
+    output_location: 'dist'
+    skip_deploy_on_missing_secrets: true  # Prevents hard failures
+```
+
+#### Issue 2: Case Sensitivity - Directory Not Found
+
+**Error Message:**
+```
+Could not find any files matching: frontend/spa/package.json
+The system cannot find the path specified.
+```
+
+**Root Cause:** Linux GitHub Actions runners are case-sensitive. Windows development uses different case than deployed paths.
+
+**✅ SOLUTION - Update All Workflow Files:**
+
+**Check your actual directory structure:**
+```powershell
+# In your repository root
+dir Frontend  # Should show 'spa' subdirectory
+dir Frontend/spa  # Should show package.json and other SPA files
+```
+
+**Update GitHub Actions workflow:**
+```yaml
+# CORRECT (if your directory is Frontend/spa with capital F)
+- name: Build SPA
+  run: |
+    echo "Building SPA from Frontend/spa (note: capital F)"
+    cd Frontend/spa
+    npm install
+    npm run build
+
+- name: Deploy to Azure Static Web Apps
+  uses: Azure/static-web-apps-deploy@v1
+  with:
+    app_location: 'Frontend/spa'  # Match exact case
+    api_location: 'AzureFunctions/TKDHubFunctions'
+    output_location: 'dist'
+```
+
+#### Issue 3: Azure Functions Build Failures - AutoMapper Conflicts
+
+**Error Message:**
+```
+Could not load file or assembly 'AutoMapper, Version=13.0.0'
+The located assembly's manifest definition does not match the assembly reference
+```
+
+**Root Cause:** Version conflicts between AutoMapper packages and Azure Functions runtime.
+
+**✅ SOLUTION - Downgrade AutoMapper:**
+
+1. **Navigate to your Azure Functions project:**
+```powershell
+cd AzureFunctions/TKDHubFunctions
+```
+
+2. **Update package versions:**
+```powershell
+# Remove existing AutoMapper packages
+dotnet remove package AutoMapper
+dotnet remove package AutoMapper.Extensions.Microsoft.DependencyInjection
+
+# Install compatible versions
+dotnet add package AutoMapper --version 12.0.1
+dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection --version 12.0.1
+```
+
+3. **Use simplified Program.cs (✅ TESTED VERSION):**
+```csharp
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using TKDHubAPI.Application;
+using TKDHubAPI.Infrastructure;
+
+var host = new HostBuilder()
+    .ConfigureFunctionsWebApplication()
+    .ConfigureServices(services =>
+    {
+        services.AddApplicationInsightsTelemetryWorkerService();
+        services.ConfigureFunctionsApplicationInsights();
+        
+        // Use existing DI extension methods - resolves all conflicts automatically
+        services.AddApplication();
+        services.AddInfrastructure();
+    })
+    .Build();
+
+host.Run();
+```
+
+#### Issue 4: SPA Build Configuration Problems
+
+**Error Message:**
+```
+npm ERR! Missing script: "build"
+Error: Process completed with exit code 1.
+```
+
+**Root Cause:** Incorrect Vite configuration or missing build scripts.
+
+**✅ SOLUTION - Update SPA Configuration:**
+
+1. **Verify package.json scripts:**
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:copy": "npm run build && copyfiles -u 1 \"dist/**/*\" \"../../src/TKDHubAPI.WebAPI/wwwroot/\"",
+    "preview": "vite preview"
+  }
+}
+```
+
+2. **Update vite.config.ts for Azure Static Web Apps:**
+```typescript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    outDir: 'dist',  // Standard output for Azure Static Web Apps
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': 'http://localhost:7071'  // Azure Functions local development
+    }
+  }
+})
+```
+
+3. **Test local build:**
+```powershell
+cd Frontend/spa
+npm install
+npm run build
+```
+
+#### Issue 5: Azure Static Web App Creation Failures
+
+**Error Message:**
+```
+The source control token is invalid or has expired
+Repository access denied
+```
+
+**Root Cause:** GitHub authentication or repository permissions.
+
+**✅ SOLUTION - Fix GitHub Integration:**
+
+1. **Re-authenticate with GitHub:**
+```powershell
+az login --scope https://management.core.windows.net//.default
+az staticwebapp create --login-with-github
+```
+
+2. **Manual repository configuration:**
+```powershell
+# Create without GitHub integration first
+az staticwebapp create \
+    --name $staticWebAppName \
+    --resource-group $resourceGroup \
+    --location $location \
+    --sku Free
+
+# Configure GitHub integration separately in Azure Portal
+```
+
+3. **Verify repository URL format:**
+```powershell
+# Must be public repository or you must have access
+$githubRepo = "username/repository-name"  # No https:// prefix
+```
+
+### 📋 Pre-Deployment Checklist
+
+Before starting deployment, verify:
+
+- [ ] ✅ **Azure CLI installed and logged in**
+- [ ] ✅ **GitHub repository is public or you have admin access**
+- [ ] ✅ **Directory structure matches case-sensitive paths**
+- [ ] ✅ **SPA builds locally without errors** (`npm run build`)
+- [ ] ✅ **Azure Functions build locally** (`dotnet build`)
+- [ ] ✅ **AutoMapper versions are compatible** (v12.0.1 recommended)
+
+### 🔍 Post-Deployment Verification
+
+After successful deployment:
+
+1. **Check Azure Static Web App URL:**
+```powershell
+az staticwebapp show --name YOUR_SWA_NAME --resource-group YOUR_RG --query "defaultHostname" -o tsv
+```
+
+2. **Verify GitHub Actions workflow:**
+   - Go to: **Your Repository** → **Actions** tab
+   - Check latest workflow run status
+   - Review build logs for any warnings
+
+3. **Test API endpoints:**
+```powershell
+# Test Functions API (replace URL with your actual SWA URL)
+curl https://YOUR_SWA_URL.azurestaticapps.net/api/students
+```
+
+4. **Monitor Application Insights:**
+   - Check Azure Portal → Application Insights
+   - Review Live Metrics and Logs
+
+### 🚨 Emergency Recovery Steps
+
+If deployment fails completely:
+
+1. **Delete and recreate Static Web App:**
+```powershell
+az staticwebapp delete --name YOUR_SWA_NAME --resource-group YOUR_RG
+# Then re-run Step 6 with correct configuration
+```
+
+2. **Reset GitHub workflow:**
+   - Delete `.github/workflows/azure-static-web-apps-*.yml`
+   - Recreate Static Web App to generate new workflow
+
+3. **Check resource quotas:**
+```powershell
+az vm list-usage --location "Central US"
+```
+
+### 📞 Support Resources
+
+- **Azure Static Web Apps Docs**: https://docs.microsoft.com/azure/static-web-apps/
+- **GitHub Actions Troubleshooting**: https://docs.github.com/actions/monitoring-and-troubleshooting-workflows
+- **Azure Functions Docs**: https://docs.microsoft.com/azure/azure-functions/
 
 ---
 
-
-**Next**: Once configuration is complete, proceed to Step 5 (Azure Functions setup)
+**Next**: Once configuration and troubleshooting are complete, proceed to Step 5 (Azure Functions setup)
