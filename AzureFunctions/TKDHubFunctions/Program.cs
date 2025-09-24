@@ -18,6 +18,17 @@ public class Program
                 services.AddApplicationInsightsTelemetryWorkerService();
                 services.ConfigureFunctionsApplicationInsights();
                 
+                // Add CORS support
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowAll", builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
+                });
+                
                 // Add Application and Infrastructure layers
                 services.AddApplication(context.Configuration);
                 services.AddInfrastructure(context.Configuration);

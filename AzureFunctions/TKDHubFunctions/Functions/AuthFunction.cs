@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Application.Common;
+using TKDHubFunctions.Helpers;
 
 namespace TKDHubFunctions.Functions;
 
@@ -25,7 +26,7 @@ public class AuthFunction
 
     [Function("Register")]
     public async Task<HttpResponseData> Register(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/register")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Auth/register")] HttpRequestData req)
     {
         try
         {
@@ -57,6 +58,7 @@ public class AuthFunction
             var result = await _userService.RegisterAsync(createUserDto, registerDto.Password);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
+            CorsHelper.SetCorsHeaders(response);
             await response.WriteAsJsonAsync(result);
             return response;
         }
@@ -98,6 +100,7 @@ public class AuthFunction
             }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
+            CorsHelper.SetCorsHeaders(response);
             await response.WriteAsJsonAsync(new { token = result.Token, user = result.User });
             return response;
         }
@@ -108,5 +111,14 @@ public class AuthFunction
             await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
             return errorResponse;
         }
+    }
+
+    [Function("AuthOptions")]
+    public async Task<HttpResponseData> AuthOptions(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Auth/{*route}")] HttpRequestData req)
+    {
+        _logger.LogInformation("CORS preflight request for Auth endpoints");
+        var response = CorsHelper.CreateCorsResponse(req);
+        return response;
     }
 }

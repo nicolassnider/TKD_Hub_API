@@ -2,128 +2,241 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
+using TKDHubFunctions.Helpers;
 
-namespace TKDHubFunctions.Functions;
-
-public class StudentFunction
+namespace TKDHubFunctions.Functions
 {
-    private readonly ILogger<StudentFunction> _logger;
-    private readonly IStudentService _studentService;
-
-    public StudentFunction(ILogger<StudentFunction> logger, IStudentService studentService)
+    public class StudentFunction
     {
-        _logger = logger;
-        _studentService = studentService;
-    }
+        private readonly ILogger<StudentFunction> _logger;
+        private readonly IStudentService _studentService;
 
-    [Function("GetAllStudents")]
-    public async Task<HttpResponseData> GetAllStudents(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "students")] HttpRequestData req)
-    {
-        try
+        public StudentFunction(ILogger<StudentFunction> logger, IStudentService studentService)
         {
-            var result = await _studentService.GetAllStudentsAsync();
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(result);
-            return response;
+            _logger = logger;
+            _studentService = studentService;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in GetAllStudents function");
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-            return errorResponse;
-        }
-    }
 
-    [Function("GetStudentById")]
-    public async Task<HttpResponseData> GetStudentById(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "students/{id:int}")] HttpRequestData req,
-        int id)
-    {
-        try
+        // GET api/Students
+        [Function("GetAllStudents")]
+        public async Task<HttpResponseData> GetAllStudents(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/Students")] HttpRequestData req)
         {
-            var result = await _studentService.GetStudentByIdAsync(id);
-            
-            if (result == null)
+            try
             {
-                var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
-                await notFoundResponse.WriteAsJsonAsync(new { message = "Student not found" });
-                return notFoundResponse;
+                _logger.LogInformation("Getting all students");
+                var students = await _studentService.GetAllStudentsAsync();
+                
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                CorsHelper.SetCorsHeaders(response);
+                await response.WriteAsJsonAsync(students);
+                return response;
             }
-
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(result);
-            return response;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in GetStudentById function for ID: {Id}", id);
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-            return errorResponse;
-        }
-    }
-
-    [Function("CreateStudent")]
-    public async Task<HttpResponseData> CreateStudent(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "students")] HttpRequestData req)
-    {
-        try
-        {
-            var body = await req.ReadAsStringAsync();
-            var createStudentDto = JsonSerializer.Deserialize<CreateStudentDto>(body, new JsonSerializerOptions 
-            { 
-                PropertyNameCaseInsensitive = true 
-            });
-
-            if (createStudentDto == null)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error in GetAllStudents function");
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                CorsHelper.SetCorsHeaders(errorResponse);
+                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
+                return errorResponse;
+            }
+        }
+
+        // GET api/Students/{id}
+        [Function("GetStudentById")]
+        public async Task<HttpResponseData> GetStudentById(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/Students/{id:int}")] HttpRequestData req,
+            int id)
+        {
+            try
+            {
+                _logger.LogInformation("Getting student with ID: {StudentId}", id);
+                var result = await _studentService.GetStudentByIdAsync(id);
+                
+                if (result == null)
+                {
+                    var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+                    CorsHelper.SetCorsHeaders(notFoundResponse);
+                    await notFoundResponse.WriteAsJsonAsync(new { message = "Student not found" });
+                    return notFoundResponse;
+                }
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                CorsHelper.SetCorsHeaders(response);
+                await response.WriteAsJsonAsync(result);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetStudentById function for StudentId: {StudentId}", id);
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                CorsHelper.SetCorsHeaders(errorResponse);
+                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
+                return errorResponse;
+            }
+        }
+
+        // POST api/Students
+        [Function("CreateStudent")]
+        public async Task<HttpResponseData> CreateStudent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Students")] HttpRequestData req)
+        {
+            try
+            {
+                _logger.LogInformation("Creating new student");
+                
+                string requestBody = await req.ReadAsStringAsync();
+                var createUserDto = JsonSerializer.Deserialize<CreateUserDto>(requestBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (createUserDto == null)
+                {
+                    var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                    CorsHelper.SetCorsHeaders(badRequestResponse);
+                    await badRequestResponse.WriteAsJsonAsync(new { message = "Invalid student data" });
+                    return badRequestResponse;
+                }
+
+                var result = await _studentService.CreateStudentAsync(createUserDto);
+                
+                var response = req.CreateResponse(HttpStatusCode.Created);
+                CorsHelper.SetCorsHeaders(response);
+                await response.WriteAsJsonAsync(result);
+                return response;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid data provided for student creation");
                 var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await badRequestResponse.WriteAsJsonAsync(new { message = "Invalid request data" });
+                CorsHelper.SetCorsHeaders(badRequestResponse);
+                await badRequestResponse.WriteAsJsonAsync(new { message = ex.Message });
                 return badRequestResponse;
             }
-
-            var result = await _studentService.CreateStudentAsync(createStudentDto);
-
-            var response = req.CreateResponse(HttpStatusCode.Created);
-            await response.WriteAsJsonAsync(result);
-            return response;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in CreateStudent function");
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                CorsHelper.SetCorsHeaders(errorResponse);
+                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
+                return errorResponse;
+            }
         }
-        catch (Exception ex)
+
+        // PUT api/Students/{id}
+        [Function("UpdateStudent")]
+        public async Task<HttpResponseData> UpdateStudent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "api/Students/{id:int}")] HttpRequestData req,
+            int id)
         {
-            _logger.LogError(ex, "Error in CreateStudent function");
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-            return errorResponse;
+            try
+            {
+                _logger.LogInformation("Updating student with ID: {StudentId}", id);
+                
+                string requestBody = await req.ReadAsStringAsync();
+                var updateUserDto = JsonSerializer.Deserialize<UpdateUserDto>(requestBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (updateUserDto == null)
+                {
+                    var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                    CorsHelper.SetCorsHeaders(badRequestResponse);
+                    await badRequestResponse.WriteAsJsonAsync(new { message = "Invalid student data" });
+                    return badRequestResponse;
+                }
+
+                var result = await _studentService.UpdateStudentAsync(id, updateUserDto);
+                
+                if (result == null)
+                {
+                    var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+                    CorsHelper.SetCorsHeaders(notFoundResponse);
+                    await notFoundResponse.WriteAsJsonAsync(new { message = "Student not found" });
+                    return notFoundResponse;
+                }
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                CorsHelper.SetCorsHeaders(response);
+                await response.WriteAsJsonAsync(result);
+                return response;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid data provided for student update. StudentId: {StudentId}", id);
+                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                CorsHelper.SetCorsHeaders(badRequestResponse);
+                await badRequestResponse.WriteAsJsonAsync(new { message = ex.Message });
+                return badRequestResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in UpdateStudent function for StudentId: {StudentId}", id);
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                CorsHelper.SetCorsHeaders(errorResponse);
+                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
+                return errorResponse;
+            }
         }
-    }
 
-    [Function("GetStudentsByDojaang")]
-    public async Task<HttpResponseData> GetStudentsByDojaang(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "dojaangs/{dojaangId:int}/students")] HttpRequestData req,
-        int dojaangId)
-    {
-        try
+        // DELETE api/Students/{id}
+        [Function("DeleteStudent")]
+        public async Task<HttpResponseData> DeleteStudent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "api/Students/{id:int}")] HttpRequestData req,
+            int id)
         {
-            var result = await _studentService.GetStudentsByDojaangIdAsync(dojaangId);
+            try
+            {
+                _logger.LogInformation("Deleting student with ID: {StudentId}", id);
+                
+                var success = await _studentService.DeleteStudentAsync(id);
+                
+                if (!success)
+                {
+                    var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+                    CorsHelper.SetCorsHeaders(notFoundResponse);
+                    await notFoundResponse.WriteAsJsonAsync(new { message = "Student not found" });
+                    return notFoundResponse;
+                }
 
+                var response = req.CreateResponse(HttpStatusCode.NoContent);
+                CorsHelper.SetCorsHeaders(response);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in DeleteStudent function for StudentId: {StudentId}", id);
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                CorsHelper.SetCorsHeaders(errorResponse);
+                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
+                return errorResponse;
+            }
+        }
+
+        // OPTIONS handler for CORS preflight requests
+        [Function("StudentsOptions")]
+        public HttpResponseData StudentsOptions(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Students")] HttpRequestData req)
+        {
             var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(result);
+            CorsHelper.SetCorsHeaders(response);
             return response;
         }
-        catch (Exception ex)
+
+        [Function("StudentsByIdOptions")]
+        public HttpResponseData StudentsByIdOptions(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Students/{id:int}")] HttpRequestData req)
         {
-            _logger.LogError(ex, "Error in GetStudentsByDojaang function for DojaangId: {DojaangId}", dojaangId);
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-            return errorResponse;
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            CorsHelper.SetCorsHeaders(response);
+            return response;
         }
     }
 }
