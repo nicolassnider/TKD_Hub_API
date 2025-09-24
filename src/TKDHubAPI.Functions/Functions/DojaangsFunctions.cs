@@ -101,22 +101,12 @@ public class DojaangsFunction
                 return badRequest;
             }
 
-            var result = await _dojaangService.CreateAsync(createDojaangDto);
+            await _dojaangService.AddAsync(createDojaangDto);
             
-            if (result.Success)
-            {
-                var response = req.CreateResponse(HttpStatusCode.Created);
-                CorsHelper.SetCorsHeaders(response);
-                await response.WriteAsJsonAsync(result);
-                return response;
-            }
-            else
-            {
-                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                CorsHelper.SetCorsHeaders(badRequestResponse);
-                await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                return badRequestResponse;
-            }
+            var response = req.CreateResponse(HttpStatusCode.Created);
+            CorsHelper.SetCorsHeaders(response);
+            await response.WriteAsJsonAsync(new { message = "Dojaang created successfully" });
+            return response;
         }
         catch (Exception ex)
         {
@@ -149,22 +139,12 @@ public class DojaangsFunction
                 return badRequest;
             }
 
-            var result = await _dojaangService.UpdateAsync(id, updateDojaangDto);
+            await _dojaangService.UpdateAsync(updateDojaangDto);
             
-            if (result.Success)
-            {
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                CorsHelper.SetCorsHeaders(response);
-                await response.WriteAsJsonAsync(result);
-                return response;
-            }
-            else
-            {
-                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                CorsHelper.SetCorsHeaders(badRequestResponse);
-                await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                return badRequestResponse;
-            }
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            CorsHelper.SetCorsHeaders(response);
+            await response.WriteAsJsonAsync(new { message = "Dojaang updated successfully" });
+            return response;
         }
         catch (Exception ex)
         {

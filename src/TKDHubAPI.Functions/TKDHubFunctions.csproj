@@ -2,6 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
@@ -21,9 +24,9 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TKDHubAPI.Application\TKDHubAPI.Application.csproj" />
-    <ProjectReference Include="..\..\src\TKDHubAPI.Domain\TKDHubAPI.Domain.csproj" />
-    <ProjectReference Include="..\..\src\TKDHubAPI.Infrastructure\TKDHubAPI.Infrastructure.csproj" />
+    <ProjectReference Include="..\TKDHubAPI.Application\TKDHubAPI.Application.csproj" />
+    <ProjectReference Include="..\TKDHubAPI.Domain\TKDHubAPI.Domain.csproj" />
+    <ProjectReference Include="..\TKDHubAPI.Infrastructure\TKDHubAPI.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

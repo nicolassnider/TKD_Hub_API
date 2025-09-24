@@ -112,11 +112,7 @@ namespace TKDHubFunctions.Functions
                 {
                     Name = createClassDto.Name,
                     DojaangId = createClassDto.DojaangId,
-                    CoachId = createClassDto.CoachId,
-                    Description = createClassDto.Description,
-                    MaxCapacity = createClassDto.MaxCapacity,
-                    MinAge = createClassDto.MinAge,
-                    MaxAge = createClassDto.MaxAge
+                    CoachId = createClassDto.CoachId
                 };
 
                 var result = await _trainingClassService.CreateAsync(trainingClass);
@@ -146,7 +142,7 @@ namespace TKDHubFunctions.Functions
             {
                 _logger.LogInformation("Getting students for class ID: {ClassId}", classId);
                 
-                var students = await _studentClassService.GetStudentsByClassIdAsync(classId);
+                var students = await _studentClassService.GetStudentsByTrainingClassIdAsync(classId);
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 CorsHelper.SetCorsHeaders(response);
                 await response.WriteAsJsonAsync(students);

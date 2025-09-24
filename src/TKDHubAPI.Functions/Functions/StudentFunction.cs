@@ -15,11 +15,13 @@ namespace TKDHubFunctions.Functions
     {
         private readonly ILogger<StudentFunction> _logger;
         private readonly IStudentService _studentService;
+        private readonly IUserService _userService;
 
-        public StudentFunction(ILogger<StudentFunction> logger, IStudentService studentService)
+        public StudentFunction(ILogger<StudentFunction> logger, IStudentService studentService, IUserService userService)
         {
             _logger = logger;
             _studentService = studentService;
+            _userService = userService;
         }
 
         // GET api/Students
@@ -91,12 +93,12 @@ namespace TKDHubFunctions.Functions
                 _logger.LogInformation("Creating new student");
                 
                 string requestBody = await req.ReadAsStringAsync();
-                var createUserDto = JsonSerializer.Deserialize<CreateUserDto>(requestBody, new JsonSerializerOptions
+                var createStudentDto = JsonSerializer.Deserialize<CreateStudentDto>(requestBody, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (createUserDto == null)
+                if (createStudentDto == null)
                 {
                     var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                     CorsHelper.SetCorsHeaders(badRequestResponse);
@@ -104,7 +106,7 @@ namespace TKDHubFunctions.Functions
                     return badRequestResponse;
                 }
 
-                var result = await _studentService.CreateStudentAsync(createUserDto);
+                var result = await _studentService.CreateStudentAsync(createStudentDto);
                 
                 var response = req.CreateResponse(HttpStatusCode.Created);
                 CorsHelper.SetCorsHeaders(response);
@@ -140,12 +142,12 @@ namespace TKDHubFunctions.Functions
                 _logger.LogInformation("Updating student with ID: {StudentId}", id);
                 
                 string requestBody = await req.ReadAsStringAsync();
-                var updateUserDto = JsonSerializer.Deserialize<UpdateUserDto>(requestBody, new JsonSerializerOptions
+                var updateStudentDto = JsonSerializer.Deserialize<UpdateStudentDto>(requestBody, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (updateUserDto == null)
+                if (updateStudentDto == null)
                 {
                     var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                     CorsHelper.SetCorsHeaders(badRequestResponse);
@@ -153,7 +155,7 @@ namespace TKDHubFunctions.Functions
                     return badRequestResponse;
                 }
 
-                var result = await _studentService.UpdateStudentAsync(id, updateUserDto);
+                var result = await _studentService.UpdateStudentAsync(id, updateStudentDto);
                 
                 if (result == null)
                 {
@@ -196,15 +198,7 @@ namespace TKDHubFunctions.Functions
             {
                 _logger.LogInformation("Deleting student with ID: {StudentId}", id);
                 
-                var success = await _studentService.DeleteStudentAsync(id);
-                
-                if (!success)
-                {
-                    var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
-                    CorsHelper.SetCorsHeaders(notFoundResponse);
-                    await notFoundResponse.WriteAsJsonAsync(new { message = "Student not found" });
-                    return notFoundResponse;
-                }
+                await _userService.DeleteAsync(id);
 
                 var response = req.CreateResponse(HttpStatusCode.NoContent);
                 CorsHelper.SetCorsHeaders(response);

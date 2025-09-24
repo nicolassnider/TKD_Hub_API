@@ -90,33 +90,23 @@ public class CoachesFunction
             _logger.LogInformation("Creating new coach");
             
             var body = await req.ReadAsStringAsync();
-            var createCoachDto = JsonSerializer.Deserialize<CreateUserDto>(body, 
+            var createUserDto = JsonSerializer.Deserialize<CreateUserDto>(body, 
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (createCoachDto == null)
+            if (createUserDto == null)
             {
                 var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
                 CorsHelper.SetCorsHeaders(badRequest);
                 await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
                 return badRequest;
             }
-
-            var result = await _userService.CreateCoachAsync(createCoachDto);
             
-            if (result.Success)
-            {
-                var response = req.CreateResponse(HttpStatusCode.Created);
-                CorsHelper.SetCorsHeaders(response);
-                await response.WriteAsJsonAsync(result);
-                return response;
-            }
-            else
-            {
-                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                CorsHelper.SetCorsHeaders(badRequestResponse);
-                await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                return badRequestResponse;
-            }
+            var result = await _userService.CreateUserAsync(0, new[] { "Admin" }, createUserDto);
+            
+            var response = req.CreateResponse(HttpStatusCode.Created);
+            CorsHelper.SetCorsHeaders(response);
+            await response.WriteAsJsonAsync(result);
+            return response;
         }
         catch (Exception ex)
         {
@@ -149,22 +139,12 @@ public class CoachesFunction
                 return badRequest;
             }
 
-            var result = await _userService.UpdateCoachAsync(id, updateCoachDto);
+            await _userService.UpdateUserFromDtoAsync(id, updateCoachDto);
             
-            if (result.Success)
-            {
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                CorsHelper.SetCorsHeaders(response);
-                await response.WriteAsJsonAsync(result);
-                return response;
-            }
-            else
-            {
-                var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                CorsHelper.SetCorsHeaders(badRequestResponse);
-                await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                return badRequestResponse;
-            }
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            CorsHelper.SetCorsHeaders(response);
+            await response.WriteAsJsonAsync(new { message = "Coach updated successfully" });
+            return response;
         }
         catch (Exception ex)
         {
