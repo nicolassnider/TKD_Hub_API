@@ -31,7 +31,7 @@ jobs:
       - name: Build SPA
         run: |
           echo "Building SPA from frontend/spa"
-          cd frontend/spa
+          cd Frontend/spa
           npm install
           npm run build
 
