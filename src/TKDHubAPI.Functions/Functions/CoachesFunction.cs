@@ -1,10 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubFunctions.Helpers;
@@ -26,12 +24,12 @@ public class CoachesFunction
 
     [Function("GetAllCoaches")]
     public async Task<HttpResponseData> GetAllCoaches(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/coaches")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "coaches")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Getting all coaches");
-            
+
             var coaches = await _coachService.GetAllCoachesAsync();
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -50,13 +48,13 @@ public class CoachesFunction
 
     [Function("GetCoachById")]
     public async Task<HttpResponseData> GetCoachById(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/coaches/{id:int}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "coaches/{id:int}")] HttpRequestData req,
         int id)
     {
         try
         {
             _logger.LogInformation("Getting coach with ID: {CoachId}", id);
-            
+
             var coach = await _coachService.GetCoachByIdAsync(id);
             if (coach == null)
             {
@@ -83,14 +81,14 @@ public class CoachesFunction
 
     [Function("CreateCoach")]
     public async Task<HttpResponseData> CreateCoach(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/coaches")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "coaches")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Creating new coach");
-            
+
             var body = await req.ReadAsStringAsync();
-            var createUserDto = JsonSerializer.Deserialize<CreateUserDto>(body, 
+            var createUserDto = JsonSerializer.Deserialize<CreateUserDto>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (createUserDto == null)
@@ -100,9 +98,9 @@ public class CoachesFunction
                 await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
                 return badRequest;
             }
-            
+
             var result = await _userService.CreateUserAsync(0, new[] { "Admin" }, createUserDto);
-            
+
             var response = req.CreateResponse(HttpStatusCode.Created);
             CorsHelper.SetCorsHeaders(response);
             await response.WriteAsJsonAsync(result);
@@ -120,15 +118,15 @@ public class CoachesFunction
 
     [Function("UpdateCoach")]
     public async Task<HttpResponseData> UpdateCoach(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "api/coaches/{id:int}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "coaches/{id:int}")] HttpRequestData req,
         int id)
     {
         try
         {
             _logger.LogInformation("Updating coach with ID: {CoachId}", id);
-            
+
             var body = await req.ReadAsStringAsync();
-            var updateCoachDto = JsonSerializer.Deserialize<UpdateUserDto>(body, 
+            var updateCoachDto = JsonSerializer.Deserialize<UpdateUserDto>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (updateCoachDto == null)
@@ -140,7 +138,7 @@ public class CoachesFunction
             }
 
             await _userService.UpdateUserFromDtoAsync(id, updateCoachDto);
-            
+
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
             await response.WriteAsJsonAsync(new { message = "Coach updated successfully" });
@@ -158,7 +156,7 @@ public class CoachesFunction
 
     [Function("CoachesOptions")]
     public async Task<HttpResponseData> CoachesOptions(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/coaches/{*route}")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "coaches/{*route}")] HttpRequestData req)
     {
         _logger.LogInformation("CORS preflight request for Coaches endpoints");
         var response = CorsHelper.CreateCorsResponse(req);

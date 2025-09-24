@@ -1,10 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.Payment;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubFunctions.Helpers;
@@ -24,18 +22,18 @@ public class PaymentFunction
 
     [Function("CreatePaymentPreference")]
     public async Task<HttpResponseData> CreatePaymentPreference(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/payments/create-preference")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "payments/create-preference")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Creating MercadoPago payment preference");
-            
+
             var body = await req.ReadAsStringAsync();
-            var request = JsonSerializer.Deserialize<CreatePreferenceRequest>(body, 
+            var request = JsonSerializer.Deserialize<CreatePreferenceRequest>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (request == null || request.Amount <= 0 || 
-                string.IsNullOrWhiteSpace(request.Description) || 
+            if (request == null || request.Amount <= 0 ||
+                string.IsNullOrWhiteSpace(request.Description) ||
                 string.IsNullOrWhiteSpace(request.PayerEmail))
             {
                 var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
@@ -45,9 +43,9 @@ public class PaymentFunction
             }
 
             var result = await _mercadoPagoService.CreatePreferenceAsync(
-                request.Amount, 
-                request.Description, 
-                request.PayerEmail, 
+                request.Amount,
+                request.Description,
+                request.PayerEmail,
                 System.Threading.CancellationToken.None);
 
             if (result == null)
@@ -83,14 +81,14 @@ public class PaymentFunction
 
     [Function("PaymentWebhook")]
     public async Task<HttpResponseData> PaymentWebhook(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/payments/webhook")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "payments/webhook")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Processing MercadoPago webhook");
-            
+
             var body = await req.ReadAsStringAsync();
-            var webhook = JsonSerializer.Deserialize<object>(body, 
+            var webhook = JsonSerializer.Deserialize<object>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             // Process the webhook (implement based on MercadoPago webhook structure)
@@ -114,7 +112,7 @@ public class PaymentFunction
 
     [Function("PaymentsOptions")]
     public async Task<HttpResponseData> PaymentsOptions(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/payments/{*route}")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "payments/{*route}")] HttpRequestData req)
     {
         _logger.LogInformation("CORS preflight request for Payments endpoints");
         var response = CorsHelper.CreateCorsResponse(req);

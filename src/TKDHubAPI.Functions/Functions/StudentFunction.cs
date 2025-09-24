@@ -1,10 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubFunctions.Helpers;
@@ -27,13 +25,13 @@ namespace TKDHubFunctions.Functions
         // GET api/Students
         [Function("GetAllStudents")]
         public async Task<HttpResponseData> GetAllStudents(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/Students")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Students")] HttpRequestData req)
         {
             try
             {
                 _logger.LogInformation("Getting all students");
                 var students = await _studentService.GetAllStudentsAsync();
-                
+
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 CorsHelper.SetCorsHeaders(response);
                 await response.WriteAsJsonAsync(students);
@@ -52,14 +50,14 @@ namespace TKDHubFunctions.Functions
         // GET api/Students/{id}
         [Function("GetStudentById")]
         public async Task<HttpResponseData> GetStudentById(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/Students/{id:int}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Students/{id:int}")] HttpRequestData req,
             int id)
         {
             try
             {
                 _logger.LogInformation("Getting student with ID: {StudentId}", id);
                 var result = await _studentService.GetStudentByIdAsync(id);
-                
+
                 if (result == null)
                 {
                     var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
@@ -86,12 +84,12 @@ namespace TKDHubFunctions.Functions
         // POST api/Students
         [Function("CreateStudent")]
         public async Task<HttpResponseData> CreateStudent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Students")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Students")] HttpRequestData req)
         {
             try
             {
                 _logger.LogInformation("Creating new student");
-                
+
                 string requestBody = await req.ReadAsStringAsync();
                 var createStudentDto = JsonSerializer.Deserialize<CreateStudentDto>(requestBody, new JsonSerializerOptions
                 {
@@ -107,7 +105,7 @@ namespace TKDHubFunctions.Functions
                 }
 
                 var result = await _studentService.CreateStudentAsync(createStudentDto);
-                
+
                 var response = req.CreateResponse(HttpStatusCode.Created);
                 CorsHelper.SetCorsHeaders(response);
                 await response.WriteAsJsonAsync(result);
@@ -134,13 +132,13 @@ namespace TKDHubFunctions.Functions
         // PUT api/Students/{id}
         [Function("UpdateStudent")]
         public async Task<HttpResponseData> UpdateStudent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "api/Students/{id:int}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "Students/{id:int}")] HttpRequestData req,
             int id)
         {
             try
             {
                 _logger.LogInformation("Updating student with ID: {StudentId}", id);
-                
+
                 string requestBody = await req.ReadAsStringAsync();
                 var updateStudentDto = JsonSerializer.Deserialize<UpdateStudentDto>(requestBody, new JsonSerializerOptions
                 {
@@ -156,7 +154,7 @@ namespace TKDHubFunctions.Functions
                 }
 
                 var result = await _studentService.UpdateStudentAsync(id, updateStudentDto);
-                
+
                 if (result == null)
                 {
                     var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
@@ -191,13 +189,13 @@ namespace TKDHubFunctions.Functions
         // DELETE api/Students/{id}
         [Function("DeleteStudent")]
         public async Task<HttpResponseData> DeleteStudent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "api/Students/{id:int}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "Students/{id:int}")] HttpRequestData req,
             int id)
         {
             try
             {
                 _logger.LogInformation("Deleting student with ID: {StudentId}", id);
-                
+
                 await _userService.DeleteAsync(id);
 
                 var response = req.CreateResponse(HttpStatusCode.NoContent);
@@ -217,7 +215,7 @@ namespace TKDHubFunctions.Functions
         // OPTIONS handler for CORS preflight requests
         [Function("StudentsOptions")]
         public HttpResponseData StudentsOptions(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Students")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "Students")] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -226,7 +224,7 @@ namespace TKDHubFunctions.Functions
 
         [Function("StudentsByIdOptions")]
         public HttpResponseData StudentsByIdOptions(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Students/{id:int}")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "Students/{id:int}")] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);

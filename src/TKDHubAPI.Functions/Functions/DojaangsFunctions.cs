@@ -1,10 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.Dojaang;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubFunctions.Helpers;
@@ -26,12 +24,12 @@ public class DojaangsFunction
 
     [Function("GetAllDojaangs")]
     public async Task<HttpResponseData> GetAllDojaangs(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/dojaangs")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "dojaangs")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Getting all dojaangs");
-            
+
             var dojaangs = await _dojaangService.GetAllAsync();
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -50,13 +48,13 @@ public class DojaangsFunction
 
     [Function("GetDojaangById")]
     public async Task<HttpResponseData> GetDojaangById(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/dojaangs/{id:int}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "dojaangs/{id:int}")] HttpRequestData req,
         int id)
     {
         try
         {
             _logger.LogInformation("Getting dojaang with ID: {DojaangId}", id);
-            
+
             var dojaang = await _dojaangService.GetByIdAsync(id);
             if (dojaang == null)
             {
@@ -83,14 +81,14 @@ public class DojaangsFunction
 
     [Function("CreateDojaang")]
     public async Task<HttpResponseData> CreateDojaang(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/dojaangs")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "dojaangs")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Creating new dojaang");
-            
+
             var body = await req.ReadAsStringAsync();
-            var createDojaangDto = JsonSerializer.Deserialize<CreateDojaangDto>(body, 
+            var createDojaangDto = JsonSerializer.Deserialize<CreateDojaangDto>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (createDojaangDto == null)
@@ -102,7 +100,7 @@ public class DojaangsFunction
             }
 
             await _dojaangService.AddAsync(createDojaangDto);
-            
+
             var response = req.CreateResponse(HttpStatusCode.Created);
             CorsHelper.SetCorsHeaders(response);
             await response.WriteAsJsonAsync(new { message = "Dojaang created successfully" });
@@ -120,15 +118,15 @@ public class DojaangsFunction
 
     [Function("UpdateDojaang")]
     public async Task<HttpResponseData> UpdateDojaang(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "api/dojaangs/{id:int}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "dojaangs/{id:int}")] HttpRequestData req,
         int id)
     {
         try
         {
             _logger.LogInformation("Updating dojaang with ID: {DojaangId}", id);
-            
+
             var body = await req.ReadAsStringAsync();
-            var updateDojaangDto = JsonSerializer.Deserialize<UpdateDojaangDto>(body, 
+            var updateDojaangDto = JsonSerializer.Deserialize<UpdateDojaangDto>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (updateDojaangDto == null)
@@ -140,7 +138,7 @@ public class DojaangsFunction
             }
 
             await _dojaangService.UpdateAsync(updateDojaangDto);
-            
+
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
             await response.WriteAsJsonAsync(new { message = "Dojaang updated successfully" });
@@ -158,13 +156,13 @@ public class DojaangsFunction
 
     [Function("GetDojaangStudents")]
     public async Task<HttpResponseData> GetDojaangStudents(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/dojaangs/{dojaangId:int}/students")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "dojaangs/{dojaangId:int}/students")] HttpRequestData req,
         int dojaangId)
     {
         try
         {
             _logger.LogInformation("Getting students for dojaang ID: {DojaangId}", dojaangId);
-            
+
             var students = await _userService.GetStudentsByDojaangIdAsync(dojaangId);
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -183,7 +181,7 @@ public class DojaangsFunction
 
     [Function("DojaangsOptions")]
     public async Task<HttpResponseData> DojaangsOptions(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/dojaangs/{*route}")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "dojaangs/{*route}")] HttpRequestData req)
     {
         _logger.LogInformation("CORS preflight request for Dojaangs endpoints");
         var response = CorsHelper.CreateCorsResponse(req);

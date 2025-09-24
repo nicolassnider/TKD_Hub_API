@@ -1,14 +1,10 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Application.Common;
 using TKDHubFunctions.Helpers;
 
 namespace TKDHubFunctions.Functions;
@@ -26,14 +22,14 @@ public class AuthFunction
 
     [Function("Register")]
     public async Task<HttpResponseData> Register(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Auth/register")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "register")] HttpRequestData req)
     {
         try
         {
             var body = await req.ReadAsStringAsync();
-            var registerDto = JsonSerializer.Deserialize<RegisterDto>(body, new JsonSerializerOptions 
-            { 
-                PropertyNameCaseInsensitive = true 
+            var registerDto = JsonSerializer.Deserialize<RegisterDto>(body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
             });
 
             if (registerDto == null)
@@ -54,7 +50,7 @@ public class AuthFunction
                 DojaangId = registerDto.DojaangId,
                 RoleIds = new List<int> { 4 } // Student role ID
             };
-            
+
             var result = await _userService.RegisterAsync(createUserDto, registerDto.Password);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
@@ -73,14 +69,14 @@ public class AuthFunction
 
     [Function("Login")]
     public async Task<HttpResponseData> Login(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Auth/login")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "login")] HttpRequestData req)
     {
         try
         {
             var body = await req.ReadAsStringAsync();
-            var loginDto = JsonSerializer.Deserialize<LoginDto>(body, new JsonSerializerOptions 
-            { 
-                PropertyNameCaseInsensitive = true 
+            var loginDto = JsonSerializer.Deserialize<LoginDto>(body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
             });
 
             if (loginDto == null)
@@ -113,11 +109,20 @@ public class AuthFunction
         }
     }
 
-    [Function("AuthOptions")]
-    public async Task<HttpResponseData> AuthOptions(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Auth/{*route}")] HttpRequestData req)
+    [Function("LoginOptions")]
+    public async Task<HttpResponseData> LoginOptions(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "login")] HttpRequestData req)
     {
-        _logger.LogInformation("CORS preflight request for Auth endpoints");
+        _logger.LogInformation("CORS preflight request for login endpoint");
+        var response = CorsHelper.CreateCorsResponse(req);
+        return response;
+    }
+
+    [Function("RegisterOptions")]
+    public async Task<HttpResponseData> RegisterOptions(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "register")] HttpRequestData req)
+    {
+        _logger.LogInformation("CORS preflight request for register endpoint");
         var response = CorsHelper.CreateCorsResponse(req);
         return response;
     }

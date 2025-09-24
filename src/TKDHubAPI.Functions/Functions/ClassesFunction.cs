@@ -1,15 +1,11 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TKDHubAPI.Application.DTOs.TrainingClass;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Application.Services;
-using TKDHubAPI.Domain.Entities;
 using TKDHubFunctions.Helpers;
 
 namespace TKDHubFunctions.Functions
@@ -30,12 +26,12 @@ namespace TKDHubFunctions.Functions
         // GET api/Classes
         [Function("GetAllClasses")]
         public async Task<HttpResponseData> GetAllClasses(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/Classes")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Classes")] HttpRequestData req)
         {
             try
             {
                 _logger.LogInformation("Getting all training classes");
-                
+
                 var classes = await _trainingClassService.GetAllAsync();
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 CorsHelper.SetCorsHeaders(response);
@@ -55,13 +51,13 @@ namespace TKDHubFunctions.Functions
         // GET api/Classes/{id}
         [Function("GetClassById")]
         public async Task<HttpResponseData> GetClassById(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/Classes/{id:int}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Classes/{id:int}")] HttpRequestData req,
             int id)
         {
             try
             {
                 _logger.LogInformation("Getting training class with ID: {ClassId}", id);
-                
+
                 var trainingClass = await _trainingClassService.GetByIdAsync(id);
                 if (trainingClass == null)
                 {
@@ -89,14 +85,14 @@ namespace TKDHubFunctions.Functions
         // POST api/Classes
         [Function("CreateClass")]
         public async Task<HttpResponseData> CreateClass(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/Classes")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Classes")] HttpRequestData req)
         {
             try
             {
                 _logger.LogInformation("Creating new training class");
-                
+
                 var body = await req.ReadAsStringAsync();
-                var createClassDto = JsonSerializer.Deserialize<CreateTrainingClassDto>(body, 
+                var createClassDto = JsonSerializer.Deserialize<CreateTrainingClassDto>(body,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (createClassDto == null)
@@ -116,7 +112,7 @@ namespace TKDHubFunctions.Functions
                 };
 
                 var result = await _trainingClassService.CreateAsync(trainingClass);
-                
+
                 var response = req.CreateResponse(HttpStatusCode.Created);
                 CorsHelper.SetCorsHeaders(response);
                 await response.WriteAsJsonAsync(result);
@@ -135,13 +131,13 @@ namespace TKDHubFunctions.Functions
         // GET api/classes/{classId}/students
         [Function("GetClassStudents")]
         public async Task<HttpResponseData> GetClassStudents(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/classes/{classId:int}/students")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "classes/{classId:int}/students")] HttpRequestData req,
             int classId)
         {
             try
             {
                 _logger.LogInformation("Getting students for class ID: {ClassId}", classId);
-                
+
                 var students = await _studentClassService.GetStudentsByTrainingClassIdAsync(classId);
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 CorsHelper.SetCorsHeaders(response);
@@ -161,7 +157,7 @@ namespace TKDHubFunctions.Functions
         // OPTIONS handlers for CORS preflight requests
         [Function("ClassesOptions")]
         public HttpResponseData ClassesOptions(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Classes")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "Classes")] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -170,7 +166,7 @@ namespace TKDHubFunctions.Functions
 
         [Function("ClassesByIdOptions")]
         public HttpResponseData ClassesByIdOptions(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/Classes/{id:int}")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "Classes/{id:int}")] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -179,7 +175,7 @@ namespace TKDHubFunctions.Functions
 
         [Function("ClassStudentsOptions")]
         public HttpResponseData ClassStudentsOptions(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "api/classes/{classId:int}/students")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "classes/{classId:int}/students")] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
