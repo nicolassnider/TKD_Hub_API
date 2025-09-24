@@ -14,16 +14,8 @@ export default defineConfig({
     },
   },
   build: {
-    // Resolve two directories up from frontend/spa to reach the repository root,
-    // then into src/TKDHubAPI.WebAPI/wwwroot so the build always writes into the API project.
-    outDir: path.resolve(
-      __dirname,
-      "..",
-      "..",
-      "src",
-      "TKDHubAPI.WebAPI",
-      "wwwroot",
-    ),
+    // Use standard dist folder for Azure Static Web Apps deployment
+    outDir: path.resolve(__dirname, "dist"),
     // Clean the output directory before building to avoid stale assets.
     emptyOutDir: true,
     rollupOptions: {

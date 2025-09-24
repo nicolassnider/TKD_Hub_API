@@ -7,7 +7,8 @@
     "build": "vite build",
     "format": "npx prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "e2e:test": "node ./test/smoke-header.test.js",
-    "build:copy": "npm run build",
+    "build:copy": "npm run build && npm run copy-to-webapi",
+    "copy-to-webapi": "copyfiles -u 1 'dist/**/*' '../../src/TKDHubAPI.WebAPI/wwwroot/'",
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.0.0",
+    "copyfiles": "^2.4.1",
     "prettier": "^3.0.0",
     "puppeteer": "^20.0.0",
     "typescript": "^5.0.0",
