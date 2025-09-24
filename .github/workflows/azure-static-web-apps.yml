@@ -42,7 +42,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (i.e., PR comments)
           action: 'upload'
-          app_location: 'frontend/spa'
+          app_location: 'Frontend/spa'
           api_location: 'src/TKDHubAPI.Functions'
           output_location: 'dist'
           skip_deploy_on_missing_secrets: true
