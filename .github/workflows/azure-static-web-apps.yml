@@ -19,6 +19,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug - List repository structure
+        run: |
+          echo "=== Repository root contents ==="
+          ls -la
+          echo "=== Frontend directory contents (if exists) ==="
+          ls -la frontend/ || echo "frontend directory not found"
+          echo "=== Looking for spa directory ==="
+          find . -name "spa" -type d || echo "No spa directories found"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,9 +35,17 @@ jobs:
           
       - name: Build SPA
         run: |
-          cd frontend/spa
-          npm install
-          npm run build
+          if [ -d "frontend/spa" ]; then
+            echo "Building SPA from frontend/spa"
+            cd frontend/spa
+            npm install
+            npm run build
+          else
+            echo "ERROR: frontend/spa directory not found!"
+            echo "Available directories:"
+            find . -maxdepth 2 -type d -name "*spa*" || echo "No spa directories found"
+            exit 1
+          fi
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
