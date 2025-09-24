@@ -591,7 +591,7 @@ az sql db show --resource-group $resourceGroup --server $sqlServerName --name $s
 
 # Check SignalR Service
 Write-Host "📡 Checking SignalR Service..."
-az signalr show --name $signalRName --resource-group $resourceGroup --query "provisioningState" -o tsv
+# Ensure the resource group exists and is accessible
 
 
 # Check Static Web App
