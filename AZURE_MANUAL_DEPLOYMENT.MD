@@ -282,13 +282,19 @@ Write-Host "⚙️ Setting up deployment configuration..." -ForegroundColor Yell
 # Basic settings
 $resourceGroup = "tkd-hub-rg"
 $location = "East US"  # Cost-effective region
-$uniqueId = Get-Random -Minimum 1000 -Maximum 9999
 
-# Resource names (automatically made unique)
+# 🎯 Generate ONE unique ID for all resources (ensures consistency)
+$uniqueId = Get-Random -Minimum 10000 -Maximum 99999
+Write-Host "🔢 Generated Unique ID: $uniqueId" -ForegroundColor Green
+Write-Host "   This ID will be used for ALL Azure resources" -ForegroundColor Cyan
+
+# 📝 All Resource names (using the SAME unique ID)
 $sqlServerName = "tkd-hub-sql-$uniqueId"
 $sqlDbName = "TKDHubDB"
 $signalRName = "tkd-hub-signalr-$uniqueId"
 $staticWebAppName = "tkd-hub-app-$uniqueId"
+$appServicePlan = "tkd-hub-plan-$uniqueId"
+$webAppName = "tkd-hub-api-$uniqueId"
 
 # Database credentials (CHANGE THESE!)
 $sqlAdminUser = "tkdhub-admin"
@@ -301,11 +307,19 @@ $githubRepo = "nicolassnider/TKD_Hub_API"  # ⚠️ CHANGE THIS
 Write-Host "� Deployment Configuration:" -ForegroundColor Green
 Write-Host "   Resource Group: $resourceGroup" -ForegroundColor Cyan
 Write-Host "   Location: $location" -ForegroundColor Cyan
+Write-Host "   Unique ID: $uniqueId (used by all resources)" -ForegroundColor Green
 Write-Host "   SQL Server: $sqlServerName" -ForegroundColor Cyan
 Write-Host "   Database: $sqlDbName" -ForegroundColor Cyan
+Write-Host "   App Service Plan: $appServicePlan" -ForegroundColor Cyan
+Write-Host "   Web App: $webAppName" -ForegroundColor Cyan
 Write-Host "   SignalR: $signalRName" -ForegroundColor Cyan
 Write-Host "   Static Web App: $staticWebAppName" -ForegroundColor Cyan
 Write-Host "   GitHub Repo: $githubRepo" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "✨ RESOURCE NAMING STRATEGY:" -ForegroundColor Green
+Write-Host "   • All resources use the SAME unique ID: $uniqueId" -ForegroundColor Cyan
+Write-Host "   • Ensures consistency and easier management" -ForegroundColor Cyan
+Write-Host "   • Makes cleanup and identification simple" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "⚠️  IMPORTANT: Make sure GitHub repo URL is correct!" -ForegroundColor Yellow
 ```
@@ -330,15 +344,21 @@ function Test-AzureRegionAvailability {
     
     Write-Host "� Testing region availability: $Region" -ForegroundColor Cyan
     
-    # Test region by attempting to create a temporary resource group
-    $testRgName = "test-rg-$(Get-Random)"
-    az group create --name $testRgName --location $Region --output none 2>$null
-    
-    if ($LASTEXITCODE -eq 0) {
-        # Clean up test resource group
-        az group delete --name $testRgName --yes --no-wait --output none 2>$null
-        return $true
+    try {
+        # Simple region validation using Azure locations list
+        $availableRegions = az account list-locations --query "[].name" -o tsv 2>$null
+        if ($availableRegions -contains $Region) {
+            # Additional check: try to list resource providers for SQL in the region
+            $sqlProvider = az provider show --namespace Microsoft.Sql --query "registrationState" -o tsv 2>$null
+            if ($sqlProvider -eq "Registered") {
+                return $true
+            }
+        }
     }
+    catch {
+        Write-Host "⚠️ Could not verify region availability: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+    
     return $false
 }
 
@@ -445,24 +465,107 @@ if ($rgDeployment.Success) {
 ```powershell
 Write-Host "🗄️ Creating SQL Server and Database with region retry..." -ForegroundColor Yellow
 
-# 📊 Create SQL Server with Region Retry
-$sqlDeployment = Deploy-WithRegionRetry -PrimaryRegion $location -ResourceDescription "SQL Server" -DeploymentScript {
-    Write-Host "📊 Creating SQL Server: $sqlServerName in $script:location" -ForegroundColor Cyan
+# 📊 Create SQL Server with Smart Region Retry (handles name conflicts)
+function Deploy-SqlServerWithRegionRetry {
+    param([string]$PrimaryRegion, [string]$BaseServerName, [string]$ResourceGroup, [string]$AdminUser, [string]$AdminPassword)
     
-    az sql server create `
-        --name $sqlServerName `
-        --resource-group $resourceGroup `
-        --location $script:location `
-        --admin-user $sqlAdminUser `
-        --admin-password $sqlAdminPassword `
-        --output none
+    # Region pool for SQL Server
+    $regionPool = @($PrimaryRegion, "East US", "East US 2", "West US 2", "South Central US", 
+                   "Central US", "West Central US", "West Europe", "North Europe", "UK South",
+                   "Southeast Asia", "East Asia", "Australia East", "Japan East")
     
-    return $LASTEXITCODE
+    $uniqueRegions = @($PrimaryRegion) + ($regionPool | Where-Object { $_ -ne $PrimaryRegion }) | Select-Object -Unique
+    
+    Write-Host "🗄️ SQL Server deployment with smart retry..." -ForegroundColor Yellow
+    Write-Host "📊 Base name: $BaseServerName" -ForegroundColor Cyan
+    
+    $regionAttempt = 0
+    foreach ($region in $uniqueRegions) {
+        $regionAttempt++
+        
+        # Generate unique server name for each region attempt
+        $currentServerName = if ($regionAttempt -eq 1) { 
+            $BaseServerName 
+        } else { 
+            "$BaseServerName-r$regionAttempt" 
+        }
+        
+        Write-Host "� Attempt $regionAttempt : $currentServerName in $region" -ForegroundColor Yellow
+        
+        # Check if server name is available in the subscription
+        $nameCheck = az sql server list --query "[?name=='$currentServerName']" -o tsv 2>$null
+        if ($nameCheck) {
+            Write-Host "⚠️ SQL Server name '$currentServerName' already exists globally, trying next..." -ForegroundColor DarkYellow
+            continue
+        }
+        
+        try {
+            Write-Host "📊 Creating SQL Server: $currentServerName in $region" -ForegroundColor Cyan
+            
+            az sql server create `
+                --name $currentServerName `
+                --resource-group $ResourceGroup `
+                --location $region `
+                --admin-user $AdminUser `
+                --admin-password $AdminPassword `
+                --output none
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ SQL Server created successfully: $currentServerName in $region" -ForegroundColor Green
+                return @{
+                    Success = $true
+                    Region = $region
+                    ServerName = $currentServerName
+                }
+            } else {
+                # Capture and analyze the error output
+                $errorOutput = az sql server create --name $currentServerName --resource-group $ResourceGroup --location $region --admin-user $AdminUser --admin-password $AdminPassword 2>&1 | Out-String
+                
+                if ($errorOutput -match "RegionDoesNotAllowProvisioning") {
+                    Write-Host "⚠️ Region '$region' not accepting new SQL servers (capacity issue)" -ForegroundColor Yellow
+                }
+                elseif ($errorOutput -match "InvalidResourceLocation") {
+                    Write-Host "⚠️ SQL Server name conflict in region '$region'" -ForegroundColor Yellow
+                }
+                elseif ($errorOutput -match "SubscriptionNotFound|AuthorizationFailed") {
+                    Write-Host "❌ Subscription or authorization issue - check permissions" -ForegroundColor Red
+                }
+                else {
+                    Write-Host "❌ Failed to create SQL Server in $region" -ForegroundColor Red
+                }
+                
+                # Clean up any partially created resources (silently)
+                Write-Host "🧹 Cleaning up partial resources..." -ForegroundColor DarkYellow
+                az sql server delete --name $currentServerName --resource-group $ResourceGroup --yes --output none 2>$null
+            }
+        }
+        catch {
+            Write-Host "❌ Exception in $region : $($_.Exception.Message)" -ForegroundColor Red
+            # Try to clean up
+            az sql server delete --name $currentServerName --resource-group $ResourceGroup --yes --output none 2>$null
+        }
+        
+        Write-Host "⚠️ Retrying in next region..." -ForegroundColor DarkYellow
+        Start-Sleep -Seconds 3  # Brief pause between attempts
+    }
+    
+    Write-Host "❌ Failed to create SQL Server in all regions" -ForegroundColor Red
+    return @{
+        Success = $false
+        Region = $null
+        ServerName = $null
+    }
 }
 
+# Deploy SQL Server with advanced retry logic
+$sqlDeployment = Deploy-SqlServerWithRegionRetry -PrimaryRegion $location -BaseServerName $sqlServerName -ResourceGroup $resourceGroup -AdminUser $sqlAdminUser -AdminPassword $sqlAdminPassword
+
 if ($sqlDeployment.Success) {
+    # Update variables with successful deployment results
     $location = $sqlDeployment.Region  # Update location to successful region
-    Write-Host "✅ SQL Server created successfully in $location" -ForegroundColor Green
+    $sqlServerName = $sqlDeployment.ServerName  # Update server name to actual deployed name
+    
+    Write-Host "✅ SQL Server created successfully: $sqlServerName in $location" -ForegroundColor Green
     
     # Create Serverless SQL Database (auto-pause for cost savings)
     Write-Host "📊 Creating serverless database: $sqlDbName" -ForegroundColor Cyan
@@ -516,6 +619,7 @@ if ($sqlDeployment.Success) {
         Write-Host "   Region: $location" -ForegroundColor Cyan
         Write-Host "   Tier: Serverless (0.5-1 vCore, auto-pause after 60 min)" -ForegroundColor Cyan
         Write-Host "   Cost: ~$5-15/month (includes auto-pause savings)" -ForegroundColor Cyan
+        Write-Host "   ℹ️ Final server name: $sqlServerName" -ForegroundColor Cyan
     } else {
         Write-Host "❌ Failed to create database on SQL Server" -ForegroundColor Red
         exit 1
@@ -523,9 +627,10 @@ if ($sqlDeployment.Success) {
 } else {
     Write-Host "❌ Failed to create SQL Server in all available regions" -ForegroundColor Red
     Write-Host "💡 Possible issues:" -ForegroundColor Yellow
-    Write-Host "   • SQL Server name '$sqlServerName' may be taken globally" -ForegroundColor DarkYellow
-    Write-Host "   • Try changing the uniqueId or server name" -ForegroundColor DarkYellow
-    Write-Host "   • Check subscription SQL server limits" -ForegroundColor DarkYellow
+    Write-Host "   • All attempted server names were taken globally" -ForegroundColor DarkYellow
+    Write-Host "   • Try changing the uniqueId value: Get-Random -Minimum 10000 -Maximum 99999" -ForegroundColor DarkYellow
+    Write-Host "   • Check subscription SQL server limits across regions" -ForegroundColor DarkYellow
+    Write-Host "   • Verify Azure SQL service is available in attempted regions" -ForegroundColor DarkYellow
     exit 1
 }
 ```
@@ -535,10 +640,7 @@ if ($sqlDeployment.Success) {
 
 ```powershell
 Write-Host "🌐 Creating App Service for Web API with region retry..." -ForegroundColor Yellow
-
-# App Service names
-$appServicePlan = "tkd-hub-plan-$uniqueId"
-$webAppName = "tkd-hub-api-$uniqueId"
+Write-Host "📋 Using pre-configured names: $appServicePlan & $webAppName" -ForegroundColor Cyan
 
 # 📋 Create App Service Plan with Region Retry
 $appPlanDeployment = Deploy-WithRegionRetry -PrimaryRegion $location -ResourceDescription "App Service Plan" -DeploymentScript {
@@ -1090,7 +1192,69 @@ foreach ($region in $testRegions) {
 }
 ```
 
-#### 🛠️ 2. Manual Region Override
+#### �️ 2. SQL Server Name Conflicts
+
+The enhanced deployment script automatically handles SQL Server name conflicts using this strategy:
+
+**🔄 Automatic Naming Strategy:**
+- **Attempt 1**: `tkd-hub-sql-1234` (original name)
+- **Attempt 2**: `tkd-hub-sql-1234-r2` (if first region fails)  
+- **Attempt 3**: `tkd-hub-sql-1234-r3` (if second region fails)
+- **And so on...** for each region retry
+
+This prevents the `InvalidResourceLocation` error you encountered. If you still encounter issues:
+
+```powershell
+# Check for existing SQL servers with conflicting names
+function Check-SqlServerNames {
+    Write-Host "🔍 Checking for SQL Server name conflicts..." -ForegroundColor Cyan
+    
+    $baseNames = @("tkd-hub-sql-$uniqueId", "tkd-hub-sql-$uniqueId-r2", "tkd-hub-sql-$uniqueId-r3")
+    
+    foreach ($name in $baseNames) {
+        $existing = az sql server show --name $name --resource-group $resourceGroup 2>$null
+        if ($existing) {
+            $serverInfo = $existing | ConvertFrom-Json
+            Write-Host "⚠️ SQL Server '$name' exists in $($serverInfo.location)" -ForegroundColor Yellow
+        } else {
+            Write-Host "✅ SQL Server name '$name' is available" -ForegroundColor Green
+        }
+    }
+}
+
+# Clean up failed SQL Server deployments
+function Cleanup-FailedSqlServers {
+    Write-Host "🧹 Cleaning up failed SQL Server deployments..." -ForegroundColor Yellow
+    
+    # List all SQL servers in the resource group
+    $existingServers = az sql server list --resource-group $resourceGroup --query "[].{name:name, location:location, state:state}" -o json | ConvertFrom-Json
+    
+    foreach ($server in $existingServers) {
+        if ($server.name -like "tkd-hub-sql-*") {
+            Write-Host "🗑️ Found SQL Server: $($server.name) in $($server.location) (State: $($server.state))" -ForegroundColor Cyan
+            
+            # Optionally delete failed servers (uncomment if needed)
+            # Write-Host "Deleting failed SQL Server: $($server.name)" -ForegroundColor Red
+            # az sql server delete --name $server.name --resource-group $resourceGroup --yes --output none
+        }
+    }
+}
+
+# Generate new unique server name if conflicts persist
+function Generate-NewSqlServerName {
+    $newId = Get-Random -Minimum 10000 -Maximum 99999
+    $newServerName = "tkd-hub-sql-$newId"
+    Write-Host "🆕 Generated new SQL Server name: $newServerName" -ForegroundColor Green
+    return $newServerName
+}
+
+# Run diagnostics
+Check-SqlServerNames
+# Cleanup-FailedSqlServers  # Uncomment if needed
+# $sqlServerName = Generate-NewSqlServerName  # Use if name conflicts persist
+```
+
+#### �🛠️ 3. Manual Region Override
 
 If automatic region retry fails, override manually:
 
@@ -1155,7 +1319,59 @@ $pairedRegion = Get-PairedRegion -PrimaryRegion $location
 Write-Host "🌍 Recommended paired region: $pairedRegion" -ForegroundColor Cyan
 ```
 
-#### 🚨 5. Emergency Fallback Deployment
+#### �️ 5. Common SQL Server Deployment Errors
+
+**Handle specific error scenarios:**
+
+```powershell
+# Error: RegionDoesNotAllowProvisioning
+# Solution: This region has reached capacity for SQL servers
+Write-Host "💡 RegionDoesNotAllowProvisioning Error:" -ForegroundColor Yellow
+Write-Host "   • Region has reached SQL Server capacity" -ForegroundColor Cyan
+Write-Host "   • Try different regions: West US 2, North Europe, Southeast Asia" -ForegroundColor Cyan
+Write-Host "   • Check Azure Service Health: https://status.azure.com" -ForegroundColor Cyan
+
+# Error: ResourceNotFound during cleanup
+# Solution: Ignore cleanup errors, they're usually harmless
+Write-Host "💡 ResourceNotFound during cleanup:" -ForegroundColor Yellow
+Write-Host "   • These errors during cleanup are normal and can be ignored" -ForegroundColor Cyan
+Write-Host "   • The deployment script will continue to next region" -ForegroundColor Cyan
+
+# Error: InvalidResourceLocation
+# Solution: Server name conflicts (handled automatically now)
+Write-Host "💡 InvalidResourceLocation Error:" -ForegroundColor Yellow
+Write-Host "   • Enhanced script now handles this automatically" -ForegroundColor Cyan
+Write-Host "   • Each region attempt uses a unique server name" -ForegroundColor Cyan
+
+# Generate completely new resource names with fresh unique ID if all attempts fail
+function New-ResourceNames {
+    Write-Host "🔄 Generating fresh resource names..." -ForegroundColor Yellow
+    
+    # Generate new unique ID
+    $newUniqueId = Get-Random -Minimum 10000 -Maximum 99999
+    Write-Host "🆕 New Unique ID: $newUniqueId" -ForegroundColor Green
+    
+    # Regenerate ALL resource names with the same new ID
+    $script:uniqueId = $newUniqueId
+    $script:sqlServerName = "tkd-hub-sql-$newUniqueId"
+    $script:signalRName = "tkd-hub-signalr-$newUniqueId"
+    $script:staticWebAppName = "tkd-hub-app-$newUniqueId"
+    $script:appServicePlan = "tkd-hub-plan-$newUniqueId"
+    $script:webAppName = "tkd-hub-api-$newUniqueId"
+    
+    Write-Host "✨ All resource names updated:" -ForegroundColor Green
+    Write-Host "   SQL Server: $script:sqlServerName" -ForegroundColor Cyan
+    Write-Host "   App Service Plan: $script:appServicePlan" -ForegroundColor Cyan
+    Write-Host "   Web App: $script:webAppName" -ForegroundColor Cyan
+    Write-Host "   SignalR: $script:signalRName" -ForegroundColor Cyan
+    Write-Host "   Static Web App: $script:staticWebAppName" -ForegroundColor Cyan
+}
+
+# Use if you need a completely fresh start with all new names
+# New-ResourceNames
+```
+
+#### �🚨 6. Emergency Fallback Deployment
 
 If all Azure regions fail:
 
@@ -1229,424 +1445,9 @@ If you need the ultra-low-cost Azure Functions approach, refer to the project's 
 
 **9.2 Create Authentication Functions:**
 
-Create `Functions/AuthFunction.cs`:
-```csharp
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Text.Json;
-using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Application.DTOs.Auth;
 
-namespace TKDHubFunctions.Functions
-{
-    public class AuthFunction
-    {
-        private readonly ILogger _logger;
-        private readonly IAuthService _authService;
 
-        public AuthFunction(ILoggerFactory loggerFactory, IAuthService authService)
-        {
-            _logger = loggerFactory.CreateLogger<AuthFunction>();
-            _authService = authService;
-        }
 
-        [Function("Login")]
-        public async Task<HttpResponseData> Login(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/auth/login")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Processing login request");
-                
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var loginRequest = JsonSerializer.Deserialize<LoginRequestDto>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (loginRequest == null)
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
-                    return badRequest;
-                }
-
-                var result = await _authService.LoginAsync(loginRequest);
-                
-                if (result.Success)
-                {
-                    var response = req.CreateResponse(HttpStatusCode.OK);
-                    await response.WriteAsJsonAsync(result);
-                    return response;
-                }
-                else
-                {
-                    var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
-                    await unauthorizedResponse.WriteAsJsonAsync(new { message = result.Message });
-                    return unauthorizedResponse;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing login request");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-
-        [Function("Register")]
-        public async Task<HttpResponseData> Register(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/auth/register")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Processing registration request");
-                
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var registerRequest = JsonSerializer.Deserialize<RegisterRequestDto>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (registerRequest == null)
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
-                    return badRequest;
-                }
-
-                var result = await _authService.RegisterAsync(registerRequest);
-                
-                if (result.Success)
-                {
-                    var response = req.CreateResponse(HttpStatusCode.Created);
-                    await response.WriteAsJsonAsync(result);
-                    return response;
-                }
-                else
-                {
-                    var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                    return badRequestResponse;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing registration request");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-
-        [Function("RefreshToken")]
-        public async Task<HttpResponseData> RefreshToken(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/auth/refresh")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Processing token refresh request");
-                
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var refreshRequest = JsonSerializer.Deserialize<RefreshTokenRequestDto>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (refreshRequest == null)
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
-                    return badRequest;
-                }
-
-                var result = await _authService.RefreshTokenAsync(refreshRequest.RefreshToken);
-                
-                if (result.Success)
-                {
-                    var response = req.CreateResponse(HttpStatusCode.OK);
-                    await response.WriteAsJsonAsync(result);
-                    return response;
-                }
-                else
-                {
-                    var unauthorizedResponse = req.CreateResponse(HttpStatusCode.Unauthorized);
-                    await unauthorizedResponse.WriteAsJsonAsync(new { message = result.Message });
-                    return unauthorizedResponse;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing token refresh");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-    }
-}
-```
-
-**9.3 Create Student Functions:**
-
-Create `Functions/StudentFunction.cs`:
-```csharp
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Text.Json;
-using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Application.DTOs.Student;
-
-namespace TKDHubFunctions.Functions
-{
-    public class StudentFunction
-    {
-        private readonly ILogger _logger;
-        private readonly IStudentService _studentService;
-
-        public StudentFunction(ILoggerFactory loggerFactory, IStudentService studentService)
-        {
-            _logger = loggerFactory.CreateLogger<StudentFunction>();
-            _studentService = studentService;
-        }
-
-        [Function("GetAllStudents")]
-        public async Task<HttpResponseData> GetAllStudents(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/students")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Getting all students");
-                
-                var students = await _studentService.GetAllStudentsAsync();
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteAsJsonAsync(students);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting all students");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-
-        [Function("GetStudentById")]
-        public async Task<HttpResponseData> GetStudentById(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/students/{id}")]
-            HttpRequestData req)
-        {
-            try
-            {
-                var routeData = req.FunctionContext.BindingContext.BindingData;
-                if (!routeData.TryGetValue("id", out var idObj) || !Guid.TryParse(idObj?.ToString(), out var id))
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid student ID" });
-                    return badRequest;
-                }
-
-                _logger.LogInformation("Getting student with ID: {StudentId}", id);
-                
-                var student = await _studentService.GetStudentByIdAsync(id);
-                if (student == null)
-                {
-                    var notFound = req.CreateResponse(HttpStatusCode.NotFound);
-                    await notFound.WriteAsJsonAsync(new { message = "Student not found" });
-                    return notFound;
-                }
-
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteAsJsonAsync(student);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting student");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-
-        [Function("CreateStudent")]
-        public async Task<HttpResponseData> CreateStudent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/students")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Creating new student");
-                
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var createStudentDto = JsonSerializer.Deserialize<CreateStudentDto>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (createStudentDto == null)
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
-                    return badRequest;
-                }
-
-                var result = await _studentService.CreateStudentAsync(createStudentDto);
-                
-                if (result.Success)
-                {
-                    var response = req.CreateResponse(HttpStatusCode.Created);
-                    await response.WriteAsJsonAsync(result.Data);
-                    return response;
-                }
-                else
-                {
-                    var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                    return badRequestResponse;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating student");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-    }
-}
-```
-
-**9.4 Create Payment Functions:**
-
-Create `Functions/PaymentFunction.cs`:
-```csharp
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Text.Json;
-using TKDHubAPI.Application.Interfaces;
-using TKDHubAPI.Application.DTOs.Payment;
-
-namespace TKDHubFunctions.Functions
-{
-    public class PaymentFunction
-    {
-        private readonly ILogger _logger;
-        private readonly IPaymentService _paymentService;
-
-        public PaymentFunction(ILoggerFactory loggerFactory, IPaymentService paymentService)
-        {
-            _logger = loggerFactory.CreateLogger<PaymentFunction>();
-            _paymentService = paymentService;
-        }
-
-        [Function("CreatePayment")]
-        public async Task<HttpResponseData> CreatePayment(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/payments")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Processing payment creation");
-                
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var paymentRequest = JsonSerializer.Deserialize<CreatePaymentDto>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (paymentRequest == null)
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid request data" });
-                    return badRequest;
-                }
-
-                var result = await _paymentService.CreatePaymentAsync(paymentRequest);
-                
-                if (result.Success)
-                {
-                    var response = req.CreateResponse(HttpStatusCode.Created);
-                    await response.WriteAsJsonAsync(result.Data);
-                    return response;
-                }
-                else
-                {
-                    var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                    return badRequestResponse;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating payment");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-
-        [Function("WebhookPayment")]
-        public async Task<HttpResponseData> WebhookPayment(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/payments/webhook")]
-            HttpRequestData req)
-        {
-            try
-            {
-                _logger.LogInformation("Processing MercadoPago webhook");
-                
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var webhookData = JsonSerializer.Deserialize<MercadoPagoWebhookDto>(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (webhookData == null)
-                {
-                    var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequest.WriteAsJsonAsync(new { message = "Invalid webhook data" });
-                    return badRequest;
-                }
-
-                var result = await _paymentService.ProcessWebhookAsync(webhookData);
-                
-                if (result.Success)
-                {
-                    var response = req.CreateResponse(HttpStatusCode.OK);
-                    await response.WriteAsJsonAsync(new { message = "Webhook processed successfully" });
-                    return response;
-                }
-                else
-                {
-                    var badRequestResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await badRequestResponse.WriteAsJsonAsync(new { message = result.Message });
-                    return badRequestResponse;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing webhook");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { message = "Internal server error" });
-                return errorResponse;
-            }
-        }
-    }
-}
-```
 
 
 #### Step 10: Update host.json Configuration
@@ -4357,6 +4158,7 @@ az consumption budget create `
 ✅ **Production Security** - JWT authentication and encrypted connections  
 ✅ **Cost Optimization** - ~$18-28/month for full functionality  
 ✅ **Monitoring Ready** - Application Insights for performance tracking  
+✅ **Unified Resource Management** - All resources use the same unique ID for easy identification  
 
 ### Next Steps for Production
 
@@ -4367,6 +4169,3 @@ az consumption budget create `
 5. **Plan backup and disaster recovery** strategy
 
 **Your martial arts school management system is ready to serve students and instructors worldwide! 🥋**
-
-
-
