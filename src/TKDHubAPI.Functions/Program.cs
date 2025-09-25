@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using TKDHubAPI.Application;
 using TKDHubAPI.Infrastructure;
-using TKDHubAPI.Infrastructure.Data;
 
 
 namespace TKDHubFunctions;
