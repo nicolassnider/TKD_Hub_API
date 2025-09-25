@@ -84,11 +84,11 @@ export function useAllFormData(
         endpoints.push("students");
       }
       if (includeCoaches) {
-        requests.push(fetch("/api/Coaches"));
+        requests.push(fetch("/api/coaches"));
         endpoints.push("coaches");
       }
       if (includeDojaangs) {
-        requests.push(fetch("/api/Dojaangs"));
+        requests.push(fetch("/api/dojaangs"));
         endpoints.push("dojaangs");
       }
       if (includeEvents) {

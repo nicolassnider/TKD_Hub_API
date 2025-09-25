@@ -70,11 +70,11 @@ export function useStudents(shouldFetch: boolean = true) {
 }
 
 export function useCoaches(shouldFetch: boolean = true) {
-  return useApiData<Coach>("/api/Coaches", shouldFetch);
+  return useApiData<Coach>("/api/coaches", shouldFetch);
 }
 
 export function useDojaangs(shouldFetch: boolean = true) {
-  return useApiData<Dojaang>("/api/Dojaangs", shouldFetch);
+  return useApiData<Dojaang>("/api/dojaangs", shouldFetch);
 }
 
 export function useRanks(shouldFetch: boolean = true) {

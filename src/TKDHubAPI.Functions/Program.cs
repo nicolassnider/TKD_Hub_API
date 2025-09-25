@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,9 @@ public class Program
                                .AllowAnyHeader();
                     });
                 });
+
+                // Add IHttpContextAccessor for Azure Functions
+                services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
                 // Add Application and Infrastructure layers
                 services.AddApplication(context.Configuration);
