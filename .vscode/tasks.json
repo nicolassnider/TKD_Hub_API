@@ -12,7 +12,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/AzureFunctions\\TKDHubFunctions"
+				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
 			}
 		},
 		{
@@ -31,7 +31,7 @@
 			},
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/AzureFunctions\\TKDHubFunctions"
+				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
 			}
 		},
 		{
@@ -47,7 +47,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/AzureFunctions\\TKDHubFunctions"
+				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
 			}
 		},
 		{
@@ -58,20 +58,20 @@
 				"--configuration",
 				"Release",
 				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
+				"/consoleloggerparameters:NoSummasy"
 			],
 			"type": "process",
 			"dependsOn": "clean release (functions)",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/AzureFunctions\\TKDHubFunctions"
+				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
 			}
 		},
 		{
 			"type": "func",
 			"dependsOn": "build (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/AzureFunctions\\TKDHubFunctions/bin/Debug/net8.0"
+				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions/bin/Debug/net8.0"
 			},
 			"command": "host start",
 			"isBackground": true,
