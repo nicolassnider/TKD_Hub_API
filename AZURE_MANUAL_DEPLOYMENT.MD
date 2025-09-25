@@ -304,7 +304,7 @@ $sqlAdminPassword = "x4hPB^{A8#U5L}w27u!?"  # Must be complex
 $githubRepo = "nicolassnider/TKD_Hub_API"  # ⚠️ CHANGE THIS
 
 # Display configuration
-Write-Host "� Deployment Configuration:" -ForegroundColor Green
+Write-Host "📋 Deployment Configuration:" -ForegroundColor Green
 Write-Host "   Resource Group: $resourceGroup" -ForegroundColor Cyan
 Write-Host "   Location: $location" -ForegroundColor Cyan
 Write-Host "   Unique ID: $uniqueId (used by all resources)" -ForegroundColor Green
@@ -324,6 +324,231 @@ Write-Host ""
 Write-Host "⚠️  IMPORTANT: Make sure GitHub repo URL is correct!" -ForegroundColor Yellow
 ```
 
+---
+
+## 🚨 CRITICAL: Cannot Create Resources in Any Region - Troubleshooting
+
+> **If you're getting errors creating resources in ALL regions, follow this diagnostic guide**
+
+### 🔍 Step-by-Step Diagnosis
+
+#### 1. Check Azure Login and Permissions
+
+```powershell
+Write-Host "🔐 Checking Azure authentication and permissions..." -ForegroundColor Yellow
+
+# Verify you're logged in
+$currentAccount = az account show 2>$null
+if (-not $currentAccount) {
+    Write-Host "❌ Not logged into Azure. Run: az login" -ForegroundColor Red
+    exit 1
+}
+
+$accountInfo = $currentAccount | ConvertFrom-Json
+Write-Host "✅ Logged in as: $($accountInfo.user.name)" -ForegroundColor Green
+Write-Host "📋 Subscription: $($accountInfo.name)" -ForegroundColor Cyan
+Write-Host "🆔 Subscription ID: $($accountInfo.id)" -ForegroundColor Cyan
+
+# Check subscription state
+if ($accountInfo.state -ne "Enabled") {
+    Write-Host "❌ Subscription is not enabled: $($accountInfo.state)" -ForegroundColor Red
+    Write-Host "💡 Contact your Azure admin to enable the subscription" -ForegroundColor Yellow
+    exit 1
+}
+
+# Test permissions by trying to list resource groups
+Write-Host "🔍 Testing permissions..." -ForegroundColor Cyan
+$testRG = az group list --query "[0].name" -o tsv 2>$null
+if ($testRG) {
+    Write-Host "✅ Have permissions to list resource groups" -ForegroundColor Green
+} else {
+    Write-Host "❌ No permissions to list resource groups" -ForegroundColor Red
+    Write-Host "💡 Need 'Contributor' or 'Owner' role on subscription" -ForegroundColor Yellow
+    exit 1
+}
+```
+
+#### 2. Check Subscription Quotas and Limits
+
+```powershell
+Write-Host "📊 Checking subscription quotas and limits..." -ForegroundColor Yellow
+
+# Check compute quotas in key regions
+$testRegions = @("East US", "West US 2", "West Europe", "Southeast Asia")
+foreach ($region in $testRegions) {
+    Write-Host "🌍 Checking quotas in $region..." -ForegroundColor Cyan
+    
+    try {
+        # Check if we can list VM sizes (indicates region access)
+        $vmSizes = az vm list-sizes --location $region --query "[0].name" -o tsv 2>$null
+        if ($vmSizes) {
+            Write-Host "✅ $region: Accessible" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️ $region: May have restrictions" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "❌ $region: Not accessible" -ForegroundColor Red
+    }
+}
+
+# Check SQL Server quota (common limit)
+Write-Host "🗄️ Checking SQL Server limits..." -ForegroundColor Cyan
+try {
+    $sqlServers = az sql server list --query "length(@)" -o tsv 2>$null
+    if ($sqlServers -ne $null) {
+        Write-Host "📊 Current SQL Servers: $sqlServers" -ForegroundColor Cyan
+        if ([int]$sqlServers -ge 20) {
+            Write-Host "⚠️ High SQL Server count - may be near quota limit" -ForegroundColor Yellow
+        }
+    }
+} catch {
+    Write-Host "⚠️ Could not check SQL Server count" -ForegroundColor Yellow
+}
+```
+
+#### 3. Test Resource Provider Registration
+
+```powershell
+Write-Host "🔧 Checking Azure resource providers..." -ForegroundColor Yellow
+
+# Check critical resource providers
+$requiredProviders = @(
+    "Microsoft.Web",           # App Service, Static Web Apps
+    "Microsoft.Sql",           # SQL Database
+    "Microsoft.SignalRService", # SignalR
+    "Microsoft.Resources"       # Resource Groups
+)
+
+foreach ($provider in $requiredProviders) {
+    Write-Host "🔍 Checking $provider..." -ForegroundColor Cyan
+    
+    $providerState = az provider show --namespace $provider --query "registrationState" -o tsv 2>$null
+    
+    if ($providerState -eq "Registered") {
+        Write-Host "✅ $provider: Registered" -ForegroundColor Green
+    } elseif ($providerState -eq "NotRegistered") {
+        Write-Host "⚠️ $provider: Not registered - attempting to register..." -ForegroundColor Yellow
+        az provider register --namespace $provider --output none
+        Write-Host "🔄 Registering $provider (may take 5-10 minutes)" -ForegroundColor Cyan
+    } else {
+        Write-Host "❌ $provider: State = $providerState" -ForegroundColor Red
+    }
+}
+```
+
+#### 4. Generate New Resource Names (Solve Name Conflicts)
+
+```powershell
+Write-Host "🆕 Generating completely new resource names..." -ForegroundColor Yellow
+
+# Function to generate fresh unique names
+function New-FreshResourceNames {
+    # Generate a new unique ID in a different range
+    $freshId = Get-Random -Minimum 50000 -Maximum 99999
+    Write-Host "🔢 New Unique ID: $freshId" -ForegroundColor Green
+    
+    # Update all global variables
+    $script:uniqueId = $freshId
+    $script:sqlServerName = "tkd-hub-sql-$freshId"
+    $script:signalRName = "tkd-hub-signalr-$freshId" 
+    $script:staticWebAppName = "tkd-hub-app-$freshId"
+    $script:appServicePlan = "tkd-hub-plan-$freshId"
+    $script:webAppName = "tkd-hub-api-$freshId"
+    
+    Write-Host "✨ Fresh resource names generated:" -ForegroundColor Green
+    Write-Host "   SQL Server: $script:sqlServerName" -ForegroundColor Cyan
+    Write-Host "   App Service Plan: $script:appServicePlan" -ForegroundColor Cyan  
+    Write-Host "   Web App: $script:webAppName" -ForegroundColor Cyan
+    Write-Host "   SignalR: $script:signalRName" -ForegroundColor Cyan
+    Write-Host "   Static Web App: $script:staticWebAppName" -ForegroundColor Cyan
+    
+    return $freshId
+}
+
+# Generate new names
+$newUniqueId = New-FreshResourceNames
+Write-Host "🔄 Try deployment again with these new names" -ForegroundColor Green
+```
+
+#### 5. Test Basic Resource Creation
+
+```powershell
+Write-Host "🧪 Testing basic resource creation..." -ForegroundColor Yellow
+
+# Test 1: Try creating a simple resource group in East US
+$testRGName = "test-rg-$newUniqueId"
+Write-Host "🧪 Test 1: Creating test resource group '$testRGName' in East US..." -ForegroundColor Cyan
+
+try {
+    az group create --name $testRGName --location "East US" --output none
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Test resource group created successfully!" -ForegroundColor Green
+        
+        # Clean up test resource group
+        Write-Host "🧹 Cleaning up test resource group..." -ForegroundColor DarkYellow
+        az group delete --name $testRGName --yes --output none
+        Write-Host "✅ Test cleanup completed" -ForegroundColor Green
+        
+        Write-Host "🎯 DIAGNOSIS: Basic resource creation works!" -ForegroundColor Green
+        Write-Host "💡 Issue is likely with specific resource types or naming" -ForegroundColor Cyan
+    } else {
+        Write-Host "❌ Failed to create test resource group" -ForegroundColor Red
+    }
+} catch {
+    Write-Host "❌ Exception creating test resource group: $($_.Exception.Message)" -ForegroundColor Red
+}
+```
+
+### 🛠️ Common Solutions
+
+#### Solution 1: Subscription Issues
+```powershell
+# If basic resource creation fails:
+Write-Host "📋 Subscription Issues - Try these:" -ForegroundColor Yellow
+Write-Host "   1. 🔄 Switch to different subscription:" -ForegroundColor Cyan
+Write-Host "      az account list --output table" -ForegroundColor DarkCyan  
+Write-Host "      az account set --subscription 'SUBSCRIPTION_NAME'" -ForegroundColor DarkCyan
+Write-Host "   2. 📞 Contact Azure support for quota increases" -ForegroundColor Cyan
+Write-Host "   3. 🕒 Wait 30-60 minutes and retry (temporary capacity issues)" -ForegroundColor Cyan
+```
+
+#### Solution 2: Resource Provider Issues  
+```powershell
+# If providers are not registered:
+Write-Host "🔧 Resource Provider Issues - Fix:" -ForegroundColor Yellow
+Write-Host "   1. 🔄 Re-register providers:" -ForegroundColor Cyan
+Write-Host "      az provider register --namespace Microsoft.Web" -ForegroundColor DarkCyan
+Write-Host "      az provider register --namespace Microsoft.Sql" -ForegroundColor DarkCyan
+Write-Host "   2. ⏳ Wait 10-15 minutes for registration to complete" -ForegroundColor Cyan
+Write-Host "   3. 🔄 Retry deployment" -ForegroundColor Cyan
+```
+
+#### Solution 3: Name Conflicts
+```powershell
+# If resource names are taken globally:
+Write-Host "🆕 Name Conflict Issues - Fix:" -ForegroundColor Yellow  
+Write-Host "   1. 🎲 Use the New-FreshResourceNames function above" -ForegroundColor Cyan
+Write-Host "   2. 🔄 Modify uniqueId range to avoid conflicts" -ForegroundColor Cyan
+Write-Host "   3. 🏷️ Add your initials to resource names" -ForegroundColor Cyan
+```
+
+### 🚀 Emergency Deployment Alternative
+
+If all else fails, try this minimal deployment:
+
+```powershell
+Write-Host "🚨 EMERGENCY: Minimal deployment attempt..." -ForegroundColor Red
+
+# Try with minimal configuration in most reliable region
+$emergencyRG = "tkd-emergency-$(Get-Random -Min 1000 -Max 9999)"
+$emergencyLocation = "East US"
+
+Write-Host "🆘 Creating emergency resource group: $emergencyRG" -ForegroundColor Yellow
+az group create --name $emergencyRG --location $emergencyLocation --output table
+
+# If this works, you know the issue is with specific resources
+# If this fails, you have a fundamental subscription/permission issue
+```
 
 ---
 
