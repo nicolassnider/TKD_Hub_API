@@ -17,7 +17,7 @@ export default function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const body = await fetchJson<any>("/api/Auth/login", {
+      const body = await fetchJson<any>("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

@@ -40,7 +40,7 @@ export default function Register() {
     if (v) return setError(v);
     setLoading(true);
     try {
-      const body = await fetchJson<any>("/api/Auth/register", {
+      const body = await fetchJson<any>("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firstName, lastName, email, password }),

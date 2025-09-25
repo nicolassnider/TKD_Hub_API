@@ -18,7 +18,6 @@ import {
 } from "../types/classes";
 import { fetchJson, ApiError } from "../lib/api";
 
-
 interface ClassContextType {
   // State
   classes: TrainingClass[];
@@ -27,7 +26,6 @@ interface ClassContextType {
   availableStudents: StudentForAssignment[];
   loading: boolean;
   error: string | null;
-
 
   // Class CRUD operations
   fetchClasses: () => Promise<void>;
@@ -39,13 +37,11 @@ interface ClassContextType {
   ) => Promise<TrainingClass>;
   deleteClass: (id: number) => Promise<void>;
 
-
   // Student assignment operations
   fetchStudentsForClass: (classId: number) => Promise<void>;
   fetchAvailableStudents: (classId?: number) => Promise<void>;
   assignStudentToClass: (studentId: number, classId: number) => Promise<void>;
   removeStudentFromClass: (studentId: number, classId: number) => Promise<void>;
-
 
   // Schedule validation
   validateSchedule: (
@@ -54,19 +50,15 @@ interface ClassContextType {
     excludeClassId?: number,
   ) => Promise<ScheduleConflict[]>;
 
-
   // Permissions
   getPermissions: (trainingClass?: TrainingClass) => ClassPermissions;
-
 
   // Utilities
   clearError: () => void;
   formatScheduleDisplay: (schedules: any[]) => string;
 }
 
-
 const ClassContext = createContext<ClassContextType | undefined>(undefined);
-
 
 export const useClassContext = () => {
   const context = useContext(ClassContext);
@@ -76,11 +68,9 @@ export const useClassContext = () => {
   return context;
 };
 
-
 interface ClassProviderProps {
   children: ReactNode;
 }
-
 
 export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
   const [classes, setClasses] = useState<TrainingClass[]>([]);
@@ -94,15 +84,12 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
   const { hasRole, token } = useRole();
-
 
   const getAuthHeaders = () => ({
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   });
-
 
   const handleApiError = (error: any) => {
     if (error instanceof ApiError) {
@@ -113,11 +100,9 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     console.error("Class API error:", error);
   };
 
-
   const clearError = useCallback(() => {
     setError(null);
   }, []);
-
 
   // Class CRUD operations
   const fetchClasses = useCallback(async () => {
@@ -125,11 +110,9 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
 
-
       const response = (await fetchJson("/api/Classes", {
         headers: getAuthHeaders(),
       })) as TrainingClass[];
-
 
       setClasses(response);
     } catch (error) {
@@ -139,18 +122,15 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     }
   }, [token]);
 
-
   const fetchClass = useCallback(
     async (id: number): Promise<TrainingClass | null> => {
       try {
         setLoading(true);
         setError(null);
 
-
         const response = (await fetchJson(`/api/Classes/${id}`, {
           headers: getAuthHeaders(),
         })) as TrainingClass;
-
 
         setCurrentClass(response);
         return response;
@@ -164,20 +144,17 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token],
   );
 
-
   const createClass = useCallback(
     async (data: CreateTrainingClassDto): Promise<TrainingClass> => {
       try {
         setLoading(true);
         setError(null);
 
-
         const response = (await fetchJson("/api/Classes", {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify(data),
         })) as TrainingClass;
-
 
         setClasses((prev) => [...prev, response]);
         return response;
@@ -191,7 +168,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token],
   );
 
-
   const updateClass = useCallback(
     async (
       id: number,
@@ -201,13 +177,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         setLoading(true);
         setError(null);
 
-
         const response = (await fetchJson(`/api/Classes/${id}`, {
           method: "PUT",
           headers: getAuthHeaders(),
           body: JSON.stringify(data),
         })) as TrainingClass;
-
 
         setClasses((prev) => prev.map((c) => (c.id === id ? response : c)));
         if (currentClass?.id === id) {
@@ -224,19 +198,16 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token, currentClass],
   );
 
-
   const deleteClass = useCallback(
     async (id: number): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
 
-
         await fetchJson(`/api/Classes/${id}`, {
           method: "DELETE",
           headers: getAuthHeaders(),
         });
-
 
         setClasses((prev) => prev.filter((c) => c.id !== id));
         if (currentClass?.id === id) {
@@ -252,7 +223,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token, currentClass],
   );
 
-
   // Student assignment operations
   const fetchStudentsForClass = useCallback(
     async (classId: number): Promise<void> => {
@@ -260,11 +230,9 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         setLoading(true);
         setError(null);
 
-
         const response = (await fetchJson(`/api/classes/${classId}/students`, {
           headers: getAuthHeaders(),
         })) as StudentForAssignment[];
-
 
         setEnrolledStudents(response);
       } catch (error) {
@@ -276,23 +244,19 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token],
   );
 
-
   const fetchAvailableStudents = useCallback(
     async (classId?: number): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
 
-
         const url = classId
           ? `/api/Students?excludeClassId=${classId}`
           : "/api/Students";
 
-
         const response = (await fetchJson(url, {
           headers: getAuthHeaders(),
         })) as StudentForAssignment[];
-
 
         setAvailableStudents(response);
       } catch (error) {
@@ -304,13 +268,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token],
   );
 
-
   const assignStudentToClass = useCallback(
     async (studentId: number, classId: number): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
-
 
         await fetchJson(
           `/api/Students/${studentId}/trainingclasses/${classId}`,
@@ -320,7 +282,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           },
         );
 
-
         // Refresh both lists
         await Promise.all([
           fetchStudentsForClass(classId),
@@ -336,13 +297,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token, fetchStudentsForClass, fetchAvailableStudents],
   );
 
-
   const removeStudentFromClass = useCallback(
     async (studentId: number, classId: number): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
-
 
         await fetchJson(
           `/api/Students/${studentId}/trainingclasses/${classId}`,
@@ -352,7 +311,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           },
         );
 
-
         // Refresh both lists
         await Promise.all([
           fetchStudentsForClass(classId),
@@ -367,7 +325,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     },
     [token, fetchStudentsForClass, fetchAvailableStudents],
   );
-
 
   // Schedule validation
   const validateSchedule = useCallback(
@@ -387,7 +344,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           }),
         })) as { conflicts?: ScheduleConflict[] };
 
-
         return response.conflicts || [];
       } catch (error) {
         console.error("Schedule validation error:", error);
@@ -397,13 +353,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [token],
   );
 
-
   // Permissions
   const getPermissions = useCallback(
     (trainingClass?: TrainingClass): ClassPermissions => {
       const isAdmin = hasRole("Admin");
       const isCoach = hasRole("Coach");
-
 
       // Admins can do everything
       if (isAdmin) {
@@ -416,13 +370,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         };
       }
 
-
       // Coaches can create classes and manage their own classes
       if (isCoach) {
         const isOwnClass = trainingClass
           ? trainingClass.coachId === getCurrentUserId()
           : false;
-
 
         return {
           canCreate: true,
@@ -432,7 +384,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           canViewAttendance: isOwnClass,
         };
       }
-
 
       // Students and guests can only view
       return {
@@ -446,7 +397,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     [hasRole],
   );
 
-
   // Helper to get current user ID (would need to be implemented based on your auth)
   const getCurrentUserId = (): number => {
     // This should return the current user's ID from your auth context
@@ -454,14 +404,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     return 0;
   };
 
-
   // Utility functions
   const formatScheduleDisplay = useCallback((schedules: any[]): string => {
     if (!schedules || schedules.length === 0) return "No schedules";
 
-
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 
     return schedules
       .map((schedule) => {
@@ -470,7 +417,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
       })
       .join(", ");
   }, []);
-
 
   const contextValue: ClassContextType = {
     // State
@@ -481,7 +427,6 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     loading,
     error,
 
-
     // Class CRUD operations
     fetchClasses,
     fetchClass,
@@ -489,27 +434,22 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     updateClass,
     deleteClass,
 
-
     // Student assignment operations
     fetchStudentsForClass,
     fetchAvailableStudents,
     assignStudentToClass,
     removeStudentFromClass,
 
-
     // Schedule validation
     validateSchedule,
 
-
     // Permissions
     getPermissions,
-
 
     // Utilities
     clearError,
     formatScheduleDisplay,
   };
-
 
   return (
     <ClassContext.Provider value={contextValue}>
