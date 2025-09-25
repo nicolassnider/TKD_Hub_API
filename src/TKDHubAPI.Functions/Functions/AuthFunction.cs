@@ -6,19 +6,26 @@ using System.Text.Json;
 using TKDHubAPI.Application.DTOs.User;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubFunctions.Helpers;
+using TKDHubFunctions.Services;
+
 
 namespace TKDHubFunctions.Functions;
+
 
 public class AuthFunction
 {
     private readonly ILogger<AuthFunction> _logger;
     private readonly IUserService _userService;
+    private readonly IDatabaseMigrationService _migrationService;
 
-    public AuthFunction(ILogger<AuthFunction> logger, IUserService userService)
+
+    public AuthFunction(ILogger<AuthFunction> logger, IUserService userService, IDatabaseMigrationService migrationService)
     {
         _logger = logger;
         _userService = userService;
+        _migrationService = migrationService;
     }
+
 
     [Function("Register")]
     public async Task<HttpResponseData> Register(
@@ -26,11 +33,14 @@ public class AuthFunction
     {
         try
         {
+            // Ensure database migrations are applied before first database access
+            await _migrationService.EnsureDatabaseCreatedAsync();
             var body = await req.ReadAsStringAsync();
             var registerDto = JsonSerializer.Deserialize<RegisterDto>(body, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+
 
             if (registerDto == null)
             {
@@ -38,6 +48,7 @@ public class AuthFunction
                 await badRequestResponse.WriteAsJsonAsync(new { message = "Invalid request data" });
                 return badRequestResponse;
             }
+
 
             var createUserDto = new CreateUserDto
             {
@@ -51,7 +62,9 @@ public class AuthFunction
                 RoleIds = new List<int> { 4 } // Student role ID
             };
 
+
             var result = await _userService.RegisterAsync(createUserDto, registerDto.Password);
+
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -67,17 +80,21 @@ public class AuthFunction
         }
     }
 
+
     [Function("Login")]
     public async Task<HttpResponseData> Login(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "login")] HttpRequestData req)
     {
         try
         {
+            // Ensure database migrations are applied before first database access
+            await _migrationService.EnsureDatabaseCreatedAsync();
             var body = await req.ReadAsStringAsync();
             var loginDto = JsonSerializer.Deserialize<LoginDto>(body, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+
 
             if (loginDto == null)
             {
@@ -86,7 +103,9 @@ public class AuthFunction
                 return badRequestResponse;
             }
 
+
             var result = await _userService.LoginAndGetTokenAsync(loginDto);
+
 
             if (result.Token == null)
             {
@@ -94,6 +113,7 @@ public class AuthFunction
                 await unauthorizedResponse.WriteAsJsonAsync(new { message = "Invalid credentials" });
                 return unauthorizedResponse;
             }
+
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             CorsHelper.SetCorsHeaders(response);
@@ -109,6 +129,7 @@ public class AuthFunction
         }
     }
 
+
     [Function("LoginOptions")]
     public async Task<HttpResponseData> LoginOptions(
         [HttpTrigger(AuthorizationLevel.Anonymous, "options", Route = "login")] HttpRequestData req)
@@ -117,6 +138,7 @@ public class AuthFunction
         var response = CorsHelper.CreateCorsResponse(req);
         return response;
     }
+
 
     [Function("RegisterOptions")]
     public async Task<HttpResponseData> RegisterOptions(

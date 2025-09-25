@@ -24,6 +24,7 @@ import { Add, Delete, Search, ArrowBack } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import { TrainingClassDto, UserDto } from "../types/api";
 
+
 interface Student {
   id: number;
   firstName: string;
@@ -31,6 +32,7 @@ interface Student {
   email?: string;
   dojaangName?: string;
 }
+
 
 export default function ClassStudentManagement() {
   const { classId } = useParams<{ classId: string }>();
@@ -45,30 +47,35 @@ export default function ClassStudentManagement() {
     useState<Student | null>(null);
   const [removing, setRemoving] = useState<number | null>(null);
 
+
   useEffect(() => {
     if (classId) {
       loadData();
     }
   }, [classId]);
 
+
   const loadData = async () => {
     try {
       setLoading(true);
       const [classRes, enrolledRes, allStudentsRes] = await Promise.all([
         fetch(`/api/Classes/${classId}`),
-        fetch(`/api/Classes/${classId}/students`),
+        fetch(`/api/classes/${classId}/students`),
         fetch("/api/Students"),
       ]);
+
 
       if (classRes.ok) {
         const classData = await classRes.json();
         setClassData(classData);
       }
 
+
       if (enrolledRes.ok) {
         const enrolled = await enrolledRes.json();
         setEnrolledStudents(enrolled);
       }
+
 
       if (allStudentsRes.ok) {
         const allStudents = await allStudentsRes.json();
@@ -82,13 +89,16 @@ export default function ClassStudentManagement() {
     }
   };
 
+
   const getAvailableStudents = () => {
     const enrolledIds = enrolledStudents.map((s) => s.id);
     return allStudents.filter((student) => !enrolledIds.includes(student.id));
   };
 
+
   const handleAddStudent = async () => {
     if (!selectedStudentToAdd || !classId) return;
+
 
     try {
       const response = await fetch(
@@ -101,9 +111,11 @@ export default function ClassStudentManagement() {
         },
       );
 
+
       if (!response.ok) {
         throw new Error("Failed to add student to class");
       }
+
 
       await loadData();
       setAddDialogOpen(false);
@@ -114,11 +126,14 @@ export default function ClassStudentManagement() {
     }
   };
 
+
   const handleRemoveStudent = async (studentId: number) => {
     if (!classId) return;
 
+
     try {
       setRemoving(studentId);
+
 
       // Note: The backend doesn't seem to have a DELETE endpoint for removing students
       // You might need to add this endpoint or find the correct one
@@ -129,9 +144,11 @@ export default function ClassStudentManagement() {
         },
       );
 
+
       if (!response.ok) {
         throw new Error("Failed to remove student from class");
       }
+
 
       await loadData();
     } catch (error) {
@@ -142,8 +159,10 @@ export default function ClassStudentManagement() {
     }
   };
 
+
   const formatSchedules = (schedules: any[]) => {
     if (!schedules || schedules.length === 0) return "No schedules";
+
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return schedules
@@ -154,11 +173,14 @@ export default function ClassStudentManagement() {
       .join(", ");
   };
 
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
   if (!classData) return <div>Class not found</div>;
 
+
   const availableStudents = getAvailableStudents();
+
 
   return (
     <div>
@@ -168,6 +190,7 @@ export default function ClassStudentManagement() {
         </IconButton>
         <h2 className="page-title">Manage Students - {classData.name}</h2>
       </Box>
+
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
@@ -191,6 +214,7 @@ export default function ClassStudentManagement() {
           </Card>
         </Grid>
 
+
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
@@ -212,6 +236,7 @@ export default function ClassStudentManagement() {
                   Add Student
                 </Button>
               </Box>
+
 
               {enrolledStudents.length === 0 ? (
                 <Typography
@@ -263,6 +288,7 @@ export default function ClassStudentManagement() {
         </Grid>
       </Grid>
 
+
       {/* Add Student Dialog */}
       <Dialog
         open={addDialogOpen}
@@ -310,6 +336,7 @@ export default function ClassStudentManagement() {
               </Box>
             )}
           />
+
 
           {availableStudents.length === 0 && (
             <Typography

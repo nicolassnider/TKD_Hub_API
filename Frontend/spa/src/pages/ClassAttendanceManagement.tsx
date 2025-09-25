@@ -39,6 +39,7 @@ import {
   AttendanceStatus,
 } from "../types/api";
 
+
 interface Student {
   id: number;
   firstName: string;
@@ -46,11 +47,13 @@ interface Student {
   email?: string;
 }
 
+
 interface StudentClassRelation {
   id: number;
   student: Student;
   trainingClass: TrainingClassDto;
 }
+
 
 interface AttendanceRecord {
   studentClassId: number;
@@ -59,6 +62,7 @@ interface AttendanceRecord {
   status: AttendanceStatus;
   notes?: string;
 }
+
 
 const attendanceStatusOptions = [
   {
@@ -74,6 +78,7 @@ const attendanceStatusOptions = [
   },
   { value: AttendanceStatus.Other, label: "Other", color: "default" as const },
 ];
+
 
 export default function ClassAttendanceManagement() {
   const { classId } = useParams<{ classId: string }>();
@@ -98,28 +103,33 @@ export default function ClassAttendanceManagement() {
   >([]);
   const [selectedStudentName, setSelectedStudentName] = useState<string>("");
 
+
   useEffect(() => {
     if (classId) {
       loadData();
     }
   }, [classId]);
 
+
   const loadData = async () => {
     try {
       setLoading(true);
       const [classRes, studentsRes] = await Promise.all([
         fetch(`/api/Classes/${classId}`),
-        fetch(`/api/Classes/${classId}/students`),
+        fetch(`/api/classes/${classId}/students`),
       ]);
+
 
       if (classRes.ok) {
         const classData = await classRes.json();
         setClassData(classData);
       }
 
+
       if (studentsRes.ok) {
         const students = await studentsRes.json();
         setEnrolledStudents(students);
+
 
         // Initialize attendance records for current date
         const records: AttendanceRecord[] = students.map(
@@ -141,6 +151,7 @@ export default function ClassAttendanceManagement() {
     }
   };
 
+
   const updateAttendanceStatus = (
     studentId: number,
     status: AttendanceStatus,
@@ -152,6 +163,7 @@ export default function ClassAttendanceManagement() {
     );
   };
 
+
   const updateAttendanceNotes = (studentId: number, notes: string) => {
     setAttendanceRecords((prev) =>
       prev.map((record) =>
@@ -160,9 +172,11 @@ export default function ClassAttendanceManagement() {
     );
   };
 
+
   const saveAttendance = async () => {
     try {
       setSaving(true);
+
 
       // Save attendance for each student
       const promises = attendanceRecords.map(async (record) => {
@@ -181,6 +195,7 @@ export default function ClassAttendanceManagement() {
           },
         );
 
+
         if (!response.ok) {
           throw new Error(
             `Failed to save attendance for ${record.studentName}`,
@@ -188,7 +203,9 @@ export default function ClassAttendanceManagement() {
         }
       });
 
+
       await Promise.all(promises);
+
 
       // Show success message or refresh data
       console.log("Attendance saved successfully");
@@ -200,12 +217,14 @@ export default function ClassAttendanceManagement() {
     }
   };
 
+
   const viewStudentHistory = async (student: Student) => {
     try {
       // Note: This endpoint might need the student-class relationship ID
       const response = await fetch(
         `/api/Classes/student/${student.id}/attendance`,
       );
+
 
       if (response.ok) {
         const history = await response.json();
@@ -218,6 +237,7 @@ export default function ClassAttendanceManagement() {
     }
   };
 
+
   const getStatusChipProps = (status: AttendanceStatus) => {
     const option = attendanceStatusOptions.find((opt) => opt.value === status);
     return {
@@ -226,8 +246,10 @@ export default function ClassAttendanceManagement() {
     };
   };
 
+
   const formatSchedules = (schedules: any[]) => {
     if (!schedules || schedules.length === 0) return "No schedules";
+
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return schedules
@@ -238,9 +260,11 @@ export default function ClassAttendanceManagement() {
       .join(", ");
   };
 
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
   if (!classData) return <div>Class not found</div>;
+
 
   return (
     <div>
@@ -250,6 +274,7 @@ export default function ClassAttendanceManagement() {
         </IconButton>
         <h2 className="page-title">Attendance - {classData.name}</h2>
       </Box>
+
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
@@ -275,6 +300,7 @@ export default function ClassAttendanceManagement() {
             </CardContent>
           </Card>
         </Grid>
+
 
         <Grid item xs={12} md={8}>
           <Card>
@@ -306,6 +332,7 @@ export default function ClassAttendanceManagement() {
                 </Box>
               </Box>
 
+
               {enrolledStudents.length === 0 ? (
                 <Typography
                   variant="body2"
@@ -322,6 +349,7 @@ export default function ClassAttendanceManagement() {
                       (s) => s.id === record.studentId,
                     );
                     if (!student) return null;
+
 
                     return (
                       <React.Fragment key={record.studentId}>
@@ -353,6 +381,7 @@ export default function ClassAttendanceManagement() {
                                 </Select>
                               </FormControl>
 
+
                               <TextField
                                 placeholder="Notes"
                                 size="small"
@@ -365,6 +394,7 @@ export default function ClassAttendanceManagement() {
                                 }
                                 sx={{ width: 120 }}
                               />
+
 
                               <IconButton
                                 size="small"
@@ -386,6 +416,7 @@ export default function ClassAttendanceManagement() {
           </Card>
         </Grid>
       </Grid>
+
 
       {/* Attendance History Dialog */}
       <Dialog
