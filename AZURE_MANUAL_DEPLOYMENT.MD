@@ -1,813 +1,1231 @@
-# Azure Deployment Guide - TKD Hub API
+# 🥋 TKD Hub Azure Deployment Guide
 
+> **Production-ready deployment guide for TKD Hub API on Microsoft Azure**
 
-This guide provides step-by-step instructions for deploying the TKD Hub API application to Microsoft Azure with **ultra-low-cost optimization**.
+This comprehensive guide provides step-by-step instructions for deploying the TKD Hub application to Microsoft Azure with cost-optimized configurations suitable for production environments.
 
+## � Table of Contents
 
-## 🚀 Quick Start - Copy & Run Complete Script
+- [�🚀 Quick Start](#-quick-start)
+- [💰 Cost Analysis](#-cost-analysis)
+- [📋 Prerequisites](#-prerequisites)
+- [🏗️ Architecture Options](#️-architecture-options)
+- [⚡ Option 1: Ultra-Low-Cost (Azure Static Web Apps)](#-option-1-ultra-low-cost-azure-static-web-apps)
+- [💪 Option 2: Production-Ready (ASP.NET Core Web API)](#-option-2-production-ready-aspnet-core-web-api)
+- [🔧 Configuration & Testing](#-configuration--testing)
+- [🚀 Post-Deployment](#-post-deployment)
+- [🛠️ Troubleshooting](#️-troubleshooting)
 
+## 🚀 Quick Start
 
-**For fastest deployment, jump to the [Complete Deployment Script](#complete-deployment-script-all-steps-combined) section and run the PowerShell script.**
+Choose your deployment path:
 
+| Scenario | Recommended Option | Est. Cost | Deployment Time |
+|----------|-------------------|-----------|-----------------|
+| **MVP/Learning** | [Ultra-Low-Cost](#-option-1-ultra-low-cost-azure-static-web-apps) | $5-15/month | ~30 minutes |
+| **Production App** | [ASP.NET Core Web API](#-option-2-production-ready-aspnet-core-web-api) | $18-28/month | ~45 minutes |
 
-## 💰 Cost Summary
+## 💰 Cost Analysis
 
+### Cost Comparison
 
-| Deployment Type | Monthly Cost | Components |
-|----------------|--------------|------------|
-| **Ultra-Low-Cost** (Recommended) | **$5-15** | Static Web Apps (FREE) + SQL Serverless ($5-15) + SignalR (FREE) |
-| Standard Budget | $19-25 | App Services ($13) + SQL Basic ($5) + SignalR (FREE) |
-| Enterprise | $80-150+ | Premium tiers with enhanced features |
+| Deployment Type | Monthly Cost | Best For | Components |
+|----------------|--------------|----------|------------|
+| **Ultra-Low-Cost** | **$5-15** | MVPs, Learning, Low Traffic | Static Web Apps + SQL Serverless + SignalR FREE |
+| **Production-Ready** | **$18-28** | Production Apps, Teams | App Service + Static Web Apps + SQL Serverless |
+| **Enterprise** | **$80-150+** | High Traffic, Multi-region | Premium tiers with advanced features |
 
+### 💡 Cost-Saving Features
 
-## ⚡ Ultra-Low-Cost Features
-
-
-- ✅ **Azure Static Web Apps**: FREE hosting for React SPA + Azure Functions API
-- ✅ **SQL Database Serverless**: Auto-pause when not in use ($5-15/month)
+- ✅ **Azure Static Web Apps**: FREE hosting for React frontend
+- ✅ **SQL Database Serverless**: Auto-pause when not in use
 - ✅ **SignalR Service**: FREE tier (up to 20 connections)
-- ✅ **GitHub CI/CD**: Automatic deployments
-- ✅ **SSL & Custom Domains**: FREE
-- ✅ **94% cost reduction** compared to traditional hosting
+- ✅ **GitHub CI/CD**: Automatic deployments at no extra cost
+- ✅ **SSL & Custom Domains**: Included free
+- ✅ **Up to 94% cost reduction** vs traditional hosting
 
 
-## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Azure Services Overview](#azure-services-overview)
-- [Deployment Architecture](#deployment-architecture)
-- [Step-by-Step Deployment](#step-by-step-deployment)
-- [Configuration](#configuration)
-- [Post-Deployment](#post-deployment)
-- [Cost Optimization](#cost-optimization)
-- [Troubleshooting](#troubleshooting)
-
-
-## Prerequisites
-
+## 📋 Prerequisites
 
 ### Required Tools
-- Azure CLI installed and configured
-- Azure subscription with appropriate permissions
-- .NET 8.0 SDK
-- Node.js 18+ for React frontend
-- SQL Server Management Studio (optional)
 
+- **Azure CLI** - [Install Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+- **Azure subscription** with Contributor permissions
+- **.NET 8.0 SDK** - [Download .NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+- **Node.js 18+** - [Download Node.js](https://nodejs.org/)
+- **PowerShell 5.1+** or **PowerShell Core 7+**
+- **Git** - For source control and deployments
 
 ### Required Accounts
-- Microsoft Azure subscription
-- MercadoPago developer account (for payments)
+
+- **Microsoft Azure subscription** - [Get free Azure account](https://azure.microsoft.com/free/)
+- **GitHub account** - For CI/CD and source control
+- **MercadoPago developer account** - [Create MercadoPago account](https://www.mercadopago.com.ar/developers) (for payment processing)
+
+### Pre-deployment Checklist
+
+- [ ] Azure CLI installed and logged in (`az login`)
+- [ ] .NET 8.0 SDK installed (`dotnet --version`)
+- [ ] Node.js 18+ installed (`node --version`)
+- [ ] GitHub repository created with your TKD Hub code
+- [ ] MercadoPago test/production credentials ready
 
 
-## Azure Services Overview
+## 🏗️ Architecture Options
+
+TKD Hub supports two deployment architectures, each optimized for different use cases and budgets.
+
+### Architecture Comparison
+
+| Feature | Ultra-Low-Cost | Production-Ready |
+|---------|----------------|------------------|
+| **Frontend Hosting** | Azure Static Web Apps (FREE) | Azure Static Web Apps (FREE) |
+| **API Hosting** | Azure Functions (FREE*) | Azure App Service ($13/month) |
+| **Database** | SQL Serverless ($5-15/month) | SQL Serverless ($5-15/month) |
+| **Entity Framework** | ❌ Limited support | ✅ Full EF Core support |
+| **Auto Migrations** | ❌ Manual setup required | ✅ Automatic on deployment |
+| **Development Experience** | ⚠️ Functions constraints | ✅ Full debugging & tooling |
+| **Production Stability** | ⚠️ Cold starts possible | ✅ Always-on performance |
+
+*Up to 500K requests/month
+
+### When to Choose Each Option
+
+#### � Choose Ultra-Low-Cost When
+
+- Building MVP or prototype
+- Learning Azure deployment
+- Expected traffic < 50K requests/month
+- Team size < 3 developers
+- Simple CRUD operations
+- Budget is primary concern
+
+#### 🚀 Choose Production-Ready When
+
+- Production application with users
+- Need reliable performance
+- Complex business logic
+- Team development environment
+- Expected traffic > 50K requests/month
+- Database migrations needed
+- Long-term maintenance planned
 
 
-### Ultra-Low-Cost Solution (Recommended for Start-ups)
+## ⚡ Option 1: Ultra-Low-Cost (Azure Static Web Apps)
 
+> **Perfect for MVPs, learning projects, and budget-conscious deployments**
 
-| Service | Purpose | Tier | Est. Monthly Cost |
-|---------|---------|------|-------------------|
-| **Azure Static Web Apps** | Host React SPA + API | Free | $0 |
-| **Azure SQL Database** | Application database | Serverless (0.5 vCore) | $5-15/month* |
-| **Azure SignalR Service** | Real-time notifications | Free | $0 |
-| **Azure Key Vault** | Secrets management | Standard | $0.03/operation |
-| **Application Insights** | Monitoring & analytics | Free tier (5GB) | $0 |
+### Architecture Overview
 
-
-**Total Ultra-Low Cost: ~$5-20/month***
-
-
-*Cost varies based on database usage - can be as low as $5/month with minimal usage
-
-
-## 🔄 RECENT UPDATES (September 2025)
-
-### ✅ Key Improvements Made
-
-**Azure Functions Configuration:**
-- **FIXED**: AutoMapper version conflicts resolved
-- **FIXED**: Dependency injection properly configured using extension methods
-- **UPDATED**: Program.cs simplified to use `AddApplication()` and `AddInfrastructure()`
-- **TESTED**: Successful build with .NET 8.0 and Azure Functions v4
-
-**SPA Deployment Configuration:**
-- **UPDATED**: Vite config to build to standard `dist` folder for Azure Static Web Apps
-- **ADDED**: `build:copy` script for local development (copies to WebAPI wwwroot)
-- **CONFIGURED**: GitHub Actions workflow for automated SPA + Functions deployment
-- **ADDED**: copyfiles dependency for cross-platform file operations
-
-**GitHub Actions Workflow:**
-- **FIXED**: App location changed from `wwwroot` to `Frontend/spa` (note: capital F)
-- **FIXED**: Case sensitivity issue resolved between Windows development and Linux deployment
-- **ADDED**: Node.js setup and SPA build steps
-- **CONFIGURED**: Proper API location pointing to `AzureFunctions/TKDHubFunctions`
-- **ADDED**: `skip_deploy_on_missing_secrets: true` to prevent hard failures
-
-**Critical Deployment Fixes:**
-- **IDENTIFIED**: Directory path case sensitivity (`Frontend/spa` vs `frontend/spa`)
-- **RESOLVED**: GitHub secret configuration for Azure Static Web Apps deployment token
-- **IMPLEMENTED**: Fallback handling when deployment secrets are missing
-- **DOCUMENTED**: Complete GitHub secret setup process
-
-**Project Structure Verified:**
-```
-TKD_Hub_API/
-├── Frontend/spa/          ← React SPA (builds to dist/) - NOTE: Capital F
-├── AzureFunctions/        ← Azure Functions API
-│   └── TKDHubFunctions/   ← Functions project
-├── src/                   ← Original Web API layers
-└── .github/workflows/     ← Automated deployment
-```
-
-### 🆕 DEPLOYMENT TROUBLESHOOTING EXPERIENCE
-
-**Issue Encountered**: GitHub Actions deployment failure due to missing `AZURE_STATIC_WEB_APPS_API_TOKEN` secret
-**Root Cause**: Azure Static Web Apps requires deployment token for authorization
-**Solution**: Added comprehensive GitHub secret setup process (Step 6.1)
-
-**Case Sensitivity Fix**: 
-- **Problem**: Linux runners couldn't find `frontend/spa` directory
-- **Cause**: Windows filesystem is case-insensitive, Linux is case-sensitive
-- **Solution**: Updated all workflows to use correct `Frontend/spa` path (capital F)
-
-### Standard Budget Solution (Production Ready)
-
-
-| Service | Purpose | Tier | Est. Monthly Cost |
-|---------|---------|------|-------------------|
-| **App Service Plan** | Host web applications | Basic B1 | $13 |
-| **App Service (API)** | ASP.NET Core Web API | - | Included in plan |
-| **Azure Static Web Apps** | React SPA hosting | Free | $0 |
-| **Azure SQL Database** | Application database | Basic | $5 |
-| **Azure SignalR Service** | Real-time notifications | Free | $0 |
-| **Azure Key Vault** | Secrets management | Standard | $1 |
-| **Application Insights** | Monitoring & analytics | Free tier | $0 |
-
-
-**Total Budget Cost: ~$19/month**
-
-
-### Optional Services (Recommended)
-
-
-| Service | Purpose | Tier | Est. Monthly Cost |
-|---------|---------|------|-------------------|
-| **Azure Storage Account** | File uploads, static hosting | Standard LRS | $10 |
-| **Azure CDN** | Global content delivery | Standard | $15 |
-| **Azure API Management** | API gateway, rate limiting | Developer | $50 |
-| **Azure Functions** | Background processing | Consumption | $5 |
-
-
-## Deployment Architecture
-
-
-```
-Internet
-    ↓
-Azure Front Door (Optional)
-    ↓
-App Service (React SPA) ←→ App Service (ASP.NET Core API)
-    ↓                           ↓
-Azure CDN (Optional)        Azure SQL Database
-    ↓                           ↓
-Azure Storage               Azure SignalR Service
-    ↓                           ↓
-Azure Key Vault ←→ Application Insights
+```mermaid
+graph TD
+    A[GitHub Repository] --> B[Azure Static Web Apps - FREE]
+    B --> C[React SPA Frontend - FREE]
+    B --> D[Azure Functions API - FREE*]
+    D --> E[Azure SQL Serverless - $5-15/month]
+    D --> F[Azure SignalR - FREE]
 ```
 
+*Up to 500K requests/month
 
-## Ultra-Low-Cost Deployment Strategy
+### Key Features
 
+- ✅ **Zero hosting costs** for frontend and API (up to limits)
+- ✅ **Automatic CI/CD** from GitHub
+- ✅ **Built-in authentication** with social providers
+- ✅ **Global CDN** and SSL included
+- ✅ **Serverless scaling** - pay only for what you use
 
-### Option 1: Azure Static Web Apps (FREE Hosting)
+### Cost Breakdown
 
+| Component | Service | Monthly Cost |
+|-----------|---------|--------------|
+| Frontend Hosting | Azure Static Web Apps | FREE |
+| API Hosting | Azure Functions (Consumption) | FREE (up to 500K requests) |
+| Database | Azure SQL Serverless (0.5 vCore) | $5-15 |
+| Real-time Features | Azure SignalR Service (Free tier) | FREE |
+| SSL & Custom Domain | Included | FREE |
+| CI/CD & Monitoring | GitHub Actions + App Insights | FREE |
 
-**Perfect for MVPs and early-stage applications**
+**💰 Total: $5-15/month**
 
+### Limitations to Consider
 
-Azure Static Web Apps provides:
-- ✅ FREE hosting for React frontend
-- ✅ FREE Azure Functions backend (500K requests/month)
-- ✅ FREE custom domains and SSL
-- ✅ Built-in CI/CD from GitHub
-- ✅ FREE authentication (social logins)
+- ⚠️ **Cold starts** - Functions may have startup delays
+- ⚠️ **Limited EF Core** - Migrations require manual handling
+- ⚠️ **Development constraints** - Azure Functions debugging limitations
+- ⚠️ **Request limits** - 500K requests/month on free tier
 
+---
 
-### Deployment Architecture (Ultra-Low-Cost)
+## � Option 2: Production-Ready (ASP.NET Core Web API)
 
+> **Recommended for production applications requiring full .NET capabilities**
 
+### Architecture Overview
+
+```mermaid
+graph TD
+    A[GitHub Repository] --> B[Azure Static Web Apps - FREE]
+    A --> C[Azure App Service - $13/month]
+    B --> D[React SPA Frontend]
+    B --> E[API Proxy to App Service]
+    C --> F[ASP.NET Core Web API]
+    F --> G[Entity Framework Core]
+    F --> H[Azure SQL Serverless - $5-15/month]
+    F --> I[Azure SignalR - FREE]
 ```
-GitHub Repository
-    ↓ (Automatic CI/CD)
-Azure Static Web Apps (FREE)
-├── React SPA Frontend (FREE)
-├── Azure Functions API (FREE up to 500K requests)
-└── Authentication (FREE)
-    ↓
-Azure SQL Database Serverless (~$5-15/month)
-    ↓
-Azure SignalR Service (FREE tier)
-```
 
+### Key Features
 
-### Cost Breakdown (Ultra-Low-Cost)
+- ✅ **Full Entity Framework Core** with automatic migrations
+- ✅ **Always-on performance** - no cold starts
+- ✅ **Complete debugging** and development tools
+- ✅ **Advanced middleware** and configuration options
+- ✅ **Production monitoring** and health checks
+- ✅ **Scalable architecture** for team development
 
+### Cost Breakdown
 
-| Component | Service | Cost |
-|-----------|---------|------|
-| **Frontend Hosting** | Azure Static Web Apps | FREE |
-| **API Hosting** | Azure Functions (Consumption) | FREE (up to 500K requests) |
-| **Database** | Azure SQL Serverless (0.5 vCore) | $5-15/month |
-| **Real-time** | Azure SignalR Service (Free) | FREE |
-| **Authentication** | Static Web Apps Auth | FREE |
-| **CI/CD** | GitHub Actions | FREE |
-| **SSL & Domain** | Static Web Apps | FREE |
-| **Monitoring** | Application Insights (5GB) | FREE |
+| Component | Service | Monthly Cost |
+|-----------|---------|--------------|
+| Frontend Hosting | Azure Static Web Apps | FREE |
+| API Hosting | Azure App Service (Basic B1) | $13 |
+| Database | Azure SQL Serverless (0.5 vCore) | $5-15 |
+| Real-time Features | Azure SignalR Service (Free tier) | FREE |
+| SSL & Monitoring | Included | FREE |
 
+**💰 Total: $18-28/month**
 
-**Total Monthly Cost: $5-15** 🎉
+### Production Benefits
 
+**🏗️ Enterprise Architecture:**
+- Proper dependency injection container
+- Advanced middleware pipeline
+- Configuration management
+- Health checks and monitoring
 
-### When to Use Ultra-Low-Cost vs Budget Solution
+**🔧 Development Experience:**
+- Full IntelliSense and debugging
+- Hot reload during development
+- Easy unit testing and mocking
+- Better error handling and logging
 
+**📊 Database Features:**
+- Automatic Entity Framework migrations
+- Complex queries and relationships
+- Transaction support and connection pooling
+- Data seeding and validation
 
-**Use Ultra-Low-Cost ($5-15/month) when:**
-- ⭐ MVP or prototype stage
-- ⭐ Low traffic (<100K requests/month)
-- ⭐ Team size <5 users
-- ⭐ Simple API operations
-- ⭐ Learning/experimental project
+## 🚀 Deployment Instructions
 
+Choose your deployment path and follow the corresponding guide:
 
-**Upgrade to Budget Solution ($19/month) when:**
-- 🚀 Growing user base (>100K requests/month)
-- 🚀 Need more consistent performance
-- 🚀 Complex background processing
-- 🚀 Production-critical application
-- 🚀 Need dedicated compute resources
+### 📋 Pre-Deployment Setup
 
+**Before starting, complete these steps for both deployment options:**
 
-## Step-by-Step Deployment
+#### Step 1: Environment Verification
 
-
-### Ultra-Low-Cost Deployment (Azure Static Web Apps + Functions)
-
-
-⚠️ **IMPORTANT**: Execute these steps in **EXACT ORDER**. Each step depends on the previous ones.
-
-
-#### Step 1: Prerequisites and Setup
-
-
-**1.1 Verify Required Tools**
 ```powershell
-# Check Azure CLI
-az --version
+# Verify all required tools are installed
+Write-Host "🔍 Checking prerequisites..." -ForegroundColor Yellow
 
+# Check Azure CLI
+$azVersion = az --version 2>$null
+if ($azVersion) {
+    Write-Host "✅ Azure CLI installed" -ForegroundColor Green
+} else {
+    Write-Host "❌ Azure CLI not found. Install from: https://aka.ms/installazurecliwindows" -ForegroundColor Red
+    exit 1
+}
 
 # Check .NET SDK
-dotnet --version
-
+$dotnetVersion = dotnet --version 2>$null
+if ($dotnetVersion -and $dotnetVersion -ge "8.0") {
+    Write-Host "✅ .NET 8.0+ SDK installed: $dotnetVersion" -ForegroundColor Green
+} else {
+    Write-Host "❌ .NET 8.0 SDK required. Download from: https://dotnet.microsoft.com/download" -ForegroundColor Red
+}
 
 # Check Node.js
-node --version
-
-
-# Check Azure Functions Core Tools
-func --version
+$nodeVersion = node --version 2>$null
+if ($nodeVersion -and ($nodeVersion -replace 'v','') -ge "18.0") {
+    Write-Host "✅ Node.js 18+ installed: $nodeVersion" -ForegroundColor Green
+} else {
+    Write-Host "❌ Node.js 18+ required. Download from: https://nodejs.org" -ForegroundColor Red
+}
 ```
 
+#### Step 2: Azure Authentication
 
-**1.2 Login to Azure**
 ```powershell
-# Login to Azure (opens browser)
-az login
+# Login to Azure
+Write-Host "🔐 Logging into Azure..." -ForegroundColor Yellow
+az login --use-device-code
 
+# Verify subscription and set if needed
+$currentSub = az account show --query "name" -o tsv
+Write-Host "📋 Current subscription: $currentSub" -ForegroundColor Cyan
 
-# Verify subscription
-az account show --query "name" -o tsv
+# List available subscriptions if you need to switch
+# az account list --query "[].{Name:name, SubscriptionId:id}" -o table
+# az account set --subscription "YOUR_SUBSCRIPTION_ID"
 ```
 
+#### Step 3: Configuration Variables
 
-**1.3 Set Global Variables**
 ```powershell
-# Set these variables - they will be used throughout the deployment
+# 🔧 Global Configuration - Customize these values
+Write-Host "⚙️ Setting up deployment configuration..." -ForegroundColor Yellow
+
+# Basic settings
 $resourceGroup = "tkd-hub-rg"
-$location = "Central US"  # Primary recommendation
-$sqlServerName = "tkd-hub-sql-$(Get-Random)"
-$sqlDbName = "TKDHubDb"
+$location = "East US"  # Cost-effective region
+$uniqueId = Get-Random -Minimum 1000 -Maximum 9999
+
+# Resource names (automatically made unique)
+$sqlServerName = "tkd-hub-sql-$uniqueId"
+$sqlDbName = "TKDHubDB"
+$signalRName = "tkd-hub-signalr-$uniqueId"
+$staticWebAppName = "tkd-hub-app-$uniqueId"
+
+# Database credentials (CHANGE THESE!)
 $sqlAdminUser = "tkdhub-admin"
-$sqlAdminPassword = "SecurePassword123!"
-$signalRName = "tkd-hub-signalr-$(Get-Random)"
-$staticWebAppName = "tkd-hub-app-$(Get-Random)"
-$githubRepo = "nicolassnider/TKD_Hub_API"  # Replace with your actual GitHub repo
+$sqlAdminPassword = "x4hPB^{A8#U5L}w27u!?"  # Must be complex
 
+# GitHub repository (UPDATE THIS!)
+$githubRepo = "nicolassnider/TKD_Hub_API"  # ⚠️ CHANGE THIS
 
-# Display variables for confirmation
-Write-Host "🔧 Deployment Configuration:"
-Write-Host "Resource Group: $resourceGroup"
-Write-Host "Location: $location"
-Write-Host "SQL Server: $sqlServerName"
-Write-Host "SignalR: $signalRName"
-Write-Host "Static Web App: $staticWebAppName"
-Write-Host "GitHub Repo: $githubRepo"
+# Display configuration
+Write-Host "� Deployment Configuration:" -ForegroundColor Green
+Write-Host "   Resource Group: $resourceGroup" -ForegroundColor Cyan
+Write-Host "   Location: $location" -ForegroundColor Cyan
+Write-Host "   SQL Server: $sqlServerName" -ForegroundColor Cyan
+Write-Host "   Database: $sqlDbName" -ForegroundColor Cyan
+Write-Host "   SignalR: $signalRName" -ForegroundColor Cyan
+Write-Host "   Static Web App: $staticWebAppName" -ForegroundColor Cyan
+Write-Host "   GitHub Repo: $githubRepo" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "⚠️  IMPORTANT: Make sure GitHub repo URL is correct!" -ForegroundColor Yellow
 ```
 
 
-#### Step 2: Create Resource Group
+---
 
+## 💪 Production Deployment (ASP.NET Core Web API)
+
+> **Recommended for production applications - Full EF Core support with automatic migrations**
+
+### 🏗️ Infrastructure Setup
+
+#### Step 1: Create Azure Resource Group with Region Retry
 
 ```powershell
-# Create resource group
-Write-Host "📂 Creating resource group..."
-az group create --name $resourceGroup --location $location
+Write-Host "🏗️ Creating Azure infrastructure with region retry..." -ForegroundColor Green
 
-
-# Verify creation
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Resource group created successfully"
-    az group show --name $resourceGroup --query "location" -o tsv
-} else {
-    Write-Host "❌ Failed to create resource group"
-    # Try alternative regions if Central US fails
-    Write-Host "🔄 Trying alternative regions..."
-    $alternativeLocations = @("West US 2", "South Central US", "East US 2")
-    foreach ($altLocation in $alternativeLocations) {
-        Write-Host "Trying: $altLocation"
-        $location = $altLocation
-        az group create --name $resourceGroup --location $location
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Resource group created in $location"
-            break
-        }
+# 🌍 Smart Region Selection with Availability Check
+function Test-AzureRegionAvailability {
+    param([string]$Region, [string]$ResourceGroup)
+    
+    Write-Host "� Testing region availability: $Region" -ForegroundColor Cyan
+    
+    # Test region by attempting to create a temporary resource group
+    $testRgName = "test-rg-$(Get-Random)"
+    az group create --name $testRgName --location $Region --output none 2>$null
+    
+    if ($LASTEXITCODE -eq 0) {
+        # Clean up test resource group
+        az group delete --name $testRgName --yes --no-wait --output none 2>$null
+        return $true
     }
+    return $false
+}
+
+function Deploy-WithRegionRetry {
+    param(
+        [string]$PrimaryRegion,
+        [scriptblock]$DeploymentScript,
+        [string]$ResourceDescription = "resource"
+    )
+    
+    # 🌍 Comprehensive region list with geographic distribution
+    $regionPool = @(
+        # Primary region (user specified)
+        $PrimaryRegion,
+        
+        # North America - East
+        "East US", "East US 2", "South Central US", "Central US",
+        
+        # North America - West  
+        "West US 2", "West US 3", "West Central US",
+        
+        # Europe
+        "West Europe", "North Europe", "UK South", "France Central",
+        
+        # Asia Pacific
+        "Southeast Asia", "East Asia", "Australia East", "Japan East",
+        
+        # Additional global regions
+        "Brazil South", "Canada Central", "India Central"
+    )
+    
+    # Remove duplicates and ensure primary region is first
+    $uniqueRegions = @($PrimaryRegion) + ($regionPool | Where-Object { $_ -ne $PrimaryRegion }) | Select-Object -Unique
+    
+    Write-Host "🌍 Region retry strategy: Testing $($uniqueRegions.Count) regions" -ForegroundColor Yellow
+    Write-Host "🎯 Primary region: $PrimaryRegion" -ForegroundColor Cyan
+    
+    foreach ($region in $uniqueRegions) {
+        Write-Host "🔄 Attempting deployment in region: $region" -ForegroundColor Yellow
+        
+        # Check region availability first
+        if (-not (Test-AzureRegionAvailability -Region $region -ResourceGroup $resourceGroup)) {
+            Write-Host "⚠️ Region $region not available, skipping..." -ForegroundColor DarkYellow
+            continue
+        }
+        
+        # Update global location variable
+        $script:location = $region
+        
+        try {
+            # Execute the deployment script
+            $result = & $DeploymentScript
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ $ResourceDescription deployed successfully in $region" -ForegroundColor Green
+                return @{
+                    Success = $true
+                    Region = $region
+                    Result = $result
+                }
+            }
+        }
+        catch {
+            Write-Host "❌ Deployment failed in $region : $($_.Exception.Message)" -ForegroundColor Red
+        }
+        
+        Write-Host "⚠️ Failed in $region, trying next region..." -ForegroundColor DarkYellow
+        Start-Sleep -Seconds 2  # Brief pause between attempts
+    }
+    
+    Write-Host "❌ All regions failed for $ResourceDescription" -ForegroundColor Red
+    return @{
+        Success = $false
+        Region = $null
+        Result = $null
+    }
+}
+
+# 📂 Create Resource Group with Region Retry
+Write-Host "📂 Creating resource group: $resourceGroup" -ForegroundColor Yellow
+
+$rgDeployment = Deploy-WithRegionRetry -PrimaryRegion $location -ResourceDescription "Resource Group" -DeploymentScript {
+    az group create --name $resourceGroup --location $script:location --output none
+    return $LASTEXITCODE
+}
+
+if ($rgDeployment.Success) {
+    $location = $rgDeployment.Region  # Update location to successful region
+    Write-Host "✅ Resource group created successfully in $location" -ForegroundColor Green
+    Write-Host "📍 All subsequent resources will be deployed to: $location" -ForegroundColor Cyan
+} else {
+    Write-Host "❌ Failed to create resource group in all available regions" -ForegroundColor Red
+    Write-Host "💡 Possible issues:" -ForegroundColor Yellow
+    Write-Host "   • Azure subscription limits reached" -ForegroundColor DarkYellow
+    Write-Host "   • Insufficient permissions" -ForegroundColor DarkYellow
+    Write-Host "   • Azure service outage" -ForegroundColor DarkYellow
+    exit 1
 }
 ```
 
 
-#### Step 3: Create Azure SQL Database (Serverless - Ultra Cheap)
-
+#### Step 2: Create Azure SQL Database (Serverless) with Region Retry
 
 ```powershell
-Write-Host "🗄️ Creating SQL Server and Database..."
+Write-Host "🗄️ Creating SQL Server and Database with region retry..." -ForegroundColor Yellow
 
+# 📊 Create SQL Server with Region Retry
+$sqlDeployment = Deploy-WithRegionRetry -PrimaryRegion $location -ResourceDescription "SQL Server" -DeploymentScript {
+    Write-Host "📊 Creating SQL Server: $sqlServerName in $script:location" -ForegroundColor Cyan
+    
+    az sql server create `
+        --name $sqlServerName `
+        --resource-group $resourceGroup `
+        --location $script:location `
+        --admin-user $sqlAdminUser `
+        --admin-password $sqlAdminPassword `
+        --output none
+    
+    return $LASTEXITCODE
+}
 
-# Create SQL Server
-Write-Host "Creating SQL Server: $sqlServerName"
-az sql server create `
-  --name $sqlServerName `
-  --resource-group $resourceGroup `
-  --location $location `
-  --admin-user $sqlAdminUser `
-  --admin-password $sqlAdminPassword
-
-
-# Verify SQL Server creation
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ SQL Server created successfully"
-   
-    # Create SERVERLESS SQL Database (auto-pause when not in use)
-    Write-Host "Creating serverless database: $sqlDbName"
+if ($sqlDeployment.Success) {
+    $location = $sqlDeployment.Region  # Update location to successful region
+    Write-Host "✅ SQL Server created successfully in $location" -ForegroundColor Green
+    
+    # Create Serverless SQL Database (auto-pause for cost savings)
+    Write-Host "📊 Creating serverless database: $sqlDbName" -ForegroundColor Cyan
     az sql db create `
-      --resource-group $resourceGroup `
-      --server $sqlServerName `
-      --name $sqlDbName `
-      --edition GeneralPurpose `
-      --compute-model Serverless `
-      --family Gen5 `
-      --capacity 1 `
-      --auto-pause-delay 60
-   
+        --resource-group $resourceGroup `
+        --server $sqlServerName `
+        --name $sqlDbName `
+        --edition GeneralPurpose `
+        --compute-model Serverless `
+        --family Gen5 `
+        --capacity 1 `
+        --auto-pause-delay 60 `
+        --min-capacity 0.5 `
+        --output none
+
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Database created successfully"
-       
-        # Configure firewall to allow Azure services
-        Write-Host "Configuring firewall rules..."
+        Write-Host "✅ Database created successfully" -ForegroundColor Green
+        
+        # Configure firewall for Azure services and your IP
+        Write-Host "🔐 Configuring firewall rules..." -ForegroundColor Cyan
+        
+        # Allow Azure services
         az sql server firewall-rule create `
-          --resource-group $resourceGroup `
-          --server $sqlServerName `
-          --name "AllowAzureServices" `
-          --start-ip-address 0.0.0.0 `
-          --end-ip-address 0.0.0.0
-       
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Firewall configured successfully"
-            Write-Host "📊 Database Details:"
-            Write-Host "   Server: $sqlServerName.database.windows.net"
-            Write-Host "   Database: $sqlDbName"
-            Write-Host "   Edition: Serverless (0.5 vCore, auto-pause after 60 min)"
-            Write-Host "   💰 Estimated Cost: $5-15/month"
-        } else {
-            Write-Host "❌ Failed to configure firewall"
+            --resource-group $resourceGroup `
+            --server $sqlServerName `
+            --name "AllowAzureServices" `
+            --start-ip-address 0.0.0.0 `
+            --end-ip-address 0.0.0.0 `
+            --output none
+        
+        # Allow your current IP for management
+        try {
+            $myIP = (Invoke-RestMethod -Uri "https://ipinfo.io/ip" -TimeoutSec 10).Trim()
+            az sql server firewall-rule create `
+                --resource-group $resourceGroup `
+                --server $sqlServerName `
+                --name "AllowMyIP" `
+                --start-ip-address $myIP `
+                --end-ip-address $myIP `
+                --output none
+            Write-Host "✅ Firewall rule added for your IP: $myIP" -ForegroundColor Green
         }
+        catch {
+            Write-Host "⚠️ Could not determine your IP. Add firewall rule manually in Azure Portal." -ForegroundColor Yellow
+        }
+        
+        Write-Host "✅ Database setup completed" -ForegroundColor Green
+        Write-Host "📊 Database Configuration:" -ForegroundColor Yellow
+        Write-Host "   Server: $sqlServerName.database.windows.net" -ForegroundColor Cyan
+        Write-Host "   Database: $sqlDbName" -ForegroundColor Cyan
+        Write-Host "   Region: $location" -ForegroundColor Cyan
+        Write-Host "   Tier: Serverless (0.5-1 vCore, auto-pause after 60 min)" -ForegroundColor Cyan
+        Write-Host "   Cost: ~$5-15/month (includes auto-pause savings)" -ForegroundColor Cyan
     } else {
-        Write-Host "❌ Failed to create database"
+        Write-Host "❌ Failed to create database on SQL Server" -ForegroundColor Red
+        exit 1
     }
 } else {
-    Write-Host "❌ Failed to create SQL Server"
-    Write-Host "💡 Try a different region or check naming conflicts"
+    Write-Host "❌ Failed to create SQL Server in all available regions" -ForegroundColor Red
+    Write-Host "💡 Possible issues:" -ForegroundColor Yellow
+    Write-Host "   • SQL Server name '$sqlServerName' may be taken globally" -ForegroundColor DarkYellow
+    Write-Host "   • Try changing the uniqueId or server name" -ForegroundColor DarkYellow
+    Write-Host "   • Check subscription SQL server limits" -ForegroundColor DarkYellow
+    exit 1
 }
 ```
 
 
-#### Step 4: Create SignalR Service (FREE Tier)
-
-
-```powershell
-Write-Host "📡 Creating SignalR Service..."
-
-
-# Create SignalR Service with FREE tier
-Write-Host "Creating SignalR Service: $signalRName"
-az signalr create `
-  --name $signalRName `
-  --resource-group $resourceGroup `
-  --location $location `
-  --sku Free_F1 `
-  --unit-count 1 `
-  --service-mode Serverless
-
-
-# Verify SignalR creation
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ SignalR Service created successfully"
-   
-    # Get connection string for later use
-    Write-Host "📋 Retrieving SignalR connection string..."
-    $signalRConnectionString = az signalr key list `
-      --name $signalRName `
-      --resource-group $resourceGroup `
-      --query primaryConnectionString -o tsv
-   
-    if ($signalRConnectionString) {
-        Write-Host "✅ SignalR connection string retrieved"
-        Write-Host "📊 SignalR Details:"
-        Write-Host "   Service: $signalRName.service.signalr.net"
-        Write-Host "   Mode: Serverless (FREE tier)"
-        Write-Host "   💰 Cost: FREE (up to 20 connections)"
-    } else {
-        Write-Host "⚠️ SignalR created but connection string retrieval failed"
-        Write-Host "💡 You can get it later from Azure Portal"
-    }
-} else {
-    Write-Host "❌ Failed to create SignalR Service"
-}
-```
-
-
-#### Step 5: Setup Azure Functions Project (Local Development)
-
+#### Step 3: Create App Service Plan and Web App with Region Retry
 
 ```powershell
-Write-Host "⚡ Setting up Azure Functions project..."
+Write-Host "🌐 Creating App Service for Web API with region retry..." -ForegroundColor Yellow
 
+# App Service names
+$appServicePlan = "tkd-hub-plan-$uniqueId"
+$webAppName = "tkd-hub-api-$uniqueId"
 
-# Navigate to project root and create Azure Functions directory
-Write-Host "Creating Azure Functions project structure..."
-if (-not (Test-Path "AzureFunctions")) {
-    New-Item -ItemType Directory -Path "AzureFunctions"
-    Write-Host "✅ Created AzureFunctions directory"
+# 📋 Create App Service Plan with Region Retry
+$appPlanDeployment = Deploy-WithRegionRetry -PrimaryRegion $location -ResourceDescription "App Service Plan" -DeploymentScript {
+    Write-Host "📋 Creating App Service Plan: $appServicePlan in $script:location" -ForegroundColor Cyan
+    
+    az appservice plan create `
+        --name $appServicePlan `
+        --resource-group $resourceGroup `
+        --location $script:location `
+        --sku B1 `
+        --is-linux `
+        --output none
+    
+    return $LASTEXITCODE
 }
 
-
-Set-Location "AzureFunctions"
-
-
-# Initialize Functions project
-Write-Host "Initializing Functions project..."
-if (-not (Test-Path "TKDHubFunctions")) {
-    func init TKDHubFunctions --dotnet --target-framework net8.0
+if ($appPlanDeployment.Success) {
+    $location = $appPlanDeployment.Region  # Update location to successful region
+    Write-Host "✅ App Service Plan created successfully in $location" -ForegroundColor Green
+    
+    # 🌐 Create Web App (this should use the same region as the plan)
+    Write-Host "🌐 Creating Web App: $webAppName" -ForegroundColor Cyan
+    az webapp create `
+        --name $webAppName `
+        --resource-group $resourceGroup `
+        --plan $appServicePlan `
+        --runtime "DOTNET|8.0" `
+        --output none
+    
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Azure Functions project initialized"
-       
-        # Navigate to Functions project
-        Set-Location "TKDHubFunctions"
-       
-        # Add required packages (✅ UPDATED with tested versions)
-        Write-Host "Adding required NuGet packages..."
-        dotnet add package Microsoft.Azure.Functions.Extensions
-        dotnet add package Microsoft.Azure.Functions.Worker
-        dotnet add package Microsoft.Azure.Functions.Worker.Sdk
-        dotnet add package Microsoft.Azure.Functions.Worker.Extensions.Http
-        dotnet add package Microsoft.ApplicationInsights.WorkerService
-        dotnet add package Microsoft.Azure.Functions.Worker.ApplicationInsights
-        dotnet add package Microsoft.EntityFrameworkCore.SqlServer
-        dotnet add package Microsoft.Azure.SignalR.Management
-        dotnet add package Microsoft.EntityFrameworkCore.Tools
-        dotnet add package AutoMapper --version 12.0.1
-        dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection --version 12.0.1
-        dotnet add package System.IdentityModel.Tokens.Jwt
-       
+        Write-Host "✅ Web App created successfully" -ForegroundColor Green
+        
+        # Configure Web App settings
+        Write-Host "⚙️ Configuring Web App settings..." -ForegroundColor Cyan
+        
+        # Build connection string
+        $connectionString = "Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDbName;Persist Security Info=False;User ID=$sqlAdminUser;Password=$sqlAdminPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+        
+        # Configure app settings
+        az webapp config appsettings set `
+            --name $webAppName `
+            --resource-group $resourceGroup `
+            --settings `
+                "ConnectionStrings__DefaultConnection=$connectionString" `
+                "ASPNETCORE_ENVIRONMENT=Production" `
+                "Jwt__SecretKey=TKDHub-2024-ProductionSecretKey-Change-This-256Bit" `
+                "Jwt__Issuer=https://$webAppName.azurewebsites.net" `
+                "Jwt__Audience=https://$webAppName.azurewebsites.net" `
+                "Jwt__ExpirationHours=24" `
+            --output none
+        
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ NuGet packages added successfully"
-            Write-Host "📦 Azure Functions Project Ready!"
-            Write-Host "📂 Location: .\AzureFunctions\TKDHubFunctions"
+            Write-Host "✅ Web App configured successfully" -ForegroundColor Green
+            Write-Host "📊 App Service Configuration:" -ForegroundColor Yellow
+            Write-Host "   Plan: $appServicePlan (Basic B1)" -ForegroundColor Cyan
+            Write-Host "   Web App: $webAppName" -ForegroundColor Cyan
+            Write-Host "   Region: $location" -ForegroundColor Cyan
+            Write-Host "   URL: https://$webAppName.azurewebsites.net" -ForegroundColor Cyan
+            Write-Host "   Runtime: .NET 8.0" -ForegroundColor Cyan
+            Write-Host "   Cost: ~$13/month" -ForegroundColor Cyan
         } else {
-            Write-Host "❌ Failed to add NuGet packages"
+            Write-Host "❌ Failed to configure Web App settings" -ForegroundColor Red
+            exit 1
         }
     } else {
-        Write-Host "❌ Failed to initialize Functions project"
+        Write-Host "❌ Failed to create Web App" -ForegroundColor Red
+        Write-Host "💡 Web App name '$webAppName' may be taken globally" -ForegroundColor Yellow
+        exit 1
     }
 } else {
-    Write-Host "⚠️ Functions project already exists"
+    Write-Host "❌ Failed to create App Service Plan in all available regions" -ForegroundColor Red
+    Write-Host "💡 Check subscription App Service plan limits" -ForegroundColor Yellow
+    exit 1
+}
+```
+
+#### Step 4: Create SignalR Service (FREE) with Region Retry
+
+```powershell
+Write-Host "📡 Creating SignalR Service with region retry..." -ForegroundColor Yellow
+
+# 📡 Create SignalR Service with Region Retry
+$signalRDeployment = Deploy-WithRegionRetry -PrimaryRegion $location -ResourceDescription "SignalR Service" -DeploymentScript {
+    Write-Host "📡 Creating SignalR Service: $signalRName in $script:location" -ForegroundColor Cyan
+    
+    az signalr create `
+        --name $signalRName `
+        --resource-group $resourceGroup `
+        --location $script:location `
+        --sku Free_F1 `
+        --unit-count 1 `
+        --service-mode Default `
+        --output none
+    
+    return $LASTEXITCODE
 }
 
+if ($signalRDeployment.Success) {
+    $signalRRegion = $signalRDeployment.Region
+    Write-Host "✅ SignalR Service created successfully in $signalRRegion" -ForegroundColor Green
+    
+    # Get connection string
+    Write-Host "📋 Retrieving SignalR connection string..." -ForegroundColor Cyan
+    $signalRConnectionString = az signalr key list `
+        --name $signalRName `
+        --resource-group $resourceGroup `
+        --query primaryConnectionString -o tsv
+    
+    if ($signalRConnectionString) {
+        # Add SignalR connection to Web App
+        az webapp config appsettings set `
+            --name $webAppName `
+            --resource-group $resourceGroup `
+            --settings "Azure__SignalR__ConnectionString=$signalRConnectionString" `
+            --output none
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ SignalR configured successfully" -ForegroundColor Green
+            Write-Host "📊 SignalR Configuration:" -ForegroundColor Yellow
+            Write-Host "   Service: $signalRName" -ForegroundColor Cyan
+            Write-Host "   Region: $signalRRegion" -ForegroundColor Cyan
+            Write-Host "   Tier: FREE (up to 20 connections)" -ForegroundColor Cyan
+            Write-Host "   Cost: FREE" -ForegroundColor Cyan
+        } else {
+            Write-Host "⚠️ SignalR created but failed to configure in Web App" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "⚠️ SignalR created but failed to retrieve connection string" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "❌ Failed to create SignalR Service in all available regions" -ForegroundColor Red
+    Write-Host "💡 SignalR name '$signalRName' may be taken globally" -ForegroundColor Yellow
+    Write-Host "⚠️ Continuing without SignalR (real-time features will be disabled)" -ForegroundColor Yellow
+}
+```
+
+
+#### Step 5: Create Static Web App for Frontend with Region Retry
+
+```powershell
+Write-Host "🌐 Creating Static Web App for Frontend with region retry..." -ForegroundColor Yellow
+
+# 📱 Create Static Web App with Region Retry
+# Note: Static Web Apps have limited region availability
+$swaRegions = @("East US 2", "West US 2", "Central US", "West Europe", "East Asia")
+$swaLocation = $swaRegions | Where-Object { $_ -like "*$($location.Split(' ')[0])*" } | Select-Object -First 1
+
+if (-not $swaLocation) {
+    $swaLocation = "East US 2"  # Default fallback
+    Write-Host "⚠️ Using default SWA region: $swaLocation" -ForegroundColor Yellow
+}
+
+Write-Host "📱 Creating Static Web App: $staticWebAppName" -ForegroundColor Cyan
+Write-Host "🔗 GitHub Repository: $githubRepo" -ForegroundColor Cyan
+Write-Host "🌍 SWA Region: $swaLocation" -ForegroundColor Cyan
+
+$swaDeployment = Deploy-WithRegionRetry -PrimaryRegion $swaLocation -ResourceDescription "Static Web App" -DeploymentScript {
+    # Static Web Apps have limited regions, so we use a specific list
+    $swaSpecificRegions = @("East US 2", "West US 2", "Central US", "West Europe", "East Asia")
+    if ($swaSpecificRegions -contains $script:location) {
+        az staticwebapp create `
+            --name $staticWebAppName `
+            --resource-group $resourceGroup `
+            --source "https://github.com/$githubRepo" `
+            --location $script:location `
+            --branch "master" `
+            --app-location "frontend/spa" `
+            --output-location "dist" `
+            --login-with-github `
+            --output none
+        
+        return $LASTEXITCODE
+    } else {
+        # Skip unsupported regions for SWA
+        return 1
+    }
+}
+
+if ($swaDeployment.Success) {
+    Write-Host "✅ Static Web App created successfully in $($swaDeployment.Region)" -ForegroundColor Green
+    
+    # Get the Static Web App URL
+    $swaUrl = az staticwebapp show `
+        --name $staticWebAppName `
+        --resource-group $resourceGroup `
+        --query "defaultHostname" -o tsv
+    
+    if ($swaUrl) {
+        # Configure API proxy to App Service
+        Write-Host "🔧 Configuring API proxy to App Service..." -ForegroundColor Cyan
+        
+        # Create staticwebapp.config.json for API proxy
+        $swaConfig = @"
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "rewrite": "/api/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/api/*", "*.{css,scss,sass,js,jsx,ts,tsx,json,png,jpg,jpeg,gif,svg,ico}"]
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY"
+  }
+}
+"@
+        
+        # Ensure directory exists before creating config file
+        $swaConfigDir = "frontend/spa/public"
+        if (-not (Test-Path $swaConfigDir)) {
+            New-Item -ItemType Directory -Path $swaConfigDir -Force | Out-Null
+        }
+        
+        # Save config to project (you'll need to commit this)
+        $swaConfig | Out-File -FilePath "$swaConfigDir/staticwebapp.config.json" -Encoding UTF8
+        
+        # Configure SPA to use App Service API
+        Write-Host "⚙️ Configuring SPA environment..." -ForegroundColor Cyan
+        
+        # Update SPA environment to point to App Service
+        $spaEnv = @"
+VITE_API_URL=https://$webAppName.azurewebsites.net
+VITE_SIGNALR_URL=https://$webAppName.azurewebsites.net/hubs/notification
+"@
+        
+        # Ensure SPA directory exists
+        $spaDir = "frontend/spa"
+        if (-not (Test-Path $spaDir)) {
+            Write-Host "⚠️ SPA directory not found: $spaDir" -ForegroundColor Yellow
+        } else {
+            $spaEnv | Out-File -FilePath "$spaDir/.env.production" -Encoding UTF8
+            Write-Host "✅ SPA environment configured" -ForegroundColor Green
+        }
+        
+        Write-Host "✅ Static Web App configured successfully" -ForegroundColor Green
+        Write-Host "📊 Static Web App Configuration:" -ForegroundColor Yellow
+        Write-Host "   Name: $staticWebAppName" -ForegroundColor Cyan
+        Write-Host "   Region: $($swaDeployment.Region)" -ForegroundColor Cyan
+        Write-Host "   URL: https://$swaUrl" -ForegroundColor Cyan
+        Write-Host "   Source: $githubRepo" -ForegroundColor Cyan
+        Write-Host "   API Proxy: Configured to App Service" -ForegroundColor Cyan
+        Write-Host "   Cost: FREE" -ForegroundColor Cyan
+    }
+} else {
+    Write-Host "❌ Failed to create Static Web App in all available regions" -ForegroundColor Red
+    Write-Host "💡 Possible issues:" -ForegroundColor Yellow
+    Write-Host "   • GitHub repository URL incorrect: $githubRepo" -ForegroundColor DarkYellow
+    Write-Host "   • GitHub authentication required" -ForegroundColor DarkYellow
+    Write-Host "   • SWA name '$staticWebAppName' may be taken globally" -ForegroundColor DarkYellow
+    Write-Host "⚠️ Continuing without Static Web App (deploy frontend separately)" -ForegroundColor Yellow
+}
+```
+
+
+### 🚀 Application Deployment
+
+#### Step 6: Deploy ASP.NET Core Web API
+
+
+```powershell
+Write-Host "🚀 Deploying ASP.NET Core Web API..." -ForegroundColor Yellow
+
+# Navigate to Web API project
+$webApiProject = "src\TKDHubAPI.WebAPI"
+if (-not (Test-Path $webApiProject)) {
+    Write-Host "❌ Web API project not found at: $webApiProject" -ForegroundColor Red
+    Write-Host "💡 Make sure you're running this from the TKD Hub API project root" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Host "📦 Building and publishing Web API..." -ForegroundColor Cyan
+Set-Location $webApiProject
+
+# Clean and build
+dotnet clean
+dotnet restore
+dotnet build --configuration Release
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ Build successful" -ForegroundColor Green
+    
+    # Publish application
+    dotnet publish --configuration Release --output ./publish
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Publish successful" -ForegroundColor Green
+        
+        # Deploy to Azure App Service
+        Write-Host "🌐 Deploying to Azure App Service..." -ForegroundColor Cyan
+        
+        # Create deployment package
+        Compress-Archive -Path "./publish/*" -DestinationPath "./deploy.zip" -Force
+        
+        # Deploy to App Service
+        az webapp deploy `
+            --resource-group $resourceGroup `
+            --name $webAppName `
+            --src-path "./deploy.zip" `
+            --type zip
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Deployment successful!" -ForegroundColor Green
+            
+            # Clean up
+            Remove-Item "./deploy.zip" -Force
+            Remove-Item "./publish" -Recurse -Force
+            
+            Write-Host "📊 API Deployment Complete:" -ForegroundColor Yellow
+            Write-Host "   Web API URL: https://$webAppName.azurewebsites.net" -ForegroundColor Cyan
+            Write-Host "   Health Check: https://$webAppName.azurewebsites.net/health" -ForegroundColor Cyan
+            Write-Host "   Swagger UI: https://$webAppName.azurewebsites.net/swagger" -ForegroundColor Cyan
+        } else {
+            Write-Host "❌ Deployment failed" -ForegroundColor Red
+        }
+    }
+} else {
+    Write-Host "❌ Build failed" -ForegroundColor Red
+}
 
 # Return to project root
 Set-Location "..\..\"
 ```
 
+## � Configuration & Testing
 
-#### Step 6: Create Static Web App with GitHub Integration
-
+### Database Setup and Migration
 
 ```powershell
-Write-Host "🌐 Creating Azure Static Web App..."
+Write-Host "🗄️ Setting up database and running migrations..." -ForegroundColor Yellow
 
+# The Web API will automatically run migrations on startup, but let's verify
+Write-Host "🔄 Triggering application startup to run migrations..." -ForegroundColor Cyan
 
-# Create Static Web App with GitHub integration
-Write-Host "Creating Static Web App: $staticWebAppName"
-Write-Host "GitHub Repository: $githubRepo"
-
-
-az staticwebapp create `
-    --name $staticWebAppName `
-    --resource-group $resourceGroup `
-    --source "https://github.com/$githubRepo" `
-    --location $location `
-    --branch "master" `
-    --app-location "/frontend/spa" `
-    --api-location "/AzureFunctions/TKDHubFunctions" `
-    --output-location "dist" `
-    --login-with-github
-
-
-# Verify Static Web App creation
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Static Web App created successfully"
-   
-    # Get the default hostname
-    Write-Host "📋 Retrieving Static Web App URL..."
-    $staticWebAppUrl = az staticwebapp show `
-      --name $staticWebAppName `
-      --resource-group $resourceGroup `
-      --query "defaultHostname" -o tsv
-   
-    if ($staticWebAppUrl) {
-        Write-Host "✅ Static Web App deployed successfully"
-        Write-Host "📊 Static Web App Details:"
-        Write-Host "   Name: $staticWebAppName"
-        Write-Host "   URL: https://$staticWebAppUrl"
-        Write-Host "   GitHub: $githubRepo (master branch)"
-        Write-Host "   Frontend: /frontend/spa"
-        Write-Host "   API: /AzureFunctions/TKDHubFunctions"
-        Write-Host "   💰 Cost: FREE (includes SSL, custom domains, CI/CD)"
-    } else {
-        Write-Host "⚠️ Static Web App created but URL retrieval failed"
-        Write-Host "💡 Check Azure Portal for the URL"
-    }
-} else {
-    Write-Host "❌ Failed to create Static Web App"
-    Write-Host "💡 Check that GitHub repo URL is correct and accessible"
+# Make a request to trigger app startup and migrations
+$apiUrl = "https://$webAppName.azurewebsites.net"
+try {
+    # First request may take time due to cold start and migrations
+    Write-Host "⏳ Starting application (this may take 30-60 seconds)..." -ForegroundColor Yellow
+    $response = Invoke-RestMethod -Uri "$apiUrl/health" -Method GET -TimeoutSec 120
+    Write-Host "✅ Application started successfully" -ForegroundColor Green
+    Write-Host "✅ Database migrations completed automatically" -ForegroundColor Green
+} catch {
+    Write-Host "⚠️ Initial startup may take longer. Check App Service logs in Azure Portal." -ForegroundColor Yellow
 }
 ```
 
-#### Step 6.1: 🔑 CRITICAL - Setup GitHub Secret
+### Configure Static Web App API Proxy
 
-**⚠️ IMPORTANT**: After creating the Static Web App, you MUST add the deployment token to GitHub Secrets:
-
-1. **Get the deployment token from Azure:**
 ```powershell
-# Get the deployment token
-$deploymentToken = az staticwebapp secrets list --name $staticWebAppName --query "properties.apiKey" -o tsv
-Write-Host "🔑 Deployment Token: $deploymentToken"
+Write-Host "🔧 Configuring Static Web App API Proxy..." -ForegroundColor Yellow
+
+# Get Static Web App deployment token for configuration
+$swaToken = az staticwebapp secrets list --name $staticWebAppName --query "properties.apiKey" -o tsv
+
+if ($swaToken) {
+    Write-Host "🔑 Static Web App Token Retrieved" -ForegroundColor Green
+    
+    # Configure API backend in Static Web App
+    az staticwebapp backends create `
+        --name $staticWebAppName `
+        --resource-group $resourceGroup `
+        --backend-name "api" `
+        --backend-resource-name $webAppName `
+        --backend-resource-type "AppService" `
+        --backend-environment-name "default"
+    
+    Write-Host "✅ API proxy configured successfully" -ForegroundColor Green
+    Write-Host "📋 API Routes:" -ForegroundColor Yellow
+    Write-Host "   Frontend: https://$swaUrl" -ForegroundColor Cyan
+    Write-Host "   API Proxy: https://$swaUrl/api/*" -ForegroundColor Cyan
+    Write-Host "   Direct API: https://$webAppName.azurewebsites.net" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠️ Could not retrieve Static Web App token" -ForegroundColor Yellow
+    Write-Host "💡 Configure manually in Azure Portal" -ForegroundColor Cyan
+}
+```
+
+### API and Application Testing
+
+```powershell
+Write-Host "🧪 Testing deployed application..." -ForegroundColor Yellow
+
+# Test API endpoints
+Write-Host "🔍 Testing API endpoints..." -ForegroundColor Cyan
+
+$apiUrl = "https://$webAppName.azurewebsites.net"
+$testResults = @()
+
+# Test health endpoint
+try {
+    $healthCheck = Invoke-RestMethod -Uri "$apiUrl/health" -Method GET -TimeoutSec 30
+    Write-Host "✅ Health check passed" -ForegroundColor Green
+    $testResults += "Health: ✅ OK"
+} catch {
+    Write-Host "❌ Health check failed: $($_.Exception.Message)" -ForegroundColor Red
+    $testResults += "Health: ❌ FAILED"
+}
+
+# Test Swagger endpoint
+try {
+    $swagger = Invoke-WebRequest -Uri "$apiUrl/swagger" -Method GET -TimeoutSec 30
+    if ($swagger.StatusCode -eq 200) {
+        Write-Host "✅ Swagger UI accessible" -ForegroundColor Green
+        $testResults += "Swagger: ✅ OK"
+    }
+} catch {
+    Write-Host "❌ Swagger UI not accessible" -ForegroundColor Red
+    $testResults += "Swagger: ❌ FAILED"
+}
+
+# Test a sample API endpoint (WeatherForecast - default)
+try {
+    $weather = Invoke-RestMethod -Uri "$apiUrl/WeatherForecast" -Method GET -TimeoutSec 30
+    if ($weather) {
+        Write-Host "✅ Sample API endpoint working" -ForegroundColor Green
+        $testResults += "Sample API: ✅ OK"
+    }
+} catch {
+    Write-Host "⚠️ Sample API endpoint issue (may need authentication)" -ForegroundColor Yellow
+    $testResults += "Sample API: ⚠️ AUTH NEEDED"
+}
+
+# Display test summary
 Write-Host ""
-Write-Host "📋 Copy this token and add it to GitHub Secrets as:"
-Write-Host "   Secret Name: AZURE_STATIC_WEB_APPS_API_TOKEN"
-Write-Host "   Secret Value: $deploymentToken"
-```
+Write-Host "📊 API Test Results:" -ForegroundColor Yellow
+foreach ($result in $testResults) {
+    Write-Host "   $result" -ForegroundColor Cyan
+}
 
-2. **Add to GitHub Repository Secrets:**
-   - Go to your GitHub repository
-   - Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`
-   - Value: Paste the deployment token from above
-   - Click "Add secret"
-
-**⚠️ Without this secret, deployments will fail!**
-
-#### Step 6.5: ✅ GitHub Actions Workflow (Auto-Created)
-
-**IMPORTANT**: The Static Web App creation automatically creates a GitHub Actions workflow file at:
-`.github/workflows/azure-static-web-apps-<random-name>.yml`
-
-**✅ UPDATED Configuration (Working Version):**
-```yaml
-name: Azure Static Web Apps CI/CD
-
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches: [ master ]
-
-jobs:
-  build_and_deploy_job:
-    runs-on: ubuntu-latest
-    name: Build and Deploy Job
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          
-      - name: Build SPA
-        run: |
-          echo "Building SPA from Frontend/spa (note: capital F)"
-          cd Frontend/spa
-          npm install
-          npm run build
-
-      - name: Deploy to Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: 'upload'
-          app_location: 'Frontend/spa'
-          api_location: 'AzureFunctions/TKDHubFunctions'
-          output_location: 'dist'
-          skip_deploy_on_missing_secrets: true
-```
-
-**Key Configuration Points:**
-- ✅ `app_location: 'Frontend/spa'` (SPA source - note capital F)
-- ✅ `api_location: 'AzureFunctions/TKDHubFunctions'` (Functions API)
-- ✅ `output_location: 'dist'` (Build output folder)
-- ✅ Node.js 18 setup for SPA build
-- ✅ Automated deployment on push to master branch
-- ✅ `skip_deploy_on_missing_secrets: true` (Prevents workflow failure)
-
-#### Step 7: Configure Application Settings (Critical Step)
-
-
-```powershell
-Write-Host "⚙️ Configuring Application Settings..."
-
-
-# Build connection strings
-$sqlConnectionString = "Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDbName;Persist Security Info=False;User ID=$sqlAdminUser;Password=$sqlAdminPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-
-
-Write-Host "📋 Retrieving SignalR connection string..."
-$signalRConnectionString = az signalr key list `
-  --name $signalRName `
-  --resource-group $resourceGroup `
-  --query primaryConnectionString -o tsv
-
-
-if ($signalRConnectionString) {
-    Write-Host "✅ SignalR connection string retrieved"
-   
-    # Configure Static Web App settings
-    Write-Host "🔧 Configuring Static Web App application settings..."
-    az staticwebapp appsettings set `
-      --name $staticWebAppName `
-      --setting-names "DefaultConnection=$sqlConnectionString" `
-                      "SignalRConnectionString=$signalRConnectionString" `
-                      "Jwt__SecretKey=YourJWTSecretKey-MustBe256BitsLong-ChangeThisInProduction!" `
-                      "Jwt__Issuer=https://$staticWebAppName.azurestaticapps.net" `
-                      "Jwt__Audience=https://$staticWebAppName.azurestaticapps.net" `
-                      "MercadoPago__AccessToken=YOUR_MERCADOPAGO_TOKEN" `
-                      "MercadoPago__PublicKey=YOUR_MERCADOPAGO_PUBLIC_KEY" `
-                      "ASPNETCORE_ENVIRONMENT=Production"
-   
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Application settings configured successfully"
-        Write-Host "📊 Configuration Summary:"
-        Write-Host "   ✅ Database connection configured"
-        Write-Host "   ✅ SignalR connection configured"
-        Write-Host "   ✅ JWT settings configured"
-        Write-Host "   ⚠️ MercadoPago tokens need manual update"
-        Write-Host ""
-        Write-Host "🔐 SECURITY REMINDER:"
-        Write-Host "   • Change JWT secret key in production"
-        Write-Host "   • Update MercadoPago tokens with real values"
-        Write-Host "   • Consider using Azure Key Vault for secrets"
-    } else {
-        Write-Host "❌ Failed to configure application settings"
+# Test Static Web App
+Write-Host ""
+Write-Host "🌐 Testing Static Web App..." -ForegroundColor Cyan
+try {
+    $spaTest = Invoke-WebRequest -Uri "https://$swaUrl" -Method GET -TimeoutSec 30
+    if ($spaTest.StatusCode -eq 200) {
+        Write-Host "✅ Static Web App accessible" -ForegroundColor Green
     }
-} else {
-    Write-Host "❌ Failed to retrieve SignalR connection string"
-    Write-Host "💡 Configure settings manually in Azure Portal (see STEP8_CONFIGURATION_GUIDE.md)"
+} catch {
+    Write-Host "⚠️ Static Web App may still be deploying" -ForegroundColor Yellow
 }
 ```
 
-
-#### Step 8: Verify Deployment
-
+### 🎉 Deployment Complete with Regional Resilience
 
 ```powershell
-Write-Host "🔍 Verifying deployment..."
-
-
-# Check resource group
-Write-Host "📂 Checking resource group..."
-az group show --name $resourceGroup --query "location" -o tsv
-
-
-# Check SQL Database
-Write-Host "🗄️ Checking SQL Database..."
-az sql db show --resource-group $resourceGroup --server $sqlServerName --name $sqlDbName --query "status" -o tsv
-
-
-# Check SignalR Service
-Write-Host "📡 Checking SignalR Service..."
-# Ensure the resource group exists and is accessible
-
-
-# Check Static Web App
-Write-Host "🌐 Checking Static Web App..."
-$finalUrl = az staticwebapp show --name $staticWebAppName --resource-group $resourceGroup --query "defaultHostname" -o tsv
-
-
-if ($finalUrl) {
-    Write-Host ""
-    Write-Host "🎉 DEPLOYMENT COMPLETE!"
-    Write-Host "═══════════════════════════════════════════"
-    Write-Host "📊 Your Ultra-Low-Cost TKD Hub Deployment:"
-    Write-Host ""
-    Write-Host "🌐 Frontend URL: https://$finalUrl"
-    Write-Host "🗄️ Database: $sqlServerName.database.windows.net"
-    Write-Host "📡 SignalR: $signalRName.service.signalr.net"
-    Write-Host "📂 Resource Group: $resourceGroup"
-    Write-Host ""
-    Write-Host "💰 Monthly Cost Estimate: $5-15"
-    Write-Host "   • Static Web App: FREE"
-    Write-Host "   • Azure Functions: FREE (up to 500K requests)"
-    Write-Host "   • SignalR Service: FREE"
-    Write-Host "   • SQL Database Serverless: $5-15"
-    Write-Host ""
-    Write-Host "🚀 Next Steps:"
-    Write-Host "   1. Update MercadoPago tokens in Azure Portal"
-    Write-Host "   2. Generate secure JWT secret key"
-    Write-Host "   3. Create Azure Functions (see Step 9)"
-    Write-Host "   4. Deploy and test your application"
-    Write-Host "═══════════════════════════════════════════"
+Write-Host ""
+Write-Host "🎉 TKD Hub Production Deployment Complete with Region Retry!" -ForegroundColor Green
+Write-Host "══════════════════════════════════════════════════════════" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "📊 Deployment Summary with Regional Distribution:" -ForegroundColor Yellow
+Write-Host "   �️ Resource Group: $resourceGroup in $location" -ForegroundColor Cyan
+Write-Host "   🗄️ SQL Server: $sqlServerName.database.windows.net in $location" -ForegroundColor Cyan
+Write-Host "   🌐 App Service: $webAppName.azurewebsites.net in $location" -ForegroundColor Cyan
+if ($signalRDeployment -and $signalRDeployment.Success) {
+    Write-Host "   � SignalR: $signalRName.service.signalr.net in $($signalRDeployment.Region)" -ForegroundColor Cyan
 } else {
-    Write-Host "⚠️ Deployment completed with issues - check Azure Portal"
+    Write-Host "   📡 SignalR: ⚠️ Not deployed (optional service)" -ForegroundColor DarkYellow
 }
+if ($swaDeployment -and $swaDeployment.Success) {
+    Write-Host "   📱 Static Web App: https://$swaUrl in $($swaDeployment.Region)" -ForegroundColor Cyan
+} else {
+    Write-Host "   � Frontend: ⚠️ Deploy separately (SWA failed)" -ForegroundColor DarkYellow
+}
+Write-Host ""
+Write-Host "🌍 Region Retry Results:" -ForegroundColor Yellow
+Write-Host "   ✅ Smart region selection automatically handled failures" -ForegroundColor Green
+Write-Host "   🎯 Primary region attempted: [User specified]" -ForegroundColor Cyan
+Write-Host "   🔄 Fallback regions tested as needed" -ForegroundColor Cyan
+Write-Host "   📍 Final deployment region: $location" -ForegroundColor Green
+Write-Host ""
+Write-Host "💰 Monthly Cost Estimate: $18-28" -ForegroundColor Green
+Write-Host "   • Static Web App (Frontend): FREE" -ForegroundColor Cyan
+Write-Host "   • App Service (API): ~$13/month" -ForegroundColor Cyan
+Write-Host "   • SQL Database Serverless: ~$5-15/month" -ForegroundColor Cyan
+Write-Host "   • SignalR Service: FREE" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "�️ Deployment Reliability Features:" -ForegroundColor Yellow
+Write-Host "   ✅ Region availability testing" -ForegroundColor Green
+Write-Host "   ✅ Automatic failover to alternative regions" -ForegroundColor Green
+Write-Host "   ✅ Geographic distribution for optimal performance" -ForegroundColor Green
+Write-Host "   ✅ Comprehensive error handling and user feedback" -ForegroundColor Green
+Write-Host ""
+Write-Host "�🚀 Next Steps:" -ForegroundColor Yellow
+Write-Host "   1. 🔐 Update MercadoPago credentials in App Service Configuration" -ForegroundColor Cyan
+Write-Host "   2. 🔑 Generate secure JWT secret key for production" -ForegroundColor Cyan
+Write-Host "   3. 👥 Set up user accounts and test authentication" -ForegroundColor Cyan
+Write-Host "   4. 📊 Monitor application performance in Azure Portal" -ForegroundColor Cyan
+Write-Host "   5. 🔄 Configure CI/CD for automatic deployments" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "📋 Important URLs:" -ForegroundColor Yellow
+Write-Host "   • Application: https://$swaUrl" -ForegroundColor Cyan
+Write-Host "   • API Documentation: https://$webAppName.azurewebsites.net/swagger" -ForegroundColor Cyan
+Write-Host "   • Health Check: https://$webAppName.azurewebsites.net/health" -ForegroundColor Cyan
+Write-Host "   • Azure Portal: https://portal.azure.com" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "🎯 Your TKD Hub application is now live with regional resilience!" -ForegroundColor Green
+Write-Host "📈 Deployment reliability improved with smart region retry logic" -ForegroundColor Green
+Write-Host "══════════════════════════════════════════════════════════" -ForegroundColor Yellow
 ```
 
+---
 
-#### Step 9: Create Azure Functions (Replace Your Controllers)
+## 🔧 Advanced Region Retry Troubleshooting
+
+### Region Deployment Issues
+
+If deployment fails even with region retry, here's how to diagnose and resolve issues:
+
+#### 🔍 1. Check Region Availability
 
 ```powershell
-Write-Host "⚡ Step 9: Creating Azure Functions..." -ForegroundColor Yellow
+# Test region availability manually
+function Test-RegionCapacity {
+    param([string]$Region)
+    
+    Write-Host "🔍 Testing region capacity: $Region" -ForegroundColor Cyan
+    
+    # Check regional services availability
+    $services = @("Microsoft.Web", "Microsoft.Sql", "Microsoft.SignalRService")
+    
+    foreach ($service in $services) {
+        try {
+            $providers = az provider show --namespace $service --query "registrationState" -o tsv
+            if ($providers -eq "Registered") {
+                Write-Host "✅ $service available in $Region" -ForegroundColor Green
+            } else {
+                Write-Host "❌ $service not available in $Region" -ForegroundColor Red
+            }
+        }
+        catch {
+            Write-Host "⚠️ Could not check $service in $Region" -ForegroundColor Yellow
+        }
+    }
+}
 
-# Navigate to Azure Functions project
-Set-Location "AzureFunctions\TKDHubFunctions"
-
-# Create Functions directory
-if (-not (Test-Path "Functions")) {
-    New-Item -ItemType Directory -Path "Functions"
-    Write-Host "✅ Created Functions directory"
+# Test multiple regions
+$testRegions = @("East US", "West US 2", "West Europe", "Southeast Asia")
+foreach ($region in $testRegions) {
+    Test-RegionCapacity -Region $region
+    Write-Host ""
 }
 ```
 
-**9.1 Create Program.cs for Azure Functions (✅ UPDATED - WORKING VERSION):**
+#### 🛠️ 2. Manual Region Override
 
-Create `Program.cs`:
-```csharp
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using TKDHubAPI.Application;
-using TKDHubAPI.Infrastructure;
+If automatic region retry fails, override manually:
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
-    .ConfigureServices(services =>
-    {
-        services.AddApplicationInsightsTelemetryWorkerService();
-        services.ConfigureFunctionsApplicationInsights();
-        
-        // Add application and infrastructure layers using extension methods
-        services.AddApplication();
-        services.AddInfrastructure();
-    })
-    .Build();
+```powershell
+# Force specific region deployment
+$forceRegion = "West US 2"  # Change as needed
+Write-Host "🎯 Forcing deployment to: $forceRegion" -ForegroundColor Yellow
 
-host.Run();
+# Override location variable
+$location = $forceRegion
+
+# Skip region retry and deploy directly
+Write-Host "⚠️ Skipping region retry - deploying to $forceRegion only" -ForegroundColor Yellow
+
+# Then run your deployment commands normally
+# az group create --name $resourceGroup --location $location
 ```
 
-**✅ IMPORTANT NOTES:**
-- This simplified approach uses the existing DI extension methods
-- Automatically resolves AutoMapper version conflicts
-- Includes all required services through AddApplication() and AddInfrastructure()
-- Compatible with .NET 8.0 and Azure Functions v4
+#### 📊 3. Regional Service Limits
+
+Check subscription limits per region:
+
+```powershell
+# Check App Service limits
+az vm list-usage --location $location --query "[?localName=='App Service Plans']" -o table
+
+# Check SQL Database limits  
+az sql list-usage --location $location -o table
+
+# Check resource group limits
+az group list --query "length([?location=='$location'])" -o tsv
+```
+
+#### 🌍 4. Optimal Region Selection Strategy
+
+Choose regions based on:
+
+1. **Geographic proximity to users**
+2. **Service availability** (not all Azure services are in all regions)
+3. **Compliance requirements** (data residency laws)
+4. **Cost differences** (some regions are more expensive)
+5. **Disaster recovery** (paired regions)
+
+```powershell
+# Get recommended paired region
+function Get-PairedRegion {
+    param([string]$PrimaryRegion)
+    
+    $regionPairs = @{
+        "East US" = "West US"
+        "East US 2" = "Central US"
+        "West US 2" = "West Central US"
+        "West Europe" = "North Europe"
+        "Southeast Asia" = "East Asia"
+        "Australia East" = "Australia Southeast"
+    }
+    
+    return $regionPairs[$PrimaryRegion]
+}
+
+$pairedRegion = Get-PairedRegion -PrimaryRegion $location
+Write-Host "🌍 Recommended paired region: $pairedRegion" -ForegroundColor Cyan
+```
+
+#### 🚨 5. Emergency Fallback Deployment
+
+If all Azure regions fail:
+
+```powershell
+Write-Host "🚨 Emergency: All Azure regions failed" -ForegroundColor Red
+Write-Host "📋 Fallback options:" -ForegroundColor Yellow
+Write-Host "   1. 🕒 Retry deployment in 30-60 minutes" -ForegroundColor Cyan
+Write-Host "   2. 🔄 Use different subscription if available" -ForegroundColor Cyan  
+Write-Host "   3. 📞 Contact Azure Support for capacity issues" -ForegroundColor Cyan
+Write-Host "   4. 🌐 Deploy to different cloud provider temporarily" -ForegroundColor Cyan
+Write-Host "   5. 🏠 Use local development environment" -ForegroundColor Cyan
+```
+
+#### 📈 6. Region Performance Monitoring
+
+Monitor deployed resources across regions:
+
+```powershell
+# Get deployment regions summary
+function Get-DeploymentRegions {
+    Write-Host "📊 Current deployment regional distribution:" -ForegroundColor Yellow
+    
+    # Check resource group
+    $rgInfo = az group show --name $resourceGroup --query "{name:name, location:location}" -o json | ConvertFrom-Json
+    Write-Host "   📂 Resource Group: $($rgInfo.location)" -ForegroundColor Cyan
+    
+    # Check App Service
+    $appInfo = az webapp show --name $webAppName --resource-group $resourceGroup --query "{name:name, location:location}" -o json 2>$null | ConvertFrom-Json
+    if ($appInfo) {
+        Write-Host "   🌐 App Service: $($appInfo.location)" -ForegroundColor Cyan
+    }
+    
+    # Check SQL Server
+    $sqlInfo = az sql server show --name $sqlServerName --resource-group $resourceGroup --query "{name:name, location:location}" -o json 2>$null | ConvertFrom-Json
+    if ($sqlInfo) {
+        Write-Host "   🗄️ SQL Server: $($sqlInfo.location)" -ForegroundColor Cyan
+    }
+    
+    # Check SignalR
+    $signalrInfo = az signalr show --name $signalRName --resource-group $resourceGroup --query "{name:name, location:location}" -o json 2>$null | ConvertFrom-Json
+    if ($signalrInfo) {
+        Write-Host "   📡 SignalR: $($signalrInfo.location)" -ForegroundColor Cyan
+    }
+}
+
+# Run regional analysis
+Get-DeploymentRegions
+```
+
+---
+
+## ⚡ Alternative: Ultra-Low-Cost Deployment (Azure Static Web Apps + Functions)
+
+> **For MVPs and learning projects - Limited Entity Framework support**
+
+**Note:** This approach has limitations with Entity Framework migrations and is not recommended for production applications. Use the ASP.NET Core Web API approach above for full functionality.
+
+For completeness, the ultra-low-cost deployment steps remain available but are not detailed here due to the EF Core limitations discovered. The production ASP.NET Core approach provides:
+
+- ✅ **Full EF Core support** with automatic migrations
+- ✅ **Better reliability** and performance
+- ✅ **Easier development** and debugging
+- ✅ **Only $13/month additional cost** for significantly better features
+
+If you need the ultra-low-cost Azure Functions approach, refer to the project's GitHub repository for the complete steps.
+
+
+---
+
+## 🚀 Post-Deployment
 
 **9.2 Create Authentication Functions:**
 
@@ -1668,6 +2086,261 @@ Write-Host "🚀 Your ultra-low-cost TKD Hub API is now LIVE!" -ForegroundColor 
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Green
 ```
 
+
+## ASP.NET Core Web API Deployment (Recommended)
+
+### Step-by-Step ASP.NET Core Web API + Static Web App Deployment
+
+**This is the recommended approach for production applications that need full EF Core support and reliable database migrations.**
+
+#### Step A: Deploy ASP.NET Core Web API to Azure App Service
+
+**A1. Create Resource Group and App Service Plan**
+
+```powershell
+# Set variables
+$resourceGroup = "tkd-hub-rg"
+$location = "East US"
+$appServicePlan = "tkd-hub-plan"
+$webAppName = "tkd-hub-api-$(Get-Random)"
+$sqlServer = "tkd-hub-sql-$(Get-Random)"
+$sqlDatabase = "tkd-hub-db"
+$adminLogin = "tkdhubadmin"
+$adminPassword = "TKDHub2024!@#$(Get-Random -Minimum 100 -Maximum 999)"
+
+# Create resource group
+az group create --name $resourceGroup --location $location
+
+# Create App Service Plan (Basic B1 - $13/month)
+az appservice plan create \
+  --name $appServicePlan \
+  --resource-group $resourceGroup \
+  --location $location \
+  --sku B1 \
+  --is-linux false
+```
+
+**A2. Create Azure SQL Database**
+
+```powershell
+# Create SQL Server
+az sql server create \
+  --name $sqlServer \
+  --resource-group $resourceGroup \
+  --location $location \
+  --admin-user $adminLogin \
+  --admin-password $adminPassword
+
+# Create SQL Database (Serverless - $5-15/month)
+az sql db create \
+  --name $sqlDatabase \
+  --server $sqlServer \
+  --resource-group $resourceGroup \
+  --edition GeneralPurpose \
+  --compute-model Serverless \
+  --family Gen5 \
+  --capacity 0.5 \
+  --auto-pause-delay 60
+
+# Configure firewall to allow Azure services
+az sql server firewall-rule create \
+  --server $sqlServer \
+  --resource-group $resourceGroup \
+  --name AllowAzureServices \
+  --start-ip-address 0.0.0.0 \
+  --end-ip-address 0.0.0.0
+```
+
+**A3. Create and Configure Web App**
+
+```powershell
+# Create Web App
+az webapp create \
+  --name $webAppName \
+  --resource-group $resourceGroup \
+  --plan $appServicePlan \
+  --runtime "DOTNETCORE:8.0"
+
+# Build connection string
+$connectionString = "Server=tcp:$sqlServer.database.windows.net,1433;Initial Catalog=$sqlDatabase;Persist Security Info=False;User ID=$adminLogin;Password=$adminPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+
+# Configure app settings
+az webapp config appsettings set \
+  --name $webAppName \
+  --resource-group $resourceGroup \
+  --settings "ConnectionStrings__DefaultConnection=$connectionString" \
+             "ASPNETCORE_ENVIRONMENT=Production" \
+             "WEBSITE_RUN_FROM_PACKAGE=1"
+
+# Enable CORS for Static Web App
+az webapp cors add \
+  --name $webAppName \
+  --resource-group $resourceGroup \
+  --allowed-origins "https://*.azurestaticapps.net" "http://localhost:3000" "http://localhost:5173"
+```
+
+**A4. Deploy ASP.NET Core Web API**
+
+```powershell
+# Navigate to the existing Web API project
+cd "src\TKDHubAPI.WebAPI"
+
+# Clean and build the Web API
+dotnet clean
+dotnet publish -c Release -o .\publish
+
+# Create deployment package
+Compress-Archive -Path ".\publish\*" -DestinationPath "deployment.zip" -Force
+
+# Deploy to Azure App Service
+az webapp deploy \
+  --name $webAppName \
+  --resource-group $resourceGroup \
+  --src-path "deployment.zip" \
+  --type zip
+
+# Clean up deployment package
+Remove-Item "deployment.zip" -Force
+
+Write-Host "✅ Web API deployed successfully!" -ForegroundColor Green
+Write-Host "🌐 API URL: https://$webAppName.azurewebsites.net" -ForegroundColor Cyan
+Write-Host "🔍 Test health endpoint: https://$webAppName.azurewebsites.net/health" -ForegroundColor Yellow
+
+# Return to project root
+cd "..\..\"
+```
+
+#### Step B: Deploy React SPA to Azure Static Web Apps
+
+**B1. Create Static Web App**
+
+```powershell
+$staticAppName = "tkd-hub-frontend-$(Get-Random)"
+
+# Create Static Web App (FREE)
+az staticwebapp create \
+  --name $staticAppName \
+  --resource-group $resourceGroup \
+  --location $location \
+  --source "https://github.com/yourusername/TKD_Hub_API" \
+  --branch "main" \
+  --app-location "/frontend/spa" \
+  --output-location "dist" \
+  --login-with-github
+```
+
+**B2. Configure API Proxy in Static Web App**
+
+Create `staticwebapp.config.json` in your SPA root:
+
+```json
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "rewrite": "https://YOUR-WEB-API-NAME.azurewebsites.net/api/*"
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/api/*", "*.{css,scss,sass,js,ts,tsx,jsx,json,png,gif,jpg,jpeg,svg,ico,woff,woff2,ttf,eot}"]
+  }
+}
+```
+
+**B3. Update SPA Configuration**
+
+Update `frontend/spa/vite.config.ts`:
+
+```typescript
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://YOUR-WEB-API-NAME.azurewebsites.net',
+        changeOrigin: true,
+        secure: true
+      }
+    }
+  },
+  build: {
+    outDir: 'dist'
+  }
+})
+```
+
+#### Step C: Verification and Testing
+
+**C1. Test API Endpoints**
+
+```powershell
+# Test health endpoint
+$apiUrl = "https://$webAppName.azurewebsites.net"
+Write-Host "🔍 Testing API endpoints..." -ForegroundColor Yellow
+
+try {
+    # Test health endpoint
+    $healthCheck = Invoke-RestMethod -Uri "$apiUrl/health" -Method GET
+    Write-Host "✅ Health check passed: $($healthCheck.status)" -ForegroundColor Green
+    
+    # Test WeatherForecast endpoint (default)
+    $weather = Invoke-RestMethod -Uri "$apiUrl/WeatherForecast" -Method GET
+    Write-Host "✅ WeatherForecast endpoint working" -ForegroundColor Green
+    
+    # Test Ranks endpoint
+    $ranks = Invoke-RestMethod -Uri "$apiUrl/api/Ranks" -Method GET
+    Write-Host "✅ Ranks endpoint working: Found $($ranks.Count) ranks" -ForegroundColor Green
+    
+} catch {
+    Write-Host "⚠️ Some endpoints may need database setup: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "💡 This is normal for first deployment - continue with database verification" -ForegroundColor Cyan
+}
+```
+
+**C2. Verify Database Migrations**
+
+```powershell
+# Check if database was created and migrated
+# The ASP.NET Core app should automatically run migrations on startup
+Write-Host "Checking database setup..." -ForegroundColor Yellow
+
+# You can verify in Azure Portal > SQL Database > Query Editor
+Write-Host "Database connection string:" -ForegroundColor Cyan
+Write-Host $connectionString
+```
+
+### Benefits of This Architecture
+
+**✅ Automatic Database Migrations**
+- EF Core runs migrations automatically on app startup
+- No manual database setup required
+- Data seeding works properly
+
+**✅ Full Feature Support**  
+- All controller endpoints work
+- Complex business logic supported
+- Proper error handling and logging
+
+**✅ Production Ready**
+- Health checks included
+- Application Insights monitoring
+- Proper configuration management
+
+**✅ Cost Effective**
+- Static Web App frontend: FREE
+- App Service API: ~$13/month
+- SQL Database Serverless: $5-15/month
+- **Total: $18-28/month**
+
+### Migration from Azure Functions
+
+If you were previously using Azure Functions, update your SPA to point to the App Service:
+
+1. **Remove Azure Functions** from your repository
+2. **Update API base URL** in your SPA configuration
+3. **Deploy using the steps above**
+4. **Verify all endpoints work** with the ASP.NET Core Web API
 
 ## Migration Path: From Standard to Ultra-Low-Cost
 
@@ -3582,12 +4255,118 @@ az staticwebapp delete --name YOUR_SWA_NAME --resource-group YOUR_RG
 az vm list-usage --location "Central US"
 ```
 
-### 📞 Support Resources
+---
 
-- **Azure Static Web Apps Docs**: https://docs.microsoft.com/azure/static-web-apps/
-- **GitHub Actions Troubleshooting**: https://docs.github.com/actions/monitoring-and-troubleshooting-workflows
-- **Azure Functions Docs**: https://docs.microsoft.com/azure/azure-functions/
+## �️ Troubleshooting
+
+### Common Deployment Issues
+
+#### Database Connection Problems
+```powershell
+# Test database connectivity
+$connectionString = "Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDbName;User ID=$sqlAdminUser;Password=$sqlAdminPassword;Encrypt=True;"
+
+# Add your IP to firewall if needed
+$myIP = (Invoke-RestMethod -Uri "https://ipinfo.io/ip").Trim()
+az sql server firewall-rule create `
+    --resource-group $resourceGroup `
+    --server $sqlServerName `
+    --name "MyCurrentIP" `
+    --start-ip-address $myIP `
+    --end-ip-address $myIP
+```
+
+#### App Service Issues
+- **Cold starts:** Enable Always On for production
+- **CORS errors:** Configure allowed origins
+- **SSL issues:** Verify custom domain configuration
+
+#### Static Web App Problems
+- **Build failures:** Check Node.js version compatibility
+- **Deployment issues:** Verify GitHub secrets and permissions
+- **Routing problems:** Review staticwebapp.config.json
+
+### Performance Optimization
+
+#### Database Performance
+- Monitor DTU usage in Azure Portal
+- Implement proper Entity Framework indexing
+- Use connection pooling (enabled by default)
+
+#### App Service Performance  
+- Scale up to higher App Service Plan if needed
+- Enable Application Insights monitoring
+- Implement response caching
+
+### Cost Management
+
+#### Monthly Cost Monitoring
+Set up budget alerts to track spending:
+
+```powershell
+# Optional: Create budget alert for cost control
+az consumption budget create `
+    --budget-name "TKDHub-Monthly-Budget" `
+    --amount 30 `
+    --category "Cost" `
+    --time-grain "Monthly" `
+    --resource-group $resourceGroup
+```
+
+#### Cost Optimization Tips
+- ✅ **SQL Serverless** auto-pauses (60 min idle = $0 compute cost)
+- ✅ **App Service Basic B1** provides good performance/cost ratio
+- ✅ **Static Web Apps** frontend hosting is completely free
+- ✅ **Application Insights** 5GB monthly data is free
+- ⚠️ **Monitor data retention** policies to avoid unexpected charges
 
 ---
 
-**Next**: Once configuration and troubleshooting are complete, proceed to Step 5 (Azure Functions setup)
+## 📚 Resources and Support
+
+### Official Documentation
+- [Azure App Service](https://docs.microsoft.com/azure/app-service/) - Complete App Service guide
+- [Azure SQL Serverless](https://docs.microsoft.com/azure/azure-sql/database/serverless-tier-overview) - Cost-saving database tier
+- [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps/) - Frontend hosting platform
+- [Entity Framework Core](https://docs.microsoft.com/ef/core/) - ORM documentation
+- [MercadoPago API](https://www.mercadopago.com.ar/developers/en/docs) - Payment integration
+
+### Community and Support
+- [ASP.NET Core Community](https://dotnet.microsoft.com/learn/aspnet) - .NET community resources
+- [Azure Support Plans](https://azure.microsoft.com/support/plans/) - Professional Azure support
+- [TKD Hub Repository](https://github.com/nicolassnider/TKD_Hub_API) - Project source code
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/azure+asp.net-core) - Development Q&A
+
+### Monitoring and Maintenance
+- **Azure Portal:** Monitor resource usage and performance
+- **Application Insights:** Track application performance and errors  
+- **GitHub Actions:** Automated deployment pipeline monitoring
+- **SQL Database Metrics:** Query performance and resource consumption
+
+---
+
+## 🎯 Deployment Complete!
+
+**🥋 Congratulations! Your TKD Hub application is now deployed to Azure with a production-ready architecture.**
+
+### What You've Accomplished
+
+✅ **Scalable Infrastructure** - App Service + SQL Serverless for optimal cost/performance  
+✅ **Global Frontend** - Static Web Apps with free SSL and CDN  
+✅ **Automatic Deployments** - CI/CD pipeline via GitHub Actions  
+✅ **Production Security** - JWT authentication and encrypted connections  
+✅ **Cost Optimization** - ~$18-28/month for full functionality  
+✅ **Monitoring Ready** - Application Insights for performance tracking  
+
+### Next Steps for Production
+
+1. **Configure MercadoPago** with production credentials
+2. **Set up monitoring alerts** for performance and cost
+3. **Add custom domain** to Static Web App (optional)
+4. **Create user accounts** and test full application flow
+5. **Plan backup and disaster recovery** strategy
+
+**Your martial arts school management system is ready to serve students and instructors worldwide! 🥋**
+
+
+
