@@ -1,20 +1,23 @@
 ﻿namespace TKDHubAPI.Infrastructure.Repositories;
 
+
 public class BlogPostRepository : IBlogPostRepository
 {
     private readonly TkdHubDbContext _context;
+
 
     public BlogPostRepository(TkdHubDbContext context)
     {
         _context = context;
     }
 
-    public async Task<BlogPost> AddAsync(BlogPost blogPost)
+
+    public Task<BlogPost> AddAsync(BlogPost blogPost)
     {
         _context.BlogPosts.Add(blogPost);
-        await _context.SaveChangesAsync();
-        return blogPost;
+        return Task.FromResult(blogPost);
     }
+
 
     public async Task<BlogPost?> GetByIdAsync(int id)
     {
@@ -22,6 +25,7 @@ public class BlogPostRepository : IBlogPostRepository
             .Include(b => b.Author)
             .FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
     }
+
 
     public async Task<IEnumerable<BlogPost>> GetAllAsync()
     {
@@ -31,11 +35,13 @@ public class BlogPostRepository : IBlogPostRepository
             .ToListAsync();
     }
 
-    public async Task UpdateAsync(BlogPost blogPost)
+
+    public Task UpdateAsync(BlogPost blogPost)
     {
         _context.BlogPosts.Update(blogPost);
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
+
 
     public async Task DeleteAsync(int id)
     {
@@ -45,7 +51,6 @@ public class BlogPostRepository : IBlogPostRepository
             // Soft delete: set IsActive to false
             blogPost.IsActive = false;
             _context.BlogPosts.Update(blogPost);
-            await _context.SaveChangesAsync();
         }
     }
 }

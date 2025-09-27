@@ -1,81 +1,176 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "clean (functions)",
-			"command": "dotnet",
-			"args": [
-				"clean",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"type": "process",
-			"problemMatcher": "$msCompile",
-			"options": {
-				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
-			}
-		},
-		{
-			"label": "build (functions)",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"type": "process",
-			"dependsOn": "clean (functions)",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": "$msCompile",
-			"options": {
-				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
-			}
-		},
-		{
-			"label": "clean release (functions)",
-			"command": "dotnet",
-			"args": [
-				"clean",
-				"--configuration",
-				"Release",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"type": "process",
-			"problemMatcher": "$msCompile",
-			"options": {
-				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
-			}
-		},
-		{
-			"label": "publish (functions)",
-			"command": "dotnet",
-			"args": [
-				"publish",
-				"--configuration",
-				"Release",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummasy"
-			],
-			"type": "process",
-			"dependsOn": "clean release (functions)",
-			"problemMatcher": "$msCompile",
-			"options": {
-				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
-			}
-		},
-		{
-			"type": "func",
-			"dependsOn": "build (functions)",
-			"options": {
-				"cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions/bin/Debug/net8.0"
-			},
-			"command": "host start",
-			"isBackground": true,
-			"problemMatcher": "$func-dotnet-watch"
-		}
-	]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "clean (functions)",
+            "command": "dotnet",
+            "args": [
+                "clean",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "type": "process",
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
+            }
+        },
+        {
+            "label": "build (functions)",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "type": "process",
+            "dependsOn": "clean (functions)",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
+            }
+        },
+        {
+            "label": "clean release (functions)",
+            "command": "dotnet",
+            "args": [
+                "clean",
+                "--configuration",
+                "Release",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "type": "process",
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
+            }
+        },
+        {
+            "label": "publish (functions)",
+            "command": "dotnet",
+            "args": [
+                "publish",
+                "--configuration",
+                "Release",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummasy"
+            ],
+            "type": "process",
+            "dependsOn": "clean release (functions)",
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions"
+            }
+        },
+        {
+            "type": "func",
+            "dependsOn": "build (functions)",
+            "options": {
+                "cwd": "${workspaceFolder}/src\\TKDHubAPI.Functions/bin/Debug/net8.0"
+            },
+            "command": "host start",
+            "isBackground": true,
+            "problemMatcher": "$func-dotnet-watch"
+        },
+        {
+            "label": "test",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "--verbosity",
+                "normal"
+            ],
+            "type": "process",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "test with coverage",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "--verbosity",
+                "normal",
+                "--collect",
+                "XPlat Code Coverage",
+                "--settings",
+                "coverlet.runsettings",
+                "--logger",
+                "trx",
+                "--results-directory",
+                "./test-results"
+            ],
+            "type": "process",
+            "group": "test",
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "test (watch)",
+            "command": "dotnet",
+            "args": [
+                "watch",
+                "test",
+                "--verbosity",
+                "normal"
+            ],
+            "type": "process",
+            "group": "test",
+            "isBackground": true,
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "clean test results",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "if (Test-Path test-results) { Remove-Item -Recurse -Force test-results; Write-Host 'Test results cleaned' } else { Write-Host 'No test results to clean' }"
+            ],
+            "type": "process",
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
 }
