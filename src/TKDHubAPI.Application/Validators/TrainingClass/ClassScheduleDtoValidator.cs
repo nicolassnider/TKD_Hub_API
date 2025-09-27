@@ -1,3 +1,5 @@
+using TKDHubAPI.Application.DTOs.TrainingClass;
+
 namespace TKDHubAPI.Application.Validators.TrainingClass;
 
 

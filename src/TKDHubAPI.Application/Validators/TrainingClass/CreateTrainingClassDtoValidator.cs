@@ -1,3 +1,6 @@
+using TKDHubAPI.Application.DTOs.TrainingClass;
+using TKDHubAPI.Application.Validators.TrainingClass;
+
 public class CreateTrainingClassDtoValidator : AbstractValidator<CreateTrainingClassDto>
 {
     public CreateTrainingClassDtoValidator()

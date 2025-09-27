@@ -1,4 +1,3 @@
-using FluentValidation;
 using TKDHubAPI.Application.DTOs.BlogPost;
 
 namespace TKDHubAPI.Application.Validators.BlogPost;
@@ -16,3 +15,4 @@ public class CreateBlogPostDtoValidator : AbstractValidator<CreateBlogPostDto>
             .MaximumLength(50000).WithMessage("Content is too long.");
     }
 }
+

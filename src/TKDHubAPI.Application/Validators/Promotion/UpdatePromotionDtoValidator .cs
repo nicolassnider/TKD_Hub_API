@@ -1,3 +1,5 @@
+using TKDHubAPI.Application.DTOs.Promotion;
+
 public class UpdatePromotionDtoValidator : AbstractValidator<UpdatePromotionDto>
 {
     public UpdatePromotionDtoValidator()

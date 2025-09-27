@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using TKDHubAPI.Application.Settings;
 
+
 namespace TKDHubAPI.Application.Services;
 public class UserService : IUserService
 {
@@ -14,6 +15,7 @@ public class UserService : IUserService
     private readonly PasswordHasher<User> _passwordHasher = new();
     private readonly JwtSettings _jwtSettings;
     private readonly IMapper _mapper;
+
 
     public UserService(
         IUserRepository userRepository,
@@ -31,17 +33,21 @@ public class UserService : IUserService
         _dojaangRepository = dojaangRepository;
     }
 
+
     // Common validation for update and delete
     private async Task ValidateUserUpdateOrDeleteAsync(User user)
     {
         // Enforce: Student must belong to only one dojaang
 
+
         if (user.HasRole("Student") && NormalizeDojaangId(user.DojaangId) == null)
             throw new Exception("A student must be assigned to exactly one Dojaang.");
+
 
         // Add more shared business rules here as needed
         // Example: Prevent deleting last admin, etc.
     }
+
 
     public async Task<List<int>> GetManagedDojaangIdsAsync(int coachId)
     {
@@ -49,8 +55,10 @@ public class UserService : IUserService
         if (user == null || user.UserDojaangs == null)
             return new List<int>();
 
+
         return user.UserDojaangs.Select(ud => ud.DojaangId).ToList();
     }
+
 
     public async Task<User?> RegisterAsync(CreateUserDto createUserDto, string password)
     {
@@ -58,10 +66,13 @@ public class UserService : IUserService
         if (existingUser != null)
             return null;
 
+
         var normalizedDojaangId = NormalizeDojaangId(createUserDto.DojaangId);
+
 
         // For public registration, allow students without Dojaang assignment
         // They can be assigned to a Dojaang later by an admin
+
 
         var user = new User
         {
@@ -76,6 +87,7 @@ public class UserService : IUserService
             PasswordHash = _passwordHasher.HashPassword(new User(), password)
         };
 
+
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
         user.UserUserRoles = roles
             .Select(role => new UserUserRole
@@ -85,8 +97,10 @@ public class UserService : IUserService
             })
             .ToList();
 
+
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
+
 
         // Only add UserDojaang for the user's main role (e.g., Student), not for Coach due to black belt
         if (normalizedDojaangId.HasValue)
@@ -102,8 +116,10 @@ public class UserService : IUserService
             await _unitOfWork.SaveChangesAsync();
         }
 
+
         return user;
     }
+
 
     public async Task<User?> LoginAsync(string email, string password)
     {
@@ -111,9 +127,11 @@ public class UserService : IUserService
         if (user == null)
             return null;
 
+
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         return result == PasswordVerificationResult.Success ? user : null;
     }
+
 
     public async Task<string?> LoginWithTokenAsync(string email, string password)
     {
@@ -121,9 +139,11 @@ public class UserService : IUserService
         if (user == null)
             return null;
 
+
         var roles = user.UserUserRoles?.Select(uur => uur.UserRole.Name).ToList() ?? new List<string>();
         return GenerateJwtToken(user, roles);
     }
+
 
     private string GenerateJwtToken(User user, List<string> roles)
     {
@@ -134,13 +154,16 @@ public class UserService : IUserService
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
         };
 
+
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
 
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,
@@ -150,8 +173,10 @@ public class UserService : IUserService
             signingCredentials: creds
         );
 
+
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
 
     public async Task<IEnumerable<User>> GetAllAsync()
     {
@@ -159,10 +184,12 @@ public class UserService : IUserService
         return await _userRepository.GetAllAsync();
     }
 
+
     public async Task<User?> GetByIdAsync(int id)
     {
         return await _userRepository.GetByIdAsync(id);
     }
+
 
     public async Task<User> GetUserByEmailAsync(string email)
     {
@@ -172,6 +199,7 @@ public class UserService : IUserService
         return user;
     }
 
+
     public async Task<User> GetUserByPhoneNumberAsync(string phoneNumber)
     {
         var user = await _userRepository.GetUserByPhoneNumberAsync(phoneNumber);
@@ -180,16 +208,19 @@ public class UserService : IUserService
         return user;
     }
 
+
     public async Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName)
     {
         return await _userRepository.GetUsersByRoleAsync(roleName);
     }
+
 
     public async Task AddAsync(User user)
     {
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task UpdateAsync(User user)
     {
@@ -198,18 +229,23 @@ public class UserService : IUserService
         if (existingUser == null)
             throw new Exception("User not found.");
 
+
         // If the incoming DojaangId is 0 or null, do not modify this field
         if (user.DojaangId == null || user.DojaangId == 0)
         {
             user.DojaangId = existingUser.DojaangId == 0 ? null : existingUser.DojaangId;
 
+
         }
 
+
         await ValidateUserUpdateOrDeleteAsync(user);
+
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task UpdateUserFromDtoAsync(int id, UpdateUserDto updateUserDto)
     {
@@ -217,17 +253,22 @@ public class UserService : IUserService
         if (user == null)
             throw new Exception("User not found.");
 
+
         var originalDojaangId = user.DojaangId;
 
+
         _mapper.Map(updateUserDto, user);
+
 
         if (updateUserDto.DojaangId == null || updateUserDto.DojaangId == 0)
         {
             user.DojaangId = originalDojaangId;
         }
 
+
         await UpdateAsync(user);
     }
+
 
     public async Task DeleteAsync(int id)
     {
@@ -236,22 +277,27 @@ public class UserService : IUserService
         {
             await ValidateUserUpdateOrDeleteAsync(user);
 
+
             _userRepository.Remove(user);
             await _unitOfWork.SaveChangesAsync();
         }
     }
+
 
     public Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender)
     {
         return _userRepository.GetUsersByGenderAsync(gender);
     }
 
+
     public async Task<User> AddUserWithRolesAsync(CreateUserDto createUserDto)
     {
         var normalizedDojaangId = NormalizeDojaangId(createUserDto.DojaangId);
 
+
         if (await IsStudentRoleAsync(createUserDto.RoleIds) && normalizedDojaangId == null)
             throw new Exception("A student must be assigned to exactly one Dojaang.");
+
 
         var user = new User
         {
@@ -269,6 +315,7 @@ public class UserService : IUserService
                 : string.Empty
         };
 
+
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
         user.UserUserRoles = roles
             .Select(role => new UserUserRole
@@ -278,8 +325,10 @@ public class UserService : IUserService
             })
             .ToList();
 
+
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
+
 
         // Add UserDojaang relation if DojaangId is present
         if (normalizedDojaangId.HasValue)
@@ -294,12 +343,15 @@ public class UserService : IUserService
             await _unitOfWork.SaveChangesAsync();
         }
 
+
         return user;
     }
+
 
     public async Task<IEnumerable<UserDto>> GetAllWithRolesAsync()
     {
         var users = await _userRepository.GetAllAsync();
+
 
         var userDtos = users.Select(user => new UserDto
         {
@@ -329,14 +381,17 @@ public class UserService : IUserService
             LastName = user.LastName
         }).ToList();
 
+
         return userDtos;
     }
+
 
     public async Task<string?> GetRoleNameById(int roleId)
     {
         var role = await _userRoleRepository.GetByIdAsync(roleId);
         return role?.Name;
     }
+
 
     public bool CanAssignRoles(IEnumerable<string> currentUserRoles, IEnumerable<string> newUserRoleNames)
     {
@@ -346,26 +401,32 @@ public class UserService : IUserService
         return !isAssigningSensitive || isAdmin;
     }
 
+
     public async Task<(string? Token, UserDto? User)> LoginAndGetTokenAsync(LoginDto loginDto)
     {
         var user = await LoginAsync(loginDto.Email, loginDto.Password);
         if (user == null)
             return (null, null);
 
+
         var roles = user.UserUserRoles?.Select(uur => uur.UserRole.Name).ToList() ?? new List<string>();
         var token = GenerateJwtToken(user, roles);
+
 
         var userDto = _mapper.Map<UserDto>(user);
         userDto.Roles = roles;
 
+
         return (token, userDto);
     }
+
 
     public async Task<List<string>> GetRoleNamesByIdsAsync(List<int> roleIds)
     {
         var roles = await _userRoleRepository.GetRolesByIdsAsync(roleIds);
         return roles.Select(r => r.Name).ToList();
     }
+
 
     public async Task<bool> CoachManagesDojaangAsync(int coachId, int dojaangId)
     {
@@ -375,11 +436,13 @@ public class UserService : IUserService
         return coach.HasRole("Coach") && coach.ManagesDojaang(dojaangId);
     }
 
+
     private async Task<bool> IsStudentRoleAsync(IEnumerable<int> roleIds)
     {
         var roles = await _userRoleRepository.GetRolesByIdsAsync(roleIds);
         return roles.Any(r => r.Name.Equals("Student", StringComparison.OrdinalIgnoreCase));
     }
+
 
     public bool CanManageDojaang(User user, int dojaangId)
     {
@@ -387,9 +450,11 @@ public class UserService : IUserService
         if (user.HasRole("Admin"))
             return true;
 
+
         // Coaches/students: check if they are linked to the dojaang
         return user.UserDojaangs.Any(ud => ud.DojaangId == dojaangId && ud.Role == "Coach");
     }
+
 
     public async Task<User> AddCoachToDojaangAsync(int requestingUserId, CreateUserDto createCoachDto)
     {
@@ -397,18 +462,23 @@ public class UserService : IUserService
         if (requestingUser == null)
             throw new Exception("Requesting user not found.");
 
+
         var newUserRoleNames = await GetRoleNamesByIdsAsync(createCoachDto.RoleIds);
+
 
         if (!newUserRoleNames.Any(r => r.Equals("Coach", StringComparison.OrdinalIgnoreCase)))
             throw new UnauthorizedAccessException("Only coach role assignment is allowed in this operation.");
 
+
         var normalizedDojaangId = NormalizeDojaangId(createCoachDto.DojaangId);
+
 
         if (!requestingUser.HasRole("Admin"))
         {
             if (normalizedDojaangId == null || !requestingUser.ManagesDojaang(normalizedDojaangId.Value))
                 throw new UnauthorizedAccessException("You can only add a coach to a dojaang you manage.");
         }
+
 
         var user = new User
         {
@@ -424,6 +494,7 @@ public class UserService : IUserService
             PasswordHash = _passwordHasher.HashPassword(null, createCoachDto.Password)
         };
 
+
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createCoachDto.RoleIds);
         user.UserUserRoles = roles
             .Select(role => new UserUserRole
@@ -433,8 +504,10 @@ public class UserService : IUserService
             })
             .ToList();
 
+
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
+
 
         if (normalizedDojaangId.HasValue)
         {
@@ -447,8 +520,10 @@ public class UserService : IUserService
             await _unitOfWork.SaveChangesAsync();
         }
 
+
         return user;
     }
+
 
     public async Task<UserDto> CreateUserAsync(int requestingUserId, IEnumerable<string> currentUserRoles, CreateUserDto createUserDto)
     {
@@ -460,12 +535,15 @@ public class UserService : IUserService
                 newUserRoleNames.Add(roleName);
         }
 
+
         var normalizedDojaangId = NormalizeDojaangId(createUserDto.DojaangId);
+
 
         if (currentUserRoles.Contains("Coach") && !currentUserRoles.Contains("Admin"))
         {
             if (!newUserRoleNames.All(r => r == "Coach" || r == "Student"))
                 throw new UnauthorizedAccessException("Coach can only create Coach or Student users.");
+
 
             if (newUserRoleNames.Contains("Student") && normalizedDojaangId == null)
             {
@@ -474,19 +552,24 @@ public class UserService : IUserService
                 if (firstDojaangId == 0)
                     throw new ArgumentException("Coach does not manage any dojaang. Cannot assign student.");
 
+
                 normalizedDojaangId = firstDojaangId;
             }
 
+
             if (normalizedDojaangId == null)
                 throw new ArgumentException("DojaangId is required when a coach creates a user.");
+
 
             var manages = await CoachManagesDojaangAsync(requestingUserId, normalizedDojaangId.Value);
             if (!manages)
                 throw new UnauthorizedAccessException("Coach can only create users for dojaangs they manage.");
         }
 
+
         if (await IsStudentRoleAsync(createUserDto.RoleIds) && normalizedDojaangId == null)
             throw new ArgumentException("A student must be assigned to exactly one Dojaang.");
+
 
         var user = new User
         {
@@ -504,6 +587,7 @@ public class UserService : IUserService
                 : string.Empty
         };
 
+
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
         user.UserUserRoles = roles
             .Select(role => new UserUserRole
@@ -513,8 +597,10 @@ public class UserService : IUserService
             })
             .ToList();
 
+
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
+
 
         if (normalizedDojaangId.HasValue)
         {
@@ -528,6 +614,7 @@ public class UserService : IUserService
             await _unitOfWork.SaveChangesAsync();
         }
 
+
         var userDto = _mapper.Map<UserDto>(user);
         userDto.Roles = roles.Select(r => r.Name).ToList();
         return userDto;
@@ -537,22 +624,27 @@ public class UserService : IUserService
         return await _userRepository.GetStudentsByDojaangIdAsync(dojaangId);
     }
 
+
     public async Task RemoveCoachFromDojaangAsync(int coachId, int dojaangId)
     {
         var user = await _userRepository.GetByIdAsync(coachId);
         if (user == null)
             throw new Exception("Coach not found.");
 
+
         // Find the UserDojaang relation for this coach and dojaang with role "Coach"
         var userDojaang = user.UserDojaangs
             .FirstOrDefault(ud => ud.DojaangId == dojaangId && ud.Role == "Coach");
 
+
         if (userDojaang == null)
             throw new Exception("Coach is not assigned to this dojaang.");
 
+
         user.UserDojaangs.Remove(userDojaang);
-        _unitOfWork.SaveChangesAsync().Wait();
+        await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task AddCoachToDojaangRelationAsync(int coachId, int dojaangId)
     {
@@ -560,15 +652,18 @@ public class UserService : IUserService
         if (user == null)
             throw new Exception("Coach not found.");
 
+
         // Validate dojaang exists
         var dojaang = await _dojaangRepository.GetByIdAsync(dojaangId);
         if (dojaang == null)
             throw new Exception($"Dojaang with Id {dojaangId} does not exist.");
 
+
         // Check if the relation already exists
         var exists = user.UserDojaangs.Any(ud => ud.DojaangId == dojaangId && ud.Role == "Coach");
         if (exists)
             return; // Skip if already exists
+
 
         user.UserDojaangs.Add(new UserDojaang
         {
@@ -577,13 +672,16 @@ public class UserService : IUserService
             Role = "Coach"
         });
 
+
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     private int? NormalizeDojaangId(int? dojaangId)
     {
         return (dojaangId == null || dojaangId == 0) ? null : dojaangId;
     }
+
 
     public async Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto)
     {
@@ -592,16 +690,20 @@ public class UserService : IUserService
         if (coachRole == null)
             throw new Exception("Coach role not found in the system.");
 
+
         if (dto.Id.HasValue && dto.Id.Value > 0)
         {
             // Update existing coach
             var user = await _userRepository.GetByIdAsync(dto.Id.Value);
             if (user == null) throw new KeyNotFoundException("Coach not found.");
 
+
             _mapper.Map(dto, user); // Use AutoMapper for property mapping
+
 
             _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
+
 
             // Update managed dojaangs if provided
             if (dto.ManagedDojaangIds != null)
@@ -612,6 +714,7 @@ public class UserService : IUserService
                     .ToList();
                 foreach (var rel in toRemove)
                     user.UserDojaangs.Remove(rel);
+
 
                 // Add new relations
                 foreach (var dojaangId in dto.ManagedDojaangIds)
@@ -628,6 +731,7 @@ public class UserService : IUserService
                 }
                 await _unitOfWork.SaveChangesAsync();
             }
+
 
             return user;
         }
@@ -649,7 +753,9 @@ public class UserService : IUserService
                 RoleIds = new List<int> { coachRole.Id } // Assign Coach role
             };
 
+
             var user = await AddCoachToDojaangAsync(requestingUserId, createDto);
+
 
             // Add managed dojaangs if provided
             if (dto.ManagedDojaangIds != null)
@@ -666,9 +772,11 @@ public class UserService : IUserService
                 await _unitOfWork.SaveChangesAsync();
             }
 
+
             return user;
         }
     }
+
 
     public async Task ReactivateAsync(int userId)
     {
@@ -676,21 +784,25 @@ public class UserService : IUserService
         if (user == null)
             throw new Exception("User not found.");
 
+
         user.IsActive = true;
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId)
     {
         return await _userRepository.GetUserUserRolesAsync(userId);
     }
 
+
     public async Task AddUserUserRoleAsync(UserUserRole userUserRole)
     {
         await _userRepository.AddUserUserRoleAsync(userUserRole);
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task RemoveUserUserRoleAsync(int userId, int userRoleId)
     {
