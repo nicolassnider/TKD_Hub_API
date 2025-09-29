@@ -22,8 +22,8 @@ import {
   Link,
   Code,
 } from "@mui/icons-material";
-import { CreateBlogPostDto, UpdateBlogPostDto } from "../types/blog";
-import { useBlogContext } from "../context/BlogContext";
+import { CreateBlogPostDto, UpdateBlogPostDto } from "../../types/blog";
+import { useBlogContext } from "../../context/BlogContext";
 
 interface BlogEditorProps {
   open: boolean;

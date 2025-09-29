@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useApiItems } from "../hooks/useApiItems";
+import { useApiItems } from "../../hooks/useApiItems";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";

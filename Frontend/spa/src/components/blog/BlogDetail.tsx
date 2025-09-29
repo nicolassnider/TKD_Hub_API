@@ -24,12 +24,11 @@ import {
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
-import { useBlogContext } from "../context/BlogContext";
-import { useRole } from "../context/RoleContext";
+import { useBlogContext } from "../../context/BlogContext";
+import { useRole } from "../../context/RoleContext";
 import { BlogEditor } from "./BlogEditor";
-import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
-import { BlogPost } from "../types/blog";
-import { decodeHtml } from "../utils/htmlUtils";
+import { DeleteConfirmationDialog } from "../forms/DeleteConfirmationDialog";
+import { decodeHtml } from "../../utils/htmlUtils";
 
 export const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -15,9 +15,9 @@ import DialogActions from "@mui/material/DialogActions";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import { useApiItems } from "hooks/useApiItems";
-import { useRole } from "context/RoleContext";
-import { ApiError, fetchJson } from "lib/api";
+import { useApiItems } from "../../hooks/useApiItems";
+import { useRole } from "../../context/RoleContext";
+import { ApiError, fetchJson } from "../../lib/api";
 
 type Props = {
   coachId: string | number;

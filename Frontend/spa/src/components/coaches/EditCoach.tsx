@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useRole } from "../context/RoleContext";
+import { useRole } from "../../context/RoleContext";
 import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import { fetchJson, ApiError } from "../lib/api";
+import { fetchJson, ApiError } from "../../lib/api";
 
 type CoachPayload = {
   id: number;

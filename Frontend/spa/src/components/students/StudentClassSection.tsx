@@ -27,8 +27,8 @@ import {
   Groups as GroupsIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useProfile } from "context/ProfileContext";
-import { DAYS_OF_WEEK } from "types/classes";
+import { useProfile } from "../../context/ProfileContext";
+import { DAYS_OF_WEEK } from "../../types/classes";
 
 export const StudentClassSection: React.FC = () => {
   const navigate = useNavigate();
@@ -339,7 +339,7 @@ export const StudentClassSection: React.FC = () => {
                   .slice(0, 5)
                   .map((student, index) => (
                     <React.Fragment key={student.id}>
-                      {index > 0 && <Divider apiPath={""} id={undefined} />}
+                      {index > 0 && <Divider />}
                       <ListItem sx={{ px: 0 }}>
                         <ListItemAvatar>
                           <Avatar sx={{ bgcolor: "primary.main" }}>

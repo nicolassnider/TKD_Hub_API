@@ -12,7 +12,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { CreatePromotionDto, PromotionDto } from "types/api";
-import { Student, useFormData } from "hooks/useFormData";
+import { Student, useFormData } from "../../hooks/useFormData";
 import {
   CoachSelect,
   DojaangSelect,

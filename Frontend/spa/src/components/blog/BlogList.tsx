@@ -2,23 +2,21 @@ import React, { useState } from "react";
 import { Box, Typography, Fab, Chip } from "@mui/material";
 import {
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Person as PersonIcon,
   AccessTime as TimeIcon,
 } from "@mui/icons-material";
-import { useBlogContext } from "../context/BlogContext";
-import { useRole } from "../context/RoleContext";
+import { useBlogContext } from "../../context/BlogContext";
+import { useRole } from "../../context/RoleContext";
 import { BlogEditor } from "./BlogEditor";
-import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
-import { BlogPost } from "../types/blog";
-import { decodeHtml, getHtmlPreview } from "../utils/htmlUtils";
-import { GenericEntityList } from "./common";
+import { DeleteConfirmationDialog } from "../forms/DeleteConfirmationDialog";
+import { BlogPost } from "../../types/blog";
+import { decodeHtml, getHtmlPreview } from "../../utils/htmlUtils";
+import { GenericEntityList } from "../common/GenericEntityList";
 import {
   EntityAction,
   createEditAction,
   createDeleteAction,
-} from "./EntityActions";
+} from "../layout/EntityActions";
 
 export const BlogList: React.FC = () => {
   const { posts, loading, error, deletePost, getPermissions } =
@@ -153,7 +151,7 @@ export const BlogList: React.FC = () => {
         addButtonText="New Post"
         renderItem={renderPost}
         getItemActions={getPostActions}
-        getItemKey={(post) => post.id}
+        getItemKey={(post: BlogPost) => post.id}
         gridProps={{ xs: 12, md: 6, lg: 4 }}
         emptyTitle="No blog posts yet"
         emptyDescription="Create your first blog post to get started"

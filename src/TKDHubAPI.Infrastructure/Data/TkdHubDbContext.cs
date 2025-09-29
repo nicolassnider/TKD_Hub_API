@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using TKDHubAPI.Domain.Constants;
 
 namespace TKDHubAPI.Infrastructure.Data;
 public class TkdHubDbContext : DbContext
@@ -51,17 +53,15 @@ public class TkdHubDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var auditEntries = new List<AuditLog>();
         var now = DateTime.UtcNow;
         var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         int? userId = int.TryParse(userIdClaim, out var id) ? id : null;
 
-        // Collect audit logs for Update and Delete (EntityId is available)
-        foreach (var entry in ChangeTracker.Entries())
-        {
-            if (entry.Entity is AuditLog || entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
-                continue;
+        var auditEntries = new List<AuditLog>();
+        var pendingAdded = new List<(EntityEntry Entry, AuditLog Audit)>();
 
+        foreach (var entry in ChangeTracker.Entries().Where(e => !(e.Entity is AuditLog) && e.State != EntityState.Detached && e.State != EntityState.Unchanged))
+        {
             var audit = new AuditLog
             {
                 EntityName = entry.Entity.GetType().Name,
@@ -74,7 +74,7 @@ public class TkdHubDbContext : DbContext
             if (key != null)
             {
                 var keyProperty = key.Properties.FirstOrDefault();
-                if (keyProperty != null)
+                if (keyProperty != null && entry.Properties.Any(p => p.Metadata.Name == keyProperty.Name))
                 {
                     entityId = entry.Property(keyProperty.Name).CurrentValue;
                 }
@@ -84,41 +84,27 @@ public class TkdHubDbContext : DbContext
             switch (entry.State)
             {
                 case EntityState.Added:
+                    // Defer Added entries until after save so generated keys are available
                     audit.Operation = AuditOperation.Create;
                     audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
+                    pendingAdded.Add((entry, audit));
                     break;
                 case EntityState.Modified:
                     var original = entry.OriginalValues.ToObject();
                     var current = entry.CurrentValues.ToObject();
-                    var isSoftDelete = false;
 
-                    // Check for IsActive property (soft delete: true -> false)
-                    var isActiveProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "IsActive");
+                    // Detect soft delete transitions via IsActive property
+                    var isActiveProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == PropertyNames.IsActive);
+                    var isSoftDelete = false;
                     if (isActiveProp != null)
                     {
-                        var originalIsActive = entry.OriginalValues["IsActive"] as bool? ?? true;
-                        var currentIsActive = entry.CurrentValues["IsActive"] as bool? ?? true;
+                        var originalIsActive = entry.OriginalValues[PropertyNames.IsActive] as bool? ?? true;
+                        var currentIsActive = entry.CurrentValues[PropertyNames.IsActive] as bool? ?? true;
                         isSoftDelete = originalIsActive && !currentIsActive;
                     }
 
-                    if (isSoftDelete)
-                    {
-                        audit.Operation = AuditOperation.Delete;
-                        audit.Changes = System.Text.Json.JsonSerializer.Serialize(new
-                        {
-                            Original = original,
-                            Current = current
-                        });
-                    }
-                    else
-                    {
-                        audit.Operation = AuditOperation.Update;
-                        audit.Changes = System.Text.Json.JsonSerializer.Serialize(new
-                        {
-                            Original = original,
-                            Current = current
-                        });
-                    }
+                    audit.Operation = isSoftDelete ? AuditOperation.Delete : AuditOperation.Update;
+                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(new { Original = original, Current = current });
                     auditEntries.Add(audit);
                     break;
                 case EntityState.Deleted:
@@ -129,35 +115,26 @@ public class TkdHubDbContext : DbContext
             }
         }
 
-        // Save changes to get generated keys
+        // Persist main changes first (this will generate keys for Added entities)
         var result = await base.SaveChangesAsync(cancellationToken);
 
-        // Now handle Added entries (EntityId is available)
-        foreach (var entry in ChangeTracker.Entries().Where(e => e.State == EntityState.Unchanged))
+        // Now finish pending added audits (we can read generated keys)
+        foreach (var (entry, audit) in pendingAdded)
         {
-            if (entry.Entity is AuditLog)
-                continue;
-
-            var audit = new AuditLog
-            {
-                EntityName = entry.Entity.GetType().Name,
-                Timestamp = now,
-                UserId = userId?.ToString(),
-                Operation = AuditOperation.Create,
-                Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject())
-            };
-
             var key = entry.Metadata.FindPrimaryKey();
-            object? entityId = null;
             if (key != null)
             {
                 var keyProperty = key.Properties.FirstOrDefault();
-                if (keyProperty != null)
+                if (keyProperty != null && entry.Properties.Any(p => p.Metadata.Name == keyProperty.Name))
                 {
-                    entityId = entry.Property(keyProperty.Name).CurrentValue;
+                    audit.EntityId = entry.Property(keyProperty.Name).CurrentValue as int?;
                 }
             }
-            audit.EntityId = entityId as int?;
+
+            // If we didn't already set Changes, set it now
+            if (string.IsNullOrEmpty(audit.Changes))
+                audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
+
             auditEntries.Add(audit);
         }
 

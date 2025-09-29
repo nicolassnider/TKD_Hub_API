@@ -7,9 +7,9 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import { useRole } from "context/RoleContext";
-import { fetchJson } from "lib/api";
-import CoachSelector from "components/coaches/CoachSelector";
+import { useRole } from "../../context/RoleContext";
+import { fetchJson } from "../../lib/api";
+import CoachSelector from "../coaches/CoachSelector";
 
 type DojaangPayload = {
   id: number;

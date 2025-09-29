@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useRole } from "../context/RoleContext";
 import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
-import { fetchJson } from "../lib/api";
+import { useRole } from "context/RoleContext";
+import { fetchJson } from "lib/api";
 
 export default function LoginForm() {
   const { setToken, setRole, setDisplayName, setAvatarUrl } = useRole();

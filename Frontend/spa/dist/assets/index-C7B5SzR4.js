@@ -41307,38 +41307,36 @@ const Of = [
                 }),
                 a.jsxs(Nr, {
                   children: [
-                    t.enrolledStudents
-                      .slice(0, 5)
-                      .map((g, b) =>
-                        a.jsxs(
-                          Pe.Fragment,
-                          {
-                            children: [
-                              b > 0 && a.jsx(io, {}),
-                              a.jsxs(Or, {
-                                sx: { px: 0 },
-                                children: [
-                                  a.jsx(sC, {
-                                    children: a.jsxs(_a, {
-                                      sx: { bgcolor: "primary.main" },
-                                      children: [
-                                        g.firstName.charAt(0),
-                                        g.lastName.charAt(0),
-                                      ],
-                                    }),
+                    t.enrolledStudents.slice(0, 5).map((g, b) =>
+                      a.jsxs(
+                        Pe.Fragment,
+                        {
+                          children: [
+                            b > 0 && a.jsx(io, {}),
+                            a.jsxs(Or, {
+                              sx: { px: 0 },
+                              children: [
+                                a.jsx(sC, {
+                                  children: a.jsxs(_a, {
+                                    sx: { bgcolor: "primary.main" },
+                                    children: [
+                                      g.firstName.charAt(0),
+                                      g.lastName.charAt(0),
+                                    ],
                                   }),
-                                  a.jsx(Xr, {
-                                    primary: `${g.firstName} ${g.lastName}`,
-                                    secondary:
-                                      g.dojaangName && `From ${g.dojaangName}`,
-                                  }),
-                                ],
-                              }),
-                            ],
-                          },
-                          g.id,
-                        ),
+                                }),
+                                a.jsx(Xr, {
+                                  primary: `${g.firstName} ${g.lastName}`,
+                                  secondary:
+                                    g.dojaangName && `From ${g.dojaangName}`,
+                                }),
+                              ],
+                            }),
+                          ],
+                        },
+                        g.id,
                       ),
+                    ),
                     t.enrolledStudents.length > 5 &&
                       a.jsx(Or, {
                         sx: { px: 0, textAlign: "center" },

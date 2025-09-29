@@ -32,8 +32,8 @@ import {
   CheckCircle as CheckCircleIcon,
   PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
-import { useClassContext } from "context/ClassContext";
-import { StudentForAssignment } from "types/classes";
+import { useClassContext } from "../../context/ClassContext";
+import { StudentForAssignment } from "../../types/classes";
 
 interface StudentAssignmentProps {
   open: boolean;

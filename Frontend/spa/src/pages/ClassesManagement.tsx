@@ -13,12 +13,12 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import { Add, Edit, Delete, MoreVert, People } from "@mui/icons-material";
+import { Edit, Delete, MoreVert, People } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useApiItems } from "../hooks/useApiItems";
 import ApiTable from "../components/common/ApiTable";
-import ClassForm from "../components/classes/ClassForm";
 import { TrainingClassDto, CreateTrainingClassDto } from "../types/api";
+import { ClassForm } from "components/classes";
 
 export default function ClassesManagement() {
   return (

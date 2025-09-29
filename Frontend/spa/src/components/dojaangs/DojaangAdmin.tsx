@@ -4,7 +4,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import Alert from "@mui/material/Alert";
 import EditDojaang from "./EditDojaang";
-import { useRole } from "context/RoleContext";
+import { useRole } from "../../context/RoleContext";
 
 const baseUrl = "https://localhost:7046/api";
 

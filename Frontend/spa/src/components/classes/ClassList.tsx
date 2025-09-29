@@ -30,7 +30,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { ClassForm } from "./ClassForm";
-import { useClassContext } from "context/ClassContext";
+import { useClassContext } from "../../context/ClassContext";
 import { DAYS_OF_WEEK, TrainingClass } from "types/classes";
 import { DeleteConfirmationDialog } from "components/forms/DeleteConfirmationDialog";
 

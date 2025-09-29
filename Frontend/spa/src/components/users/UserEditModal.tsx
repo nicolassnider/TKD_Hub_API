@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { User, UpdateUserRequest, Dojaang, Rank } from "types/user";
-import { fetchJson, ApiError } from "lib/api";
+import { User, UpdateUserRequest, Dojaang, Rank } from "../../types/user";
+import { fetchJson, ApiError } from "../../lib/api";
 
 interface UserEditModalProps {
   user: User;

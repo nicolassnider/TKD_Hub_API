@@ -34,8 +34,8 @@ import {
   Add as AddIcon,
   Receipt as ReceiptIcon,
 } from "@mui/icons-material";
-import { PaymentFormData } from "types/profile";
-import { useProfile } from "context/ProfileContext";
+import { PaymentFormData } from "../../types/profile";
+import { useProfile } from "../../context/ProfileContext";
 
 export const PaymentSection: React.FC = () => {
   const {
@@ -375,7 +375,7 @@ export const PaymentSection: React.FC = () => {
                 {(historyExpanded ? paymentHistory : recentPayments).map(
                   (payment, index) => (
                     <React.Fragment key={payment.id}>
-                      {index > 0 && <Divider apiPath={""} id={undefined} />}
+                      {index > 0 && <Divider />}
                       <ListItem sx={{ px: 0 }}>
                         <ListItemIcon>
                           {getPaymentStatusIcon(payment.status)}

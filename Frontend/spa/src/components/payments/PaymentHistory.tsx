@@ -25,8 +25,8 @@ import {
   FileDownload as FileDownloadIcon,
   Search as SearchIcon,
 } from "@mui/icons-material";
-import { useProfile } from "context/ProfileContext";
-import { PaymentInfo } from "types/profile";
+import { useProfile } from "../../context/ProfileContext";
+import { PaymentInfo } from "../../types/profile";
 
 interface PaymentHistoryProps {
   compact?: boolean;

@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Box, CircularProgress, Snackbar, Alert } from "@mui/material";
 import { fetchJson, ApiError } from "../lib/api";
-import ApiDetail from "../components/common/ApiDetail";
 import EditCoach from "../components/coaches/EditCoach";
-import ManageDojaangs from "../components/ManageDojaangs";
+import ManageDojaangs from "../components/dojaangs/ManageDojaangs";
 
 export default function CoachDetail() {
   const { id } = useParams();

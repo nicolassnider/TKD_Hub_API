@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Grid,
-  Chip,
   List,
   ListItem,
   ListItemText,
@@ -16,7 +15,6 @@ import {
   Menu,
   MenuItem,
   Alert,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -35,8 +33,8 @@ import {
   AccessTime as TimeIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useProfile } from "../context/ProfileContext";
-import { TrainingClass, DAYS_OF_WEEK } from "../types/classes";
+import { useProfile } from "../../context/ProfileContext";
+import { TrainingClass, DAYS_OF_WEEK } from "../../types/classes";
 
 export const CoachClassesSection: React.FC = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { CreateUserRequest, Dojaang, Rank } from "types/user";
-import { fetchJson, ApiError } from "lib/api";
+import { CreateUserRequest, Dojaang, Rank } from "../../types/user";
+import { fetchJson, ApiError } from "../../lib/api";
 
 interface UserCreateModalProps {
   onClose: () => void;

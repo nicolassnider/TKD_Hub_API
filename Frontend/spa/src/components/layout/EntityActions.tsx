@@ -84,9 +84,7 @@ export function EntityActions({
             <ListItemIcon sx={{ color: "inherit" }}>{action.icon}</ListItemIcon>
             <ListItemText>{action.label}</ListItemText>
           </MenuItem>,
-          action.divider && (
-            <Divider key={`divider-${index}`} apiPath={""} id={undefined} />
-          ),
+          action.divider && <Divider key={`divider-${index}`} />,
         ])}
       </Menu>
     </>

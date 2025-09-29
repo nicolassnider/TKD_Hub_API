@@ -25,9 +25,9 @@ import {
   Schedule as ScheduleIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
-import { useClassContext } from "../context/ClassContext";
-import { useFormData } from "../hooks/useFormData";
-import { CoachSelect, DojaangSelect } from "./FormFields";
+import { useClassContext } from "../../context/ClassContext";
+import { useFormData } from "../../hooks/useFormData";
+import { CoachSelect, DojaangSelect } from "../forms/FormFields";
 import {
   CreateTrainingClassDto,
   UpdateTrainingClassDto,
@@ -35,7 +35,7 @@ import {
   CreateClassScheduleDto,
   DAYS_OF_WEEK,
   ScheduleConflict,
-} from "../types/classes";
+} from "../../types/classes";
 
 interface ClassFormProps {
   open: boolean;

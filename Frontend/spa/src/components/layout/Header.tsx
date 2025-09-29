@@ -16,7 +16,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import { useNavigate } from "react-router-dom";
-import { useRole } from "context/RoleContext";
+import { useRole } from "../../context/RoleContext";
 
 // Route configuration
 interface RouteConfig {
