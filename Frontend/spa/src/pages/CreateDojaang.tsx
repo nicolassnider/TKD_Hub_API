@@ -1,5 +1,5 @@
 import React from "react";
-import EditDojaang from "components/EditDojaang";
+import EditDojaang from "components/dojaangs/EditDojaang";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 

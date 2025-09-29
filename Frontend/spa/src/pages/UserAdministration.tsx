@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { fetchJson, ApiError } from "lib/api";
 import { useRole } from "context/RoleContext";
-import UserTable from "components/admin/UserTable";
-import UserEditModal from "components/admin/UserEditModal";
-import UserCreateModal from "components/admin/UserCreateModal";
+import UserTable from "components/users/UserTable";
+import UserEditModal from "components/users/UserEditModal";
+import UserCreateModal from "components/users/UserCreateModal";
 import { User, CreateUserRequest, UpdateUserRequest } from "types/user";
 
 export default function UserAdministration() {

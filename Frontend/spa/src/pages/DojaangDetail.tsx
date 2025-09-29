@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Box, CircularProgress, Snackbar, Alert } from "@mui/material";
 import { fetchJson, ApiError } from "../lib/api";
-import ApiDetail from "../components/ApiDetail";
-import EditDojaang from "../components/EditDojaang";
+import ApiDetail from "../components/common/ApiDetail";
+import EditDojaang from "../components/dojaangs/EditDojaang";
 
 export default function DojaangDetail() {
   const { id } = useParams();

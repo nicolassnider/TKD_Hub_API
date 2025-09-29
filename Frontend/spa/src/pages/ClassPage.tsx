@@ -9,7 +9,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useClassContext } from "../context/ClassContext";
 import { useRole } from "../context/RoleContext";
-import { ClassList } from "../components/ClassList";
+import { ClassList } from "../components/classes/ClassList";
 import { EnhancedClassForm } from "../components/EnhancedClassForm";
 
 interface TabPanelProps {

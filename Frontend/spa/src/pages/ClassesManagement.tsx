@@ -16,8 +16,8 @@ import {
 import { Add, Edit, Delete, MoreVert, People } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useApiItems } from "../hooks/useApiItems";
-import ApiTable from "../components/ApiTable";
-import ClassForm from "../components/ClassForm";
+import ApiTable from "../components/common/ApiTable";
+import ClassForm from "../components/classes/ClassForm";
 import { TrainingClassDto, CreateTrainingClassDto } from "../types/api";
 
 export default function ClassesManagement() {

@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { Add, Edit, Delete, MoreVert, History } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import ApiTable from "../components/ApiTable";
-import PromotionForm from "../components/PromotionForm";
+import ApiTable from "../components/common/ApiTable";
+import PromotionForm from "../components/promotions/PromotionForm";
 import { PromotionDto, CreatePromotionDto } from "../types/api";
 import { useApiItems } from "../hooks/useApiItems";
 

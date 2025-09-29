@@ -1,5 +1,5 @@
 import React from "react";
-import EditCoach from "components/EditCoach";
+import EditCoach from "components/coaches/EditCoach";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 

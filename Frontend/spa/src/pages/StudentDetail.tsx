@@ -5,7 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import { useRole } from "../context/RoleContext";
-import PromotionFormDialog from "../components/PromotionFormDialog";
+import PromotionFormDialog from "../components/promotions/PromotionFormDialog";
 import { usePromotionForm } from "../hooks/usePromotionForm";
 
 type Student = {

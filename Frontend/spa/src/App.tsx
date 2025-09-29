@@ -4,8 +4,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { RoleProvider } from "context/RoleContext";
 import { ProfileProvider } from "context/ProfileContext";
 import Header from "components/Header";
-import ProtectedRoute from "components/ProtectedRoute";
-import DojaangAdmin from "components/DojaangAdmin";
+import ProtectedRoute from "components/auth/ProtectedRoute";
+import DojaangAdmin from "components/dojaangs/DojaangAdmin";
 import StudentsList from "pages/StudentsList";
 import StudentDetail from "pages/StudentDetail";
 import EventsList from "pages/EventsList";
@@ -39,7 +39,7 @@ import UserDetail from "pages/UserDetail";
 import Dashboard from "pages/Dashboard";
 import { ProfilePage } from "pages/ProfilePage";
 import MercadoPagoDebug from "pages/MercadoPagoDebug";
-import LoginForm from "./components/LoginForm";
+import LoginForm from "./components/auth/LoginForm";
 import StudentPromotionHistory from "pages/StudentPromotionHistory";
 
 export default function App() {

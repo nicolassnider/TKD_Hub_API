@@ -1,4 +1,4 @@
-import ApiList from "../components/ApiList";
+import ApiList from "../components/common/ApiList";
 
 export default function TulsList() {
   return (

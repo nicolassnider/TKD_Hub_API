@@ -31,9 +31,9 @@ import { useRole } from "../context/RoleContext";
 
 // We'll create these components in the next steps
 
-import { CoachClassesSection } from "components/CoachClassesSection";
-import { StudentClassSection } from "components/StudentClassSection";
-import { PaymentSection } from "components/PaymentSection";
+import { CoachClassesSection } from "components/coaches/CoachClassesSection";
+import { StudentClassSection } from "components/students/StudentClassSection";
+import { PaymentSection } from "components/payments/PaymentSection";
 
 interface TabPanelProps {
   children?: React.ReactNode;

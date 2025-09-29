@@ -1,4 +1,4 @@
-import ApiTable from "components/ApiTable";
+import ApiTable from "components/common/ApiTable";
 import { useApiItems } from "../hooks/useApiItems";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";

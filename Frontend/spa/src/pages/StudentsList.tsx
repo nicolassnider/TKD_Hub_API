@@ -1,4 +1,4 @@
-import ApiTable from "components/ApiTable";
+import ApiTable from "components/common/ApiTable";
 import { useApiItems } from "../hooks/useApiItems";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -18,7 +18,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useState, MouseEvent } from "react";
-import PromotionFormDialog from "../components/PromotionFormDialog";
+import PromotionFormDialog from "../components/promotions/PromotionFormDialog";
 import { usePromotionForm } from "../hooks/usePromotionForm";
 
 export default function StudentsList() {
