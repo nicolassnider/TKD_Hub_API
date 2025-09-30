@@ -9,54 +9,54 @@ import Header from "components/layout/Header";
 import ProtectedRoute from "components/auth/ProtectedRoute";
 import LoginForm from "./components/auth/LoginForm";
 
-// Page imports
+// Page imports - organized by subfolder
 import DojaangAdmin from "components/dojaangs/DojaangAdmin";
-import StudentsList from "pages/StudentsList";
-import StudentDetail from "pages/StudentDetail";
-import StudentPromotionHistory from "pages/StudentPromotionHistory";
-import EventsList from "pages/EventsList";
-import EventDetail from "pages/EventDetail";
-import BlogList from "pages/BlogList";
-import BlogDetail from "pages/BlogDetail";
-import Register from "pages/Register";
-import ClassesList from "pages/ClassesList";
+import {
+  StudentsList,
+  StudentDetail,
+  StudentPromotionHistory,
+} from "pages/students";
+import { EventsList, EventDetail } from "pages/events";
+import { BlogList, BlogDetail } from "pages/blog";
+import { Register } from "pages/auth";
+import {
+  ClassesList,
+  ClassesManagement,
+  ClassStudentManagement,
+  ClassAttendanceManagement,
+} from "pages/classes";
 import { ClassDetail } from "components/classes/ClassDetail";
-import ClassesManagement from "pages/ClassesManagement";
-import ClassStudentManagement from "pages/ClassStudentManagement";
-import ClassAttendanceManagement from "pages/ClassAttendanceManagement";
-import CoachesList from "pages/CoachesList";
-import CoachDetail from "pages/CoachDetail";
-import CreateCoach from "pages/CreateCoach";
-import DojaangsList from "pages/DojaangsList";
-import CreateDojaang from "pages/CreateDojaang";
-import DojaangDetail from "pages/DojaangDetail";
-import PromotionsList from "pages/PromotionsList";
-import PromotionsManagement from "pages/PromotionsManagement";
-import PromotionDetail from "pages/PromotionDetail";
-import RanksList from "pages/RanksList";
-import RankDetail from "pages/RankDetail";
-import TulsList from "pages/TulsList";
-import TulDetail from "pages/TulDetail";
-import UserAdministration from "pages/UserAdministration";
-import UserDetail from "pages/UserDetail";
+import {
+  CoachesList,
+  CoachDetail,
+  CreateCoach,
+  EditCoach,
+} from "pages/coaches";
+import {
+  DojaangsList,
+  CreateDojaang,
+  DojaangDetail,
+  EditDojaang,
+} from "pages/dojaangs";
+import {
+  PromotionsList,
+  PromotionsManagement,
+  PromotionDetail,
+} from "pages/promotions";
+import { RanksList, RankDetail } from "pages/ranks";
+import { TulsList, TulDetail } from "pages/tuls";
+import { UserAdministration, UserDetail } from "pages/users";
 import Dashboard from "pages/Dashboard";
-import { ProfilePage } from "pages/ProfilePage";
+import { ProfilePage, EditProfile } from "pages/profile";
 import MercadoPagoDebug from "pages/MercadoPagoDebug";
-import EventsManagement from "components/EventsManagement";
-import BlogManagement from "components/BlogManagement";
-import StudentsManagement from "components/StudentsManagement";
-import EditCoach from "pages/EditCoach";
-import EditDojaang from "pages/EditDojaang";
-import EditProfile from "pages/EditProfile";
-import PaymentHistory from "components/PaymentHistory";
+import { EventsManagement } from "components/events";
+import { BlogManagement } from "components/blog";
+import { StudentsManagement } from "components/students";
+import { PaymentHistory } from "components/payments";
 
-// Route configuration types
-interface RouteConfig {
-  path: string;
-  component: React.ComponentType;
-  roles?: string[];
-  isPublic?: boolean;
-}
+import { RouteConfig } from "./types/api";
+
+// Route configuration types moved to centralized types/api.ts
 
 // Route configurations
 const routes: RouteConfig[] = [
@@ -121,67 +121,60 @@ const routes: RouteConfig[] = [
   { path: "/tuls", component: TulsList },
   { path: "/tuls/:id", component: TulDetail },
 
-  // Admin/Coach routes
+  // Admin routes
+  { path: "/admin/dojaangs", component: DojaangAdmin, roles: ["Admin"] },
+  { path: "/admin/coaches/create", component: CreateCoach, roles: ["Admin"] },
   {
-    path: "/events/manage",
-    component: EventsManagement,
-    roles: ["Admin", "Coach"],
+    path: "/admin/dojaangs/create",
+    component: CreateDojaang,
+    roles: ["Admin"],
   },
   {
-    path: "/students/manage",
-    component: StudentsManagement,
-    roles: ["Admin", "Coach"],
-  },
-  {
-    path: "/classes/manage",
+    path: "/admin/classes",
     component: ClassesManagement,
     roles: ["Admin", "Coach"],
   },
   {
-    path: "/classes/:classId/students",
+    path: "/admin/classes/:classId/students",
     component: ClassStudentManagement,
     roles: ["Admin", "Coach"],
   },
   {
-    path: "/classes/:classId/attendance",
+    path: "/admin/classes/:classId/attendance",
     component: ClassAttendanceManagement,
     roles: ["Admin", "Coach"],
   },
   {
-    path: "/promotions/manage",
+    path: "/admin/promotions",
     component: PromotionsManagement,
     roles: ["Admin", "Coach"],
   },
-
-  // Admin-only routes
-  { path: "/manage", component: DojaangAdmin, roles: ["Admin"] },
-  { path: "/manage/dojaangs", component: DojaangAdmin, roles: ["Admin"] },
-  { path: "/blog/manage", component: BlogManagement, roles: ["Admin"] },
-  { path: "/coaches/new", component: CreateCoach, roles: ["Admin"] },
-  { path: "/dojaangs/new", component: CreateDojaang, roles: ["Admin"] },
-  { path: "/users", component: UserAdministration, roles: ["Admin"] },
-  { path: "/users/:id", component: UserDetail, roles: ["Admin"] },
+  { path: "/admin/events", component: EventsManagement, roles: ["Admin"] },
+  { path: "/admin/blog", component: BlogManagement, roles: ["Admin"] },
   {
-    path: "/payments/mercadopago",
-    component: MercadoPagoDebug,
+    path: "/admin/students",
+    component: StudentsManagement,
     roles: ["Admin"],
   },
+  { path: "/admin/users", component: UserAdministration, roles: ["Admin"] },
+  { path: "/admin/users/:id", component: UserDetail, roles: ["Admin"] },
+  { path: "/admin/debug", component: MercadoPagoDebug, roles: ["Admin"] },
 ];
 
-// Helper function to create routes
-const createRoute = (config: RouteConfig, index: number) => {
-  const { path, component: Component, roles, isPublic } = config;
+// Helper function to create route elements
+const createRoute = (route: RouteConfig, index: number) => {
+  const Component = route.component;
 
-  if (isPublic) {
-    return <Route key={index} path={path} element={<Component />} />;
+  if (route.isPublic) {
+    return <Route key={index} path={route.path} element={<Component />} />;
   }
 
   return (
     <Route
       key={index}
-      path={path}
+      path={route.path}
       element={
-        <ProtectedRoute requiredRoles={roles}>
+        <ProtectedRoute requiredRoles={route.roles}>
           <Component />
         </ProtectedRoute>
       }

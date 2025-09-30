@@ -12,7 +12,11 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { CreatePromotionDto, PromotionDto } from "types/api";
-import { Student, useFormData } from "../../hooks/useFormData";
+import { UserDto } from "../../types/api";
+import { useFormData } from "../../hooks/useFormData";
+
+// Type alias for this component
+type Student = UserDto;
 import {
   CoachSelect,
   DojaangSelect,
@@ -207,11 +211,11 @@ export default function PromotionForm({
     const currentRank = ranks.find(
       (rank) => rank.id === selectedStudent.currentRankId,
     );
-    if (!currentRank || currentRank.level === undefined) return ranks;
+    if (!currentRank || currentRank.order === undefined) return ranks;
 
-    const currentRankLevel = currentRank.level;
+    const currentRankOrder = currentRank.order;
     return ranks.filter(
-      (rank) => rank.level !== undefined && rank.level > currentRankLevel,
+      (rank) => rank.order !== undefined && rank.order > currentRankOrder,
     );
   };
 

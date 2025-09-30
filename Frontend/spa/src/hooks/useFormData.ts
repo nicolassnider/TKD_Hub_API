@@ -1,34 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { fetchJson } from "../lib/api";
+import { UserDto, DojaangDto, Rank } from "../types/api";
 
-// Shared interfaces - move these to a separate types file in the future
-export interface Student {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  currentRankId?: number;
-  currentRankName?: string;
-}
-
-export interface Coach {
-  id: number;
-  firstName: string;
-  lastName: string;
-}
-
-export interface Dojaang {
-  id: number;
-  name: string;
-}
-
-export interface Rank {
-  id: number;
-  name: string;
-  color?: string;
-  level?: number;
-  order?: number;
-}
+// Type aliases for cleaner usage in this hook
+type Student = UserDto; // UserDto contains all student information
+type Coach = UserDto; // UserDto contains all coach information
+type Dojaang = DojaangDto;
 
 // Generic hook for fetching API data
 function useApiData<T>(endpoint: string, shouldFetch: boolean = true) {

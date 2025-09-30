@@ -10,18 +10,22 @@ import Box from "@mui/material/Box";
 import { useRole } from "../../context/RoleContext";
 import { fetchJson } from "../../lib/api";
 import CoachSelector from "../coaches/CoachSelector";
+import {
+  DojaangDto,
+  CreateDojaangDto,
+  UpdateDojaangDto,
+  UserDto,
+} from "../../types/api";
+import { ID } from "../../types/common";
 
-type DojaangPayload = {
-  id: number;
-  name: string;
-  address?: string;
-  location?: string;
-  phoneNumber?: string;
-  email?: string;
-  koreanName?: string;
-  koreanNamePhonetic?: string;
-  coachId?: number | null;
-};
+// Props interface for better type safety
+export interface EditDojaangProps {
+  dojaangId: ID;
+  onClose: () => void;
+  title?: string;
+  readOnly?: boolean;
+  initialItem?: DojaangDto;
+}
 
 export default function EditDojaang({
   dojaangId,
@@ -29,15 +33,9 @@ export default function EditDojaang({
   title,
   readOnly,
   initialItem,
-}: {
-  dojaangId: number;
-  onClose: () => void;
-  title?: string;
-  readOnly?: boolean;
-  initialItem?: any;
-}) {
+}: EditDojaangProps) {
   const { token } = useRole();
-  const [dojaang, setDojaang] = useState<DojaangPayload | null>(null);
+  const [dojaang, setDojaang] = useState<UpdateDojaangDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +58,7 @@ export default function EditDojaang({
             email: "",
             koreanName: "",
             koreanNamePhonetic: "",
-            coachId: null,
+            coachId: undefined,
           });
           return;
         }
@@ -77,8 +75,8 @@ export default function EditDojaang({
     fetchOne();
   }, [dojaangId, token, initialItem]);
 
-  const handleChange = (k: keyof DojaangPayload, v: any) =>
-    setDojaang((d) => (d ? { ...d, [k]: v } : d));
+  const handleChange = (key: keyof UpdateDojaangDto, value: any) =>
+    setDojaang((current) => (current ? { ...current, [key]: value } : current));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,20 +84,18 @@ export default function EditDojaang({
     setSaving(true);
     setError(null);
     try {
-      const payload: DojaangPayload = {
-        id: dojaang.id,
-        name: dojaang.name,
-        address: dojaang.address,
-        location: dojaang.location,
-        phoneNumber: dojaang.phoneNumber,
-        email: dojaang.email,
-        koreanName: dojaang.koreanName,
-        koreanNamePhonetic: dojaang.koreanNamePhonetic,
-        coachId: dojaang.coachId ?? null,
-      };
       if (dojaang.id === 0) {
-        const createPayload = { ...payload } as any;
-        delete (createPayload as any).id;
+        // Creating new dojaang
+        const createPayload: CreateDojaangDto = {
+          name: dojaang.name || "",
+          address: dojaang.address || "",
+          location: dojaang.location || "",
+          phoneNumber: dojaang.phoneNumber || "",
+          email: dojaang.email || "",
+          koreanName: dojaang.koreanName || undefined,
+          koreanNamePhonetic: dojaang.koreanNamePhonetic || undefined,
+          coachId: dojaang.coachId || undefined,
+        };
         await fetchJson(`/api/Dojaangs`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -107,10 +103,22 @@ export default function EditDojaang({
         });
         onClose();
       } else {
+        // Updating existing dojaang
+        const updatePayload: UpdateDojaangDto = {
+          id: dojaang.id,
+          name: dojaang.name,
+          address: dojaang.address,
+          location: dojaang.location,
+          phoneNumber: dojaang.phoneNumber,
+          email: dojaang.email,
+          koreanName: dojaang.koreanName,
+          koreanNamePhonetic: dojaang.koreanNamePhonetic,
+          coachId: dojaang.coachId,
+        };
         await fetchJson(`/api/Dojaangs/${dojaang.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(updatePayload),
         });
         onClose();
       }

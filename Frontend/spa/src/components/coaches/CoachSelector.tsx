@@ -1,17 +1,18 @@
 import { useApiItems } from "../../hooks/useApiItems";
 import { Autocomplete } from "@mui/material";
 import TextField from "@mui/material/TextField";
+import { UserDto } from "../../types/api";
+import { SelectorOption, LoadingSelectorProps } from "../../types/selectors";
+import {
+  createSelectorOptions,
+  findSelectorOption,
+  selectorConfigs,
+} from "../../utils/selectorUtils";
 
-interface CoachOption {
-  id: number;
-  label: string;
-}
-
-interface Coach {
-  id: number;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
+// Coach selector specific props extending the base selector props
+export interface CoachSelectorProps
+  extends Omit<LoadingSelectorProps, "loading"> {
+  // Coach selector doesn't need any additional props beyond the base
 }
 
 export default function CoachSelector({
@@ -19,30 +20,27 @@ export default function CoachSelector({
   onChange,
   label = "Coach",
   readOnly,
-}: {
-  value: number | null | undefined;
-  onChange: (id: number | null) => void;
-  label?: string;
-  readOnly?: boolean;
-}) {
-  const { items: coaches, loading } = useApiItems<Coach>("/api/Coaches");
+  disabled,
+  error,
+  helperText,
+  size = "small",
+  placeholder,
+  required,
+}: CoachSelectorProps) {
+  const { items: coaches, loading } = useApiItems<UserDto>("/api/Coaches");
 
-  const options: CoachOption[] = coaches.map((c: Coach) => ({
-    id: c.id,
-    label:
-      `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() ||
-      c.email ||
-      `#${c.id}`,
-  }));
-
-  const selected = options.find((o: CoachOption) => o.id === value) ?? null;
+  const options = createSelectorOptions(coaches, selectorConfigs.coach);
+  const selected = findSelectorOption(options, value);
 
   if (readOnly) {
     return (
       <TextField
         value={selected ? selected.label : ""}
         label={label}
-        size="small"
+        size={size}
+        error={error}
+        helperText={helperText}
+        required={required}
         InputProps={{ readOnly: true }}
         disabled
       />
@@ -50,15 +48,30 @@ export default function CoachSelector({
   }
 
   return (
-    <Autocomplete
+    <Autocomplete<SelectorOption>
       options={options}
       value={selected}
-      onChange={(_, v: CoachOption | null) => onChange(v ? v.id : null)}
-      getOptionLabel={(o: CoachOption) => o.label ?? String(o.id)}
+      onChange={(_, selectedOption: SelectorOption | null) =>
+        onChange(selectedOption ? selectedOption.id : null)
+      }
+      getOptionLabel={(option: SelectorOption) =>
+        option.label ?? String(option.id)
+      }
       loading={loading}
-      isOptionEqualToValue={(a: CoachOption, b: CoachOption) => a.id === b.id}
-      renderInput={(params: any) => (
-        <TextField {...params} label={label} size="small" />
+      disabled={disabled}
+      isOptionEqualToValue={(a: SelectorOption, b: SelectorOption) =>
+        a.id === b.id
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={placeholder}
+          size={size}
+          error={error}
+          helperText={helperText}
+          required={required}
+        />
       )}
       clearOnEscape
       sx={{ minWidth: 240 }}

@@ -6,7 +6,12 @@ import {
   MenuItem,
   FormHelperText,
 } from "@mui/material";
-import { Coach, Dojaang, Rank, Student } from "../../hooks/useFormData";
+import { UserDto, DojaangDto, Rank } from "../../types/api";
+
+// Type aliases for this component
+type Student = UserDto;
+type Coach = UserDto;
+type Dojaang = DojaangDto;
 
 interface BaseSelectFieldProps {
   value: number;

@@ -133,6 +133,49 @@ export interface UpdateStudentDto {
   isActive?: boolean | null;
 }
 
+export interface StudentFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  emergencyContact: string;
+  emergencyPhone: string;
+  currentRankId: ID | "";
+  dojaangId: ID | "";
+  isActive: boolean;
+  joinDate: string;
+  parentName: string;
+  parentEmail: string;
+  parentPhone: string;
+  medicalNotes: string;
+}
+
+export interface Student {
+  id: ID;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfBirth?: ISODateTime | null;
+  gender?: Gender | null;
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  currentRank?: Rank | null;
+  currentRankId?: ID | null;
+  dojaang?: DojaangDto | null;
+  dojaangId?: ID | null;
+  isActive: boolean;
+  joinDate?: ISODateTime | null;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  medicalNotes?: string;
+  roles?: UserRoleDto[];
+  createdAt: ISODateTime;
+  updatedAt: ISODateTime;
+}
+
 export interface UpsertCoachDto {
   firstName: string;
   lastName: string;
@@ -229,6 +272,17 @@ export interface DojaangDto {
 export interface ManagedDojaangDto {
   id: ID;
   name: string;
+}
+
+export interface CreateDojaangDto {
+  name: string;
+  address: string;
+  location: string;
+  phoneNumber: string;
+  email: string;
+  koreanName?: string;
+  koreanNamePhonetic?: string;
+  coachId?: ID;
 }
 
 export interface UpdateDojaangDto {
@@ -375,6 +429,23 @@ export interface PageRequest {
   sortBy?: string;
   sortDirection?: "asc" | "desc";
   searchTerm?: string;
+}
+
+// ============================================================================
+// UI COMPONENT TYPES
+// ============================================================================
+
+export interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+export interface RouteConfig {
+  path: string;
+  component: React.ComponentType;
+  roles?: string[];
+  isPublic?: boolean;
 }
 
 export default {};

@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { Rank, Student, Coach, Dojaang } from "./useFormData";
+import { UserDto, DojaangDto, Rank } from "../types/api";
+
+// Type aliases for this hook
+type Student = UserDto;
+type Coach = UserDto;
+type Dojaang = DojaangDto;
 
 // Hook for static data that rarely changes (Ranks, Tuls)
 export function useStaticData() {
