@@ -41,28 +41,29 @@ export default function CoachesList() {
 
   const columns = useMemo(
     () => [
-      { key: "firstName", label: "First Name", sortable: true },
-      { key: "lastName", label: "Last Name", sortable: true },
+      { key: "firstName", label: "FIRST NAME", sortable: true },
+      { key: "lastName", label: "LAST NAME", sortable: true },
       {
         key: "isActive",
-        label: "Status",
+        label: "STATUS",
         render: (coach: any) => (
           <Chip
             label={coach.isActive ? "Active" : "Inactive"}
-            color={coach.isActive ? "success" : "default"}
+            color={coach.isActive ? "success" : "warning"}
+            variant={coach.isActive ? "filled" : "outlined"}
             size="small"
           />
         ),
       },
-      { key: "email", label: "Email", sortable: true },
-      { key: "phoneNumber", label: "Phone" },
+      { key: "email", label: "EMAIL", sortable: true },
+      { key: "phoneNumber", label: "PHONE" },
       {
         key: "actions",
-        label: "Actions",
+        label: "ACTIONS",
         render: (coach: any) => (
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center" }}>
             {!coach.isActive ? (
-              <Tooltip title="Reactivate coach">
+              <Tooltip title="Reactivate Coach">
                 <Button
                   variant="text"
                   size="small"
@@ -72,27 +73,30 @@ export default function CoachesList() {
                     handleReactivate(coach);
                   }}
                   startIcon={<Restore fontSize="small" />}
+                  sx={{ textTransform: "none", borderRadius: 2 }}
                 >
                   {!isSmall ? "Reactivate" : null}
                 </Button>
               </Tooltip>
             ) : (
               <>
-                <Tooltip title="View details">
+                <Tooltip title="View Details">
                   <Button
                     variant="text"
                     size="small"
+                    color="primary"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/coaches/${coach.id}`);
                     }}
                     startIcon={<Edit fontSize="small" />}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
                   >
-                    {!isSmall ? "Details" : null}
+                    {!isSmall ? "DETAILS" : null}
                   </Button>
                 </Tooltip>
                 {isAdmin && (
-                  <Tooltip title="Delete coach">
+                  <Tooltip title="Delete Coach">
                     <Button
                       variant="text"
                       size="small"
@@ -108,8 +112,9 @@ export default function CoachesList() {
                         }
                       }}
                       startIcon={<Delete fontSize="small" />}
+                      sx={{ textTransform: "none", borderRadius: 2 }}
                     >
-                      {!isSmall ? "Delete" : null}
+                      {!isSmall ? "DELETE" : null}
                     </Button>
                   </Tooltip>
                 )}

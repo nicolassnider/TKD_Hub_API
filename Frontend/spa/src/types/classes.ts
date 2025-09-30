@@ -1,84 +1,90 @@
-// Class management types for the SPA
-export interface ClassSchedule {
-  id: number;
-  day: number; // 0 = Sunday, 1 = Monday, etc.
-  startTime: string; // HH:mm format
-  endTime: string; // HH:mm format
+import { ID, BaseEntity, DayOfWeek, TimeString, ISODateTime } from "./common";
+
+// Class schedule interface
+export interface ClassSchedule extends BaseEntity {
+  day: DayOfWeek | number; // 0 = Sunday, 1 = Monday, etc.
+  startTime: TimeString; // HH:mm format
+  endTime: TimeString; // HH:mm format
+  trainingClassId?: ID;
 }
 
-export interface TrainingClass {
-  id: number;
+// Training class interface
+export interface TrainingClass extends BaseEntity {
   name: string;
-  dojaangId: number;
+  dojaangId: ID;
   dojaangName?: string;
-  coachId: number;
+  coachId: ID;
   coachName?: string;
   schedules: ClassSchedule[];
   studentCount?: number;
   enrolledStudents?: StudentForAssignment[];
   isActive?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: ISODateTime;
+  updatedAt?: ISODateTime;
 }
 
+// Class creation DTO
 export interface CreateTrainingClassDto {
   name: string;
-  dojaangId: number;
-  coachId: number;
+  dojaangId: ID;
+  coachId: ID;
   schedules: CreateClassScheduleDto[];
 }
 
+// Class update DTO
 export interface UpdateTrainingClassDto {
-  id: number;
+  id: ID;
   name: string;
-  dojaangId: number;
-  coachId: number;
+  dojaangId: ID;
+  coachId: ID;
   schedules: CreateClassScheduleDto[];
 }
 
+// Class schedule creation DTO
 export interface CreateClassScheduleDto {
-  day: number;
-  startTime: string;
-  endTime: string;
+  day: DayOfWeek | number;
+  startTime: TimeString;
+  endTime: TimeString;
 }
 
 // Student-Class relationship types
-export interface StudentClass {
-  id: number;
-  studentId: number;
+export interface StudentClass extends BaseEntity {
+  studentId: ID;
   studentName?: string;
-  trainingClassId: number;
+  trainingClassId: ID;
   className?: string;
-  enrolledAt?: string;
+  enrolledAt?: ISODateTime;
   isActive: boolean;
 }
 
 export interface StudentClassAssignment {
-  studentId: number;
-  trainingClassId: number;
+  studentId: ID;
+  trainingClassId: ID;
 }
 
 // Extended student info for class assignments
 export interface StudentForAssignment {
-  id: number;
+  id: ID;
   firstName: string;
   lastName: string;
   email?: string;
+  dojaangId?: ID;
   dojaangName?: string;
+  currentRankName?: string;
+  fullName?: string;
   isEnrolled?: boolean;
-  enrolledAt?: string;
+  enrolledAt?: ISODateTime;
 }
 
 // Class analytics and management data
-export interface ClassSummary {
-  id: number;
+export interface ClassSummary extends BaseEntity {
   name: string;
   dojaangName: string;
   coachName: string;
   scheduleDisplay: string;
   enrolledStudents: number;
   maxCapacity?: number;
-  nextClassDate?: string;
+  nextClassDate?: ISODateTime;
 }
 
 // Day of week utilities

@@ -1,7 +1,20 @@
-// Auto-generated (handwritten) API types for TKD Hub
-// These are inferred from the API shape and can be refined as needed.
+/**
+ * TKD Hub API Types - Consolidated and aligned with backend DTOs
+ * Generated from .NET backend DTOs to ensure type safety and consistency
+ */
+
+// ============================================================================
+// COMMON TYPES
+// ============================================================================
 
 export type ID = number;
+export type ISODate = string; // YYYY-MM-DD format
+export type ISODateTime = string; // ISO 8601 datetime format
+export type TimeOnly = string; // HH:mm:ss format (from .NET TimeOnly)
+
+// ============================================================================
+// ENUMS (aligned with backend Domain.Enums)
+// ============================================================================
 
 export enum DayOfWeek {
   Sunday = 0,
@@ -13,13 +26,15 @@ export enum DayOfWeek {
   Saturday = 6,
 }
 
+// Backend: Present, Absent, Late, Excused
 export enum AttendanceStatus {
   Present = 0,
   Absent = 1,
-  Excused = 2,
-  Other = 3,
+  Late = 2,
+  Excused = 3,
 }
 
+// Backend: White, Yellow, Green, Blue, Red, Black
 export enum BeltColor {
   White = 0,
   Yellow = 1,
@@ -29,25 +44,135 @@ export enum BeltColor {
   Black = 5,
 }
 
-export interface AttendanceHistoryDto {
-  id: ID;
-  attendedAt: string; // ISO datetime
-  status: string; // server uses string for status
-  notes?: string | null;
-  studentClassId: ID;
-  studentName?: string;
-  className?: string;
+// Backend: MALE, FEMALE, OTHER
+export enum Gender {
+  MALE = 0,
+  FEMALE = 1,
+  OTHER = 2,
 }
 
-export interface ClassScheduleDto {
-  id: ID;
-  day: DayOfWeek | number;
-  // backend uses TimeOnly; represent as HH:mm:ss or HH:mm string
-  startTime: string;
-  endTime: string;
+export enum EventType {
+  General = 0,
+  Tournament = 1,
+  Seminar = 2,
+  Testing = 3,
+  Other = 4,
 }
+
+export enum MatchStatus {
+  Pending = 0,
+  Completed = 1,
+  Cancelled = 2,
+  Other = 3,
+}
+
+export enum RegistrationStatus {
+  Pending = 0,
+  Confirmed = 1,
+  Cancelled = 2,
+}
+
+// ============================================================================
+// USER DTOs
+// ============================================================================
+
+export interface UserDto {
+  id: ID;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  gender?: number | Gender | null; // API returns number (0=unspecified, 1=male, 2=female)
+  dateOfBirth?: ISODateTime | null;
+  dojaangId: number;
+  dojaangName?: string;
+  currentRankId?: number;
+  currentRankName?: string;
+  joinDate?: ISODateTime | null;
+  roles?: string[];
+  managedDojaangIds?: number[];
+  isActive: boolean;
+  beltLevel?: string;
+}
+
+export interface CreateUserDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  gender?: Gender | null;
+  dateOfBirth?: ISODateTime | null;
+  dojaangId?: ID | null;
+  rankId?: ID | null; // Renamed from CurrentRankId to RankId
+  joinDate?: ISODateTime | null;
+  roleIds: ID[]; // Assign roles on creation
+}
+
+export interface CreateStudentDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  gender?: Gender | null;
+  dateOfBirth?: ISODateTime | null;
+  dojaangId?: ID | null;
+  rankId?: ID | null;
+}
+
+export interface UpdateStudentDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  gender?: Gender | null;
+  dateOfBirth?: ISODateTime | null;
+  dojaangId?: ID | null;
+  rankId?: ID | null;
+  joinDate?: ISODateTime | null;
+  isActive?: boolean | null;
+}
+
+export interface UpsertCoachDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  gender?: Gender | null;
+  dateOfBirth?: ISODateTime | null;
+  dojaangId?: ID | null;
+  rankId?: ID | null;
+}
+
+export interface UserRoleDto {
+  id: ID;
+  name: string;
+}
+
+export interface UpdateCoachManagedDojaangsDto {
+  coachId: ID;
+  managedDojaangIds: ID[];
+}
+
+// ============================================================================
+// TRAINING CLASS DTOs
+// ============================================================================
 
 export interface TrainingClassDto {
+  id: ID;
+  name: string;
+  description?: string | null;
+  dojaangId: ID;
+  dojaangName?: string | null;
+  coachId: ID;
+  coachName?: string | null;
+  capacity?: number | null;
+  enrolledStudentsCount: number;
+  schedule?: string | null; // Computed field for display
+  schedules: ClassScheduleDto[];
+}
+
+export interface CreateTrainingClassDto {
   id: ID;
   name: string;
   dojaangId: ID;
@@ -57,38 +182,35 @@ export interface TrainingClassDto {
   schedules: ClassScheduleDto[];
 }
 
-export interface CreateTrainingClassDto {
-  // align with backend CreateTrainingClassDto shape where id is not required
-  name: string;
-  dojaangId: ID;
-  coachId?: ID;
-  schedules?: ClassScheduleDto[];
+export interface ClassScheduleDto {
+  id: ID;
+  day: DayOfWeek;
+  startTime: TimeOnly;
+  endTime: TimeOnly;
 }
 
-export interface CreateStudentDto {
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phoneNumber?: string;
-  gender?: number | null;
-  dateOfBirth?: string | null; // ISO date
-  dojaangId?: ID;
-  rankId?: ID;
+export interface StudentClassDto {
+  id: ID;
+  studentId: ID;
+  studentName?: string | null;
+  trainingClassId: ID;
+  date: ISODate; // Backend uses DateOnly
+  attended: boolean;
 }
 
-export interface CreateUserDto {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password?: string;
-  phoneNumber?: string;
-  gender?: number | null;
-  dateOfBirth?: string | null;
-  dojaangId?: ID;
-  rankId?: ID;
-  joinDate?: string; // ISO date
-  roleIds?: ID[];
+export interface AttendanceHistoryDto {
+  id: ID;
+  attendedAt: ISODateTime;
+  status: string;
+  notes?: string | null;
+  studentClassId: ID;
+  studentName?: string | null;
+  className?: string | null;
 }
+
+// ============================================================================
+// DOJAANG DTOs
+// ============================================================================
 
 export interface DojaangDto {
   id: ID;
@@ -99,10 +221,31 @@ export interface DojaangDto {
   email: string;
   koreanName: string;
   koreanNamePhonetic: string;
-  coachId?: ID | null;
-  coachName?: string | null;
+  coachId: ID;
+  coachName: string;
   isActive: boolean;
 }
+
+export interface ManagedDojaangDto {
+  id: ID;
+  name: string;
+}
+
+export interface UpdateDojaangDto {
+  id?: ID;
+  name?: string;
+  address?: string;
+  location?: string;
+  phoneNumber?: string;
+  email?: string;
+  koreanName?: string;
+  koreanNamePhonetic?: string;
+  coachId?: ID;
+}
+
+// ============================================================================
+// OTHER DTOs
+// ============================================================================
 
 export interface BlogPostDto {
   id: ID;
@@ -119,7 +262,7 @@ export interface PromotionDto {
   studentName?: string | null;
   rankId: ID;
   rankName?: string | null;
-  promotionDate: string; // ISO datetime
+  promotionDate: ISODateTime;
   coachId: ID;
   notes?: string | null;
   dojaangId: ID;
@@ -128,53 +271,19 @@ export interface PromotionDto {
 export interface CreatePromotionDto {
   studentId: ID;
   rankId: ID;
-  promotionDate: string; // ISO date
+  promotionDate: ISODate;
   coachId: ID;
   notes?: string | null;
   dojaangId: ID;
-}
-
-export interface UserDto {
-  id: ID;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string | null;
-  gender?: number | null;
-  dateOfBirth?: string | null;
-  dojaangId?: ID | null;
-  currentRankId?: ID | null;
-  joinDate?: string | null;
-  roles: string[];
-  managedDojaangIds?: ID[];
-  isActive: boolean;
-}
-
-// Generic envelope type used by the API
-export interface ApiEnvelope<T = any> {
-  data?: T;
-  success?: boolean;
-  message?: string;
-}
-
-export default {};
-
-// Additional DTOs and enums
-export enum EventType {
-  General = 0,
-  Tournament = 1,
-  Seminar = 2,
-  Testing = 3,
-  Other = 4,
 }
 
 export interface EventDto {
   id: ID;
   name: string;
   description?: string | null;
-  type: number;
-  startDate: string; // ISO datetime
-  endDate: string; // ISO datetime
+  type: EventType;
+  startDate: ISODateTime;
+  endDate: ISODateTime;
   location?: string | null;
   coachId: ID;
   dojaangId?: ID | null;
@@ -184,16 +293,9 @@ export interface EventAttendance {
   id: ID;
   eventId: ID;
   studentId: ID;
-  attendanceDate?: string | null;
+  attendanceDate?: ISODateTime | null;
   attendanceTime?: string | null;
-  status?: AttendanceStatus | string;
-}
-
-export enum MatchStatus {
-  Pending = 0,
-  Completed = 1,
-  Cancelled = 2,
-  Other = 3,
+  status?: AttendanceStatus;
 }
 
 export interface Match {
@@ -206,22 +308,7 @@ export interface Match {
   scoreBlue?: number;
   round?: number;
   status?: MatchStatus;
-  matchDate?: string;
-}
-
-export enum RegistrationStatus {
-  Pending = 0,
-  Confirmed = 1,
-  Cancelled = 2,
-}
-
-export interface StudentClassDto {
-  id: ID;
-  studentId: ID;
-  studentName?: string | null;
-  trainingClassId: ID;
-  date: string; // ISO date (backend DateOnly)
-  attended: boolean;
+  matchDate?: ISODateTime;
 }
 
 export interface Rank {
@@ -234,19 +321,60 @@ export interface Rank {
   danLevel?: number;
 }
 
-export interface UpdateCoachManagedDojaangsDto {
-  coachId: ID;
-  managedDojaangIds: ID[];
+// ============================================================================
+// API RESPONSE TYPES
+// ============================================================================
+
+export interface ApiResponse<T = any> {
+  data?: T;
+  success?: boolean;
+  message?: string;
+  errors?: string[];
 }
 
-export interface UpdateDojaangDto {
-  id?: ID;
-  name?: string;
-  address?: string;
-  location?: string;
-  phoneNumber?: string;
-  email?: string;
-  koreanName?: string;
-  koreanNamePhonetic?: string;
-  coachId?: ID;
+// Legacy alias for backwards compatibility
+export interface ApiEnvelope<T = any> extends ApiResponse<T> {}
+
+// ============================================================================
+// AUTHENTICATION DTOs
+// ============================================================================
+
+export interface LoginDto {
+  email: string;
+  password: string;
 }
+
+export interface RegisterDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  gender?: Gender;
+  dateOfBirth?: ISODateTime;
+  dojaangId?: ID;
+}
+
+// ============================================================================
+// PAGINATION
+// ============================================================================
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PageRequest {
+  pageNumber?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+  searchTerm?: string;
+}
+
+export default {};

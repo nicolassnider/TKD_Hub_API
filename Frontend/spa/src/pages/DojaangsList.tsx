@@ -1,58 +1,45 @@
-import ApiTable from "components/common/ApiTable";
-import { useApiItems } from "../hooks/useApiItems";
-import Button from "@mui/material/Button";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMemo, useState, useEffect, useCallback } from "react";
 import { useRole } from "../context/RoleContext";
-import Chip from "@mui/material/Chip";
-import Box from "@mui/material/Box";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import RestoreIcon from "@mui/icons-material/Restore";
+import { useApiItems } from "../hooks/useApiItems";
+import {
+  Button,
+  Switch,
+  FormControlLabel,
+  Chip,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Tooltip,
+} from "@mui/material";
+import { Add, Edit, Delete, Restore } from "@mui/icons-material";
 import { fetchJson, ApiError } from "../lib/api";
-import Tooltip from "@mui/material/Tooltip";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import CircularProgress from "@mui/material/CircularProgress";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { PageLayout } from "../components/layout/PageLayout";
+import { LoadingSpinner } from "../components/common/LoadingSpinner";
+import { ErrorAlert } from "../components/common/ErrorAlert";
+import { EmptyState } from "../components/common/EmptyState";
+import ApiTable from "components/common/ApiTable";
 
 export default function DojaangsList() {
-  return (
-    <div>
-      <h2 className="page-title">Dojaangs</h2>
-      <DojaangsTable />
-    </div>
-  );
+  return <DojaangsTable />;
 }
 
 function DojaangsTable() {
   const { items, loading, error, reload } = useApiItems("/api/Dojaangs");
   const { role, roleLoading } = useRole();
-  // Default showInactive=true for admins, false for others. If roleLoading, default to false until resolved.
-  const [showInactive, setShowInactive] = useState<boolean>(() => false);
-
-  // when roleLoading finishes, if user is admin set showInactive default to true
-  useEffect(() => {
-    if (!roleLoading) {
-      const isAdmin = Array.isArray(role) && role.includes("Admin");
-      setShowInactive(isAdmin);
-    }
-  }, [roleLoading, role]);
-
-  // Compute isAdmin for use in render and useMemo
-  const isAdmin = Array.isArray(role) && role.includes("Admin");
-
   const navigate = useNavigate();
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [showInactive, setShowInactive] = useState<boolean>(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmRow, setConfirmRow] = useState<any | null>(null);
   const [deleteLoadingMap, setDeleteLoadingMap] = useState<
@@ -67,6 +54,16 @@ function DojaangsTable() {
     message?: string;
   }>({ open: false });
   const [selectedId, setSelectedId] = useState<string | number | null>(null);
+
+  // Set default showInactive based on admin role
+  useEffect(() => {
+    if (!roleLoading) {
+      const isAdmin = Array.isArray(role) && role.includes("Admin");
+      setShowInactive(isAdmin);
+    }
+  }, [roleLoading, role]);
+
+  const isAdmin = Array.isArray(role) && role.includes("Admin");
 
   // normalize check for inactive values from API (boolean false or numeric 0)
   const isInactive = useCallback((it: any) => {
@@ -161,88 +158,103 @@ function DojaangsTable() {
       { key: "id", label: "ID", sortable: true },
       {
         key: "name",
-        label: "Name",
+        label: "NAME",
         sortable: true,
-        render: (r: any) => (
+        render: (dojaang: any) => (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box component="span">{r.name}</Box>
-            {isInactive(r) ? (
-              <Chip label="INACTIVE" color="warning" size="small" />
-            ) : null}
+            <Box component="span">{dojaang.name}</Box>
           </Box>
         ),
       },
-      { key: "address", label: "Address" },
+      { key: "address", label: "ADDRESS" },
+      {
+        key: "isActive",
+        label: "STATUS",
+        render: (dojaang: any) => (
+          <Chip
+            label={isInactive(dojaang) ? "Inactive" : "Active"}
+            color={isInactive(dojaang) ? "warning" : "success"}
+            variant={isInactive(dojaang) ? "outlined" : "filled"}
+            size="small"
+          />
+        ),
+      },
       {
         key: "actions",
-        label: "Actions",
-        render: (r: any) => (
-          <div className="actions-cell">
-            {isInactive(r) ? (
-              <Tooltip title={isSmall ? "Reactivate" : "Reactivate dojaang"}>
+        label: "ACTIONS",
+        render: (dojaang: any) => (
+          <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center" }}>
+            {isInactive(dojaang) ? (
+              <Tooltip title="Reactivate Dojaang">
                 <Button
                   variant="text"
                   size="small"
                   color="success"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleReactivateRow(r);
+                    handleReactivateRow(dojaang);
                   }}
                   startIcon={
-                    reactivateLoadingMap[r.id] ? (
+                    reactivateLoadingMap[dojaang.id] ? (
                       <CircularProgress size={16} color="inherit" />
                     ) : (
-                      <RestoreIcon fontSize="small" />
+                      <Restore fontSize="small" />
                     )
                   }
-                  disabled={!!reactivateLoadingMap[r.id]}
+                  disabled={!!reactivateLoadingMap[dojaang.id]}
+                  sx={{ textTransform: "none", borderRadius: 2 }}
                 >
                   {!isSmall ? "Reactivate" : null}
                 </Button>
               </Tooltip>
             ) : (
               <>
-                <Tooltip title={isSmall ? "Details" : "Details"}>
+                <Tooltip title="View Details">
                   <Button
                     variant="text"
                     size="small"
+                    color="primary"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/dojaangs/${r.id}`);
+                      navigate(`/dojaangs/${dojaang.id}`);
                     }}
-                    startIcon={<EditIcon fontSize="small" />}
+                    startIcon={<Edit fontSize="small" />}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
                   >
-                    {!isSmall ? "Details" : null}
+                    {!isSmall ? "DETAILS" : null}
                   </Button>
                 </Tooltip>
-                <Tooltip title={isSmall ? "Delete" : "Delete"}>
-                  <Button
-                    variant="text"
-                    size="small"
-                    color="error"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRequestDelete(r);
-                    }}
-                    startIcon={
-                      deleteLoadingMap[r.id] ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : (
-                        <DeleteIcon fontSize="small" />
-                      )
-                    }
-                    disabled={!!deleteLoadingMap[r.id]}
-                  >
-                    {!isSmall ? "Delete" : null}
-                  </Button>
-                </Tooltip>
+                {isAdmin && (
+                  <Tooltip title="Delete Dojaang">
+                    <Button
+                      variant="text"
+                      size="small"
+                      color="error"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRequestDelete(dojaang);
+                      }}
+                      startIcon={
+                        deleteLoadingMap[dojaang.id] ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <Delete fontSize="small" />
+                        )
+                      }
+                      disabled={!!deleteLoadingMap[dojaang.id]}
+                      sx={{ textTransform: "none", borderRadius: 2 }}
+                    >
+                      {!isSmall ? "DELETE" : null}
+                    </Button>
+                  </Tooltip>
+                )}
               </>
             )}
-          </div>
+          </Box>
         ),
       },
     ],
-    [navigate, deleteLoadingMap, reactivateLoadingMap, isSmall],
+    [navigate, deleteLoadingMap, reactivateLoadingMap, isSmall, isAdmin],
   );
   // Filter rows based on showInactive and admin privilege. Non-admins must never see inactive rows.
   const visibleItems = useMemo(() => {
@@ -256,39 +268,77 @@ function DojaangsTable() {
     return items.filter((it: any) => !isInactive(it));
   }, [items, showInactive, isAdmin]);
 
-  if (loading) return <div>Loading table</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  const pageActions = (
+    <Box
+      sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}
+    >
+      <Button
+        variant="outlined"
+        size="small"
+        onClick={() => reload()}
+        sx={{ textTransform: "none", borderRadius: 2 }}
+      >
+        REFRESH
+      </Button>
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => navigate(`/dojaangs/new`)}
+        startIcon={<Add />}
+        sx={{ textTransform: "none", borderRadius: 2 }}
+      >
+        CREATE DOJAANG
+      </Button>
+      {isAdmin && (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={showInactive}
+              onChange={(_, v) => setShowInactive(v)}
+            />
+          }
+          label={isSmall ? "Inactive" : "Show inactive dojaangs"}
+        />
+      )}
+    </Box>
+  );
+
+  if (loading) {
+    return (
+      <PageLayout title="Dojaangs" actions={pageActions}>
+        <LoadingSpinner />
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout title="Dojaangs" actions={pageActions}>
+        <ErrorAlert error={error} onRetry={() => reload()} />
+      </PageLayout>
+    );
+  }
+
+  if (!visibleItems || visibleItems.length === 0) {
+    return (
+      <PageLayout title="Dojaangs" actions={pageActions}>
+        <EmptyState
+          title="No Dojaangs Found"
+          description={
+            showInactive
+              ? "No dojaangs available."
+              : "No active dojaangs available."
+          }
+          actionLabel="Create First Dojaang"
+          onAction={() => navigate("/dojaangs/new")}
+        />
+      </PageLayout>
+    );
+  }
+
   return (
-    <div>
-      <div className="mb-3 actions-row">
-        <Button
-          className="btn-margin"
-          variant="outlined"
-          size="small"
-          onClick={() => reload()}
-        >
-          Refresh
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => navigate(`/dojaangs/new`)}
-        >
-          Create dojaang
-        </Button>
-        {isAdmin && (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showInactive}
-                onChange={(_, v) => setShowInactive(v)}
-              />
-            }
-            label={isSmall ? "Inactive" : "Show inactive dojaangs"}
-          />
-        )}
-      </div>
-      <div className="table-container">
+    <>
+      <PageLayout title="Dojaangs" actions={pageActions}>
         <ApiTable
           rows={visibleItems}
           columns={cols}
@@ -297,7 +347,7 @@ function DojaangsTable() {
           defaultPageSize={10}
           pageSizeOptions={[10, 25, 50]}
         />
-      </div>
+      </PageLayout>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Delete Dojaang</DialogTitle>
@@ -309,7 +359,7 @@ function DojaangsTable() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-          <Button color="error" onClick={doDelete} startIcon={<DeleteIcon />}>
+          <Button color="error" onClick={doDelete} startIcon={<Delete />}>
             Delete
           </Button>
         </DialogActions>
@@ -329,6 +379,6 @@ function DojaangsTable() {
           </Alert>
         ) : undefined}
       </Snackbar>
-    </div>
+    </>
   );
 }

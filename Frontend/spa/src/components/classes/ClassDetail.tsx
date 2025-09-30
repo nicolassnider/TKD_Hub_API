@@ -20,6 +20,9 @@ import {
   ListItemAvatar,
   Breadcrumbs,
   Link,
+  TextField,
+  Paper,
+  Stack,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -38,7 +41,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { ClassForm } from "./ClassForm";
 import { useClassContext } from "context/ClassContext";
-import { DAYS_OF_WEEK } from "types/classes";
+import { DAYS_OF_WEEK } from "../../types/classes";
 import { StudentAssignment } from "components/students/StudentAssignment";
 import { DeleteConfirmationDialog } from "components/forms/DeleteConfirmationDialog";
 
@@ -97,6 +100,18 @@ export const ClassDetail: React.FC = () => {
     handleCloseMenu();
   };
 
+  const handleNavigateToStudentManagement = () => {
+    if (currentClass) {
+      navigate(`/classes/${currentClass.id}/students`);
+    }
+  };
+
+  const handleNavigateToAttendance = () => {
+    if (currentClass) {
+      navigate(`/classes/${currentClass.id}/attendance`);
+    }
+  };
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -115,6 +130,28 @@ export const ClassDetail: React.FC = () => {
 
   const getStudentInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  };
+
+  // Common dark theme TextField styling using school logo colors
+  const darkTextFieldSx = {
+    "& .MuiInputBase-input": {
+      color: "var(--fg)",
+    },
+    "& .MuiOutlinedInput-root": {
+      bgcolor: "var(--panel)",
+      "& fieldset": {
+        borderColor: "var(--border)",
+      },
+      "&:hover fieldset": {
+        borderColor: "var(--border-accent)",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "var(--primary)",
+      },
+    },
+    "& .MuiInputLabel-root": {
+      color: "var(--fg-muted)",
+    },
   };
 
   if (loading) {
@@ -163,31 +200,67 @@ export const ClassDetail: React.FC = () => {
   const permissions = getPermissions(currentClass);
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
+    <Box
+      sx={{
+        p: 2,
+        maxWidth: 1200,
+        mx: "auto",
+        bgcolor: "var(--bg)",
+        minHeight: "100vh",
+      }}
+    >
       {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 3 }}>
+      <Breadcrumbs
+        sx={{
+          mb: 3,
+          "& .MuiBreadcrumbs-separator": { color: "var(--fg-muted)" },
+        }}
+      >
         <Link
-          color="inherit"
           href="/classes"
           onClick={(e) => {
             e.preventDefault();
             handleBack();
           }}
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            color: "var(--primary)",
+            textDecoration: "none",
+            "&:hover": { color: "var(--accent)" },
+          }}
         >
           Classes
         </Link>
-        <Typography color="text.primary">{currentClass.name}</Typography>
+        <Typography sx={{ color: "var(--fg)" }}>{currentClass.name}</Typography>
       </Breadcrumbs>
 
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3 }}>
-        <IconButton onClick={handleBack} sx={{ mt: -1 }}>
+        <IconButton
+          onClick={handleBack}
+          sx={{
+            mt: -1,
+            color: "var(--primary)",
+            "&:hover": {
+              bgcolor: "var(--primary-50)",
+              color: "var(--primary-700)",
+            },
+          }}
+        >
           <ArrowBackIcon />
         </IconButton>
 
         <Box sx={{ flexGrow: 1 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{
+              color: "var(--fg)",
+              fontWeight: 700,
+            }}
+            className="page-title"
+          >
             {currentClass.name}
           </Typography>
 
@@ -197,25 +270,87 @@ export const ClassDetail: React.FC = () => {
               alignItems: "center",
               gap: 2,
               flexWrap: "wrap",
+              mb: 2,
             }}
           >
             <Chip
-              label={`${enrolledStudents.length} students`}
-              color="primary"
+              label={`${Array.isArray(enrolledStudents) ? enrolledStudents.length : 0} students`}
               icon={<GroupsIcon />}
+              sx={{
+                bgcolor: "var(--primary-100)",
+                color: "var(--primary)",
+                fontWeight: 600,
+                "& .MuiChip-icon": {
+                  color: "var(--primary)",
+                },
+              }}
             />
             <Chip
-              label={formatScheduleDisplay(currentClass.schedules)}
+              label={formatScheduleDisplay(currentClass.schedules || [])}
               variant="outlined"
               icon={<ScheduleIcon />}
+              sx={{
+                borderColor: "var(--accent)",
+                color: "var(--accent)",
+                "& .MuiChip-icon": {
+                  color: "var(--accent)",
+                },
+              }}
             />
           </Box>
+
+          {/* Action Buttons */}
+          {permissions.canManageStudents && (
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Button
+                variant="contained"
+                startIcon={<GroupsIcon />}
+                onClick={handleNavigateToStudentManagement}
+                size="small"
+                className="auth-button"
+                sx={{
+                  background:
+                    "linear-gradient(135deg, var(--primary), var(--primary-700))",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, var(--primary-600), var(--primary-900))",
+                  },
+                }}
+              >
+                Manage Students
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<AssignmentIcon />}
+                onClick={handleNavigateToAttendance}
+                size="small"
+                sx={{
+                  borderColor: "var(--accent)",
+                  color: "var(--accent)",
+                  "&:hover": {
+                    borderColor: "var(--accent-700)",
+                    bgcolor: "var(--accent-50)",
+                    color: "var(--accent-700)",
+                  },
+                }}
+              >
+                Take Attendance
+              </Button>
+            </Box>
+          )}
         </Box>
 
-        {(permissions.canEdit ||
-          permissions.canDelete ||
-          permissions.canManageStudents) && (
-          <IconButton onClick={handleMenuClick}>
+        {(permissions.canEdit || permissions.canDelete) && (
+          <IconButton
+            onClick={handleMenuClick}
+            sx={{
+              color: "var(--fg-muted)",
+              "&:hover": {
+                bgcolor: "var(--surface-hover)",
+                color: "var(--primary)",
+              },
+            }}
+          >
             <MoreVertIcon />
           </IconButton>
         )}
@@ -224,98 +359,291 @@ export const ClassDetail: React.FC = () => {
       <Grid container spacing={3}>
         {/* Main Class Information */}
         <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+          <Card
+            elevation={2}
+            sx={{
+              borderRadius: "16px",
+              bgcolor: "var(--panel-elevated)",
+              border: "1px solid",
+              borderColor: "var(--border)",
+              boxShadow: "var(--shadow-lg)",
+              color: "var(--fg)",
+            }}
+            className="auth-card"
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  color: "var(--primary)",
+                  fontWeight: 700,
+                  mb: 2,
+                  fontSize: "1.5rem",
+                }}
+                className="page-title"
+              >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <SchoolIcon />
+                  <SchoolIcon sx={{ color: "var(--gold)" }} />
                   Class Information
                 </Box>
               </Typography>
 
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 2,
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 3,
+                  bgcolor: "var(--panel)",
+                  borderColor: "var(--border)",
+                  boxShadow: "var(--shadow)",
+                  borderRadius: "12px",
+                }}
+              >
+                <Stack spacing={2}>
+                  {/* Class Name Field */}
+                  <TextField
+                    label="Class Name"
+                    value={currentClass.name}
+                    InputProps={{
+                      readOnly: true,
+                      startAdornment: (
+                        <SchoolIcon sx={{ mr: 1, color: "var(--gold)" }} />
+                      ),
                     }}
-                  >
-                    <HomeIcon color="action" />
-                    <Box>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Location
-                      </Typography>
-                      <Typography variant="body1">
-                        {currentClass.dojaangName || "No location assigned"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      "& .MuiInputBase-input": {
+                        fontWeight: 600,
+                        fontSize: "1.1rem",
+                        color: "var(--fg)",
+                      },
+                      "& .MuiOutlinedInput-root": {
+                        bgcolor: "var(--surface-elevated)",
+                        "& fieldset": {
+                          borderColor: "var(--border-accent)",
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "var(--primary)",
+                        },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "var(--primary)",
+                        fontWeight: 600,
+                      },
+                    }}
+                  />
 
-                <Grid item xs={12} sm={6}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 2,
-                    }}
-                  >
-                    <PersonIcon color="action" />
-                    <Box>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Coach
-                      </Typography>
-                      <Typography variant="body1">
-                        {currentClass.coachName || "No coach assigned"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-              </Grid>
+                  <Grid container spacing={1.5}>
+                    {/* Location Field */}
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Location"
+                        value={
+                          currentClass.dojaangName || "No location assigned"
+                        }
+                        InputProps={{
+                          readOnly: true,
+                          startAdornment: (
+                            <HomeIcon sx={{ mr: 1, color: "primary.main" }} />
+                          ),
+                        }}
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          ...darkTextFieldSx,
+                          "& .MuiInputBase-input": {
+                            ...darkTextFieldSx["& .MuiInputBase-input"],
+                            fontWeight: 500,
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Coach Field */}
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Coach"
+                        value={currentClass.coachName || "No coach assigned"}
+                        InputProps={{
+                          readOnly: true,
+                          startAdornment: (
+                            <PersonIcon
+                              sx={{ mr: 1, color: "secondary.main" }}
+                            />
+                          ),
+                        }}
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          ...darkTextFieldSx,
+                          "& .MuiInputBase-input": {
+                            ...darkTextFieldSx["& .MuiInputBase-input"],
+                            fontWeight: 500,
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Student Count Field */}
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Enrolled Students"
+                        value={`${Array.isArray(enrolledStudents) ? enrolledStudents.length : 0} students`}
+                        InputProps={{
+                          readOnly: true,
+                          startAdornment: (
+                            <GroupsIcon sx={{ mr: 1, color: "success.main" }} />
+                          ),
+                        }}
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          ...darkTextFieldSx,
+                          "& .MuiInputBase-input": {
+                            ...darkTextFieldSx["& .MuiInputBase-input"],
+                            fontWeight: 500,
+                            color: "success.main",
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Class ID Field */}
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Class ID"
+                        value={currentClass.id}
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          ...darkTextFieldSx,
+                          "& .MuiInputBase-input": {
+                            ...darkTextFieldSx["& .MuiInputBase-input"],
+                            fontWeight: 500,
+                            color: "text.secondary",
+                          },
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Stack>
+              </Paper>
 
               <Divider sx={{ my: 3 }} />
 
-              <Typography variant="h6" gutterBottom>
+              <Divider sx={{ my: 3 }} />
+
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ color: "var(--primary)", fontWeight: 600, mb: 2 }}
+              >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <ScheduleIcon />
                   Class Schedule
                 </Box>
               </Typography>
 
-              {currentClass.schedules.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No schedules configured
-                </Typography>
+              {!Array.isArray(currentClass.schedules) ||
+              currentClass.schedules.length === 0 ? (
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 3,
+                    textAlign: "center",
+                    bgcolor: "var(--panel)",
+                    borderColor: "var(--border)",
+                  }}
+                >
+                  <ScheduleIcon
+                    sx={{ fontSize: 48, color: "var(--fg-subtle)", mb: 2 }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    No schedules configured
+                  </Typography>
+                </Paper>
               ) : (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                  {currentClass.schedules.map((schedule, index) => (
-                    <Card
-                      key={index}
-                      variant="outlined"
-                      sx={{ bgcolor: "grey.50" }}
-                    >
-                      <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                        >
-                          <Chip
-                            label={getDayName(schedule.day)}
-                            color="primary"
-                            size="small"
-                          />
-                          <Typography variant="body1">
-                            {formatTime(schedule.startTime)} -{" "}
-                            {formatTime(schedule.endTime)}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Box>
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2.5,
+                    bgcolor: "var(--panel)",
+                    borderColor: "var(--border)",
+                  }}
+                >
+                  <Stack spacing={1.5}>
+                    {Array.isArray(currentClass.schedules)
+                      ? currentClass.schedules.map((schedule, index) => (
+                          <Grid container spacing={1.5} key={index}>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                label={`Schedule ${index + 1} - Day`}
+                                value={getDayName(schedule.day)}
+                                InputProps={{
+                                  readOnly: true,
+                                  startAdornment: (
+                                    <ScheduleIcon
+                                      sx={{ mr: 1, color: "var(--primary)" }}
+                                    />
+                                  ),
+                                }}
+                                variant="outlined"
+                                fullWidth
+                                sx={{
+                                  ...darkTextFieldSx,
+                                  "& .MuiInputBase-input": {
+                                    ...darkTextFieldSx["& .MuiInputBase-input"],
+                                    fontWeight: 600,
+                                    color: "primary.main",
+                                  },
+                                }}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                label="Start Time"
+                                value={formatTime(schedule.startTime)}
+                                InputProps={{
+                                  readOnly: true,
+                                }}
+                                variant="outlined"
+                                fullWidth
+                                sx={{
+                                  ...darkTextFieldSx,
+                                  "& .MuiInputBase-input": {
+                                    ...darkTextFieldSx["& .MuiInputBase-input"],
+                                    fontWeight: 500,
+                                  },
+                                }}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                label="End Time"
+                                value={formatTime(schedule.endTime)}
+                                InputProps={{
+                                  readOnly: true,
+                                }}
+                                variant="outlined"
+                                fullWidth
+                                sx={{
+                                  ...darkTextFieldSx,
+                                  "& .MuiInputBase-input": {
+                                    ...darkTextFieldSx["& .MuiInputBase-input"],
+                                    fontWeight: 500,
+                                  },
+                                }}
+                              />
+                            </Grid>
+                          </Grid>
+                        ))
+                      : null}
+                  </Stack>
+                </Paper>
               )}
             </CardContent>
           </Card>
@@ -323,34 +651,67 @@ export const ClassDetail: React.FC = () => {
 
         {/* Student List */}
         <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
+          <Card
+            elevation={2}
+            sx={{
+              borderRadius: "16px",
+              height: "fit-content",
+              maxWidth: "100%",
+              bgcolor: "var(--panel-elevated)",
+              border: "1px solid",
+              borderColor: "var(--border)",
+              boxShadow: "var(--shadow-lg)",
+              color: "var(--fg)",
+              overflow: "hidden",
+            }}
+            className="auth-card"
+          >
+            <CardContent sx={{ p: 1.5 }}>
               <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  mb: 2,
+                  mb: 1.5,
                 }}
               >
-                <Typography variant="h6">
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: "var(--primary)",
+                    fontWeight: 700,
+                  }}
+                >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <GroupsIcon />
-                    Students ({enrolledStudents.length})
+                    <GroupsIcon sx={{ color: "var(--accent)" }} />
+                    Students (
+                    {Array.isArray(enrolledStudents)
+                      ? enrolledStudents.length
+                      : 0}
+                    )
                   </Box>
                 </Typography>
                 {permissions.canManageStudents && (
                   <Button
                     size="small"
-                    startIcon={<PersonAddIcon />}
+                    startIcon={<PersonAddIcon sx={{ color: "var(--gold)" }} />}
                     onClick={handleManageStudents}
+                    sx={{
+                      color: "var(--gold)",
+                      borderColor: "var(--gold)",
+                      "&:hover": {
+                        bgcolor: "var(--gold-50)",
+                        borderColor: "var(--gold-700)",
+                      },
+                    }}
                   >
                     Manage
                   </Button>
                 )}
               </Box>
 
-              {enrolledStudents.length === 0 ? (
+              {!Array.isArray(enrolledStudents) ||
+              enrolledStudents.length === 0 ? (
                 <Box
                   sx={{ textAlign: "center", py: 3, color: "text.secondary" }}
                 >
@@ -371,39 +732,69 @@ export const ClassDetail: React.FC = () => {
                   )}
                 </Box>
               ) : (
-                <List sx={{ maxHeight: 400, overflow: "auto" }}>
-                  {enrolledStudents.map((student) => (
-                    <ListItem key={student.id} sx={{ px: 0 }}>
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: "primary.main" }}>
-                          {getStudentInitials(
-                            student.firstName,
-                            student.lastName,
-                          )}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={`${student.firstName} ${student.lastName}`}
-                        secondary={
-                          <Box>
-                            {student.email && (
-                              <Typography variant="caption" display="block">
-                                {student.email}
-                              </Typography>
-                            )}
-                            {student.dojaangName && (
-                              <Chip
-                                label={student.dojaangName}
-                                size="small"
-                                variant="outlined"
-                                sx={{ mt: 0.5 }}
-                              />
-                            )}
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                  ))}
+                <List
+                  sx={{
+                    maxHeight: 400,
+                    overflow: "auto",
+                    width: "100%",
+                    pr: 1,
+                  }}
+                >
+                  {Array.isArray(enrolledStudents)
+                    ? enrolledStudents.map((student) => (
+                        <ListItem
+                          key={student.id}
+                          sx={{ px: 0, width: "100%", maxWidth: "100%" }}
+                        >
+                          <ListItemAvatar>
+                            <Avatar
+                              sx={{
+                                background:
+                                  "linear-gradient(135deg, var(--primary), var(--accent))",
+                                color: "white",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {getStudentInitials(
+                                student.firstName,
+                                student.lastName,
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={`${student.firstName} ${student.lastName}`}
+                            sx={{
+                              minWidth: 0,
+                              "& .MuiListItemText-primary": {
+                                wordBreak: "break-word",
+                              },
+                            }}
+                            secondary={
+                              <Box>
+                                {student.email && (
+                                  <Typography variant="caption" display="block">
+                                    {student.email}
+                                  </Typography>
+                                )}
+                                {student.dojaangName && (
+                                  <Chip
+                                    label={student.dojaangName}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                      mt: 0.5,
+                                      borderColor: "var(--gold)",
+                                      color: "var(--gold)",
+                                      fontSize: "0.75rem",
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                      ))
+                    : null}
                 </List>
               )}
             </CardContent>

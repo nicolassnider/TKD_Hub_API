@@ -1,17 +1,20 @@
-export interface User {
-  id: number;
+import { ID, BaseEntity, ISODate, Gender } from "./common";
+
+export interface User extends BaseEntity {
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber?: string;
-  dateOfBirth?: string;
-  dojaangId?: number;
+  dateOfBirth?: ISODate;
+  gender: number; // API returns number (0=unspecified, 1=male, 2=female)
+  dojaangId: number;
   dojaangName?: string;
   currentRankId?: number;
+  currentRankName?: string;
   beltLevel?: string;
-  joinDate?: string;
+  joinDate?: ISODate;
   isActive: boolean;
-  roles: string[];
+  roles?: string[];
   managedDojaangIds?: number[];
   fullName?: string;
 }
@@ -22,35 +25,31 @@ export interface CreateUserRequest {
   email: string;
   password: string;
   phoneNumber?: string;
-  dateOfBirth?: string;
-  dojaangId?: number;
-  currentRankId?: number;
+  dateOfBirth?: ISODate;
+  gender?: Gender;
+  dojaangId?: ID;
+  currentRankId?: ID;
   roles: string[];
   isActive: boolean;
 }
 
 export interface UpdateUserRequest {
-  id: number;
+  id: ID;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber?: string;
-  dateOfBirth?: string;
-  dojaangId?: number;
-  currentRankId?: number;
+  dateOfBirth?: ISODate;
+  gender?: Gender;
+  dojaangId?: ID;
+  currentRankId?: ID;
   roles: string[];
   isActive: boolean;
 }
 
-export interface UserRole {
-  id: number;
+export interface UserRole extends BaseEntity {
   name: string;
-}
-
-export interface Dojaang {
-  id: number;
-  name: string;
-  location?: string;
+  description?: string;
 }
 
 export interface Rank {

@@ -112,9 +112,9 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
 
       const response = (await fetchJson("/api/Classes", {
         headers: getAuthHeaders(),
-      })) as TrainingClass[];
+      })) as { data: TrainingClass[] };
 
-      setClasses(response);
+      setClasses(response.data || []);
     } catch (error) {
       handleApiError(error);
     } finally {
@@ -130,10 +130,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
 
         const response = (await fetchJson(`/api/Classes/${id}`, {
           headers: getAuthHeaders(),
-        })) as TrainingClass;
+        })) as { data: TrainingClass };
 
-        setCurrentClass(response);
-        return response;
+        const classData = response.data;
+        setCurrentClass(classData);
+        return classData;
       } catch (error) {
         handleApiError(error);
         return null;
@@ -154,10 +155,11 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify(data),
-        })) as TrainingClass;
+        })) as { data: TrainingClass };
 
-        setClasses((prev) => [...prev, response]);
-        return response;
+        const classData = response.data;
+        setClasses((prev) => [...prev, classData]);
+        return classData;
       } catch (error) {
         handleApiError(error);
         throw error;
@@ -181,13 +183,14 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           method: "PUT",
           headers: getAuthHeaders(),
           body: JSON.stringify(data),
-        })) as TrainingClass;
+        })) as { data: TrainingClass };
 
-        setClasses((prev) => prev.map((c) => (c.id === id ? response : c)));
+        const classData = response.data;
+        setClasses((prev) => prev.map((c) => (c.id === id ? classData : c)));
         if (currentClass?.id === id) {
-          setCurrentClass(response);
+          setCurrentClass(classData);
         }
-        return response;
+        return classData;
       } catch (error) {
         handleApiError(error);
         throw error;
@@ -232,9 +235,9 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
 
         const response = (await fetchJson(`/api/classes/${classId}/students`, {
           headers: getAuthHeaders(),
-        })) as StudentForAssignment[];
+        })) as { data: StudentForAssignment[] };
 
-        setEnrolledStudents(response);
+        setEnrolledStudents(response.data || []);
       } catch (error) {
         handleApiError(error);
       } finally {

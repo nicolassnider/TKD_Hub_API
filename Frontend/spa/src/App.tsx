@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { RoleProvider } from "context/RoleContext";
 import { ProfileProvider } from "context/ProfileContext";
+import { ClassProvider } from "context/ClassContext";
 import Header from "components/layout/Header";
 import ProtectedRoute from "components/auth/ProtectedRoute";
 import LoginForm from "./components/auth/LoginForm";
@@ -19,7 +20,7 @@ import BlogList from "pages/BlogList";
 import BlogDetail from "pages/BlogDetail";
 import Register from "pages/Register";
 import ClassesList from "pages/ClassesList";
-import ClassDetail from "pages/ClassDetail";
+import { ClassDetail } from "components/classes/ClassDetail";
 import ClassesManagement from "pages/ClassesManagement";
 import ClassStudentManagement from "pages/ClassStudentManagement";
 import ClassAttendanceManagement from "pages/ClassAttendanceManagement";
@@ -41,6 +42,13 @@ import UserDetail from "pages/UserDetail";
 import Dashboard from "pages/Dashboard";
 import { ProfilePage } from "pages/ProfilePage";
 import MercadoPagoDebug from "pages/MercadoPagoDebug";
+import EventsManagement from "components/EventsManagement";
+import BlogManagement from "components/BlogManagement";
+import StudentsManagement from "components/StudentsManagement";
+import EditCoach from "pages/EditCoach";
+import EditDojaang from "pages/EditDojaang";
+import EditProfile from "pages/EditProfile";
+import PaymentHistory from "components/PaymentHistory";
 
 // Route configuration types
 interface RouteConfig {
@@ -71,7 +79,17 @@ const routes: RouteConfig[] = [
     ),
     isPublic: true,
   },
+  {
+    path: "/auth/login",
+    component: () => (
+      <div className="center-vh">
+        <LoginForm />
+      </div>
+    ),
+    isPublic: true,
+  },
   { path: "/register", component: Register, isPublic: true },
+  { path: "/auth/register", component: Register, isPublic: true },
   { path: "/events", component: EventsList, isPublic: true },
   { path: "/events/:id", component: EventDetail, isPublic: true },
   { path: "/blog", component: BlogList, isPublic: true },
@@ -79,6 +97,8 @@ const routes: RouteConfig[] = [
 
   // Protected routes (general users)
   { path: "/profile", component: ProfilePage },
+  { path: "/profile/edit", component: EditProfile },
+  { path: "/payments", component: PaymentHistory },
   { path: "/dashboard", component: Dashboard },
   { path: "/students", component: StudentsList },
   { path: "/students/:id", component: StudentDetail },
@@ -90,8 +110,10 @@ const routes: RouteConfig[] = [
   { path: "/classes/:id", component: ClassDetail },
   { path: "/coaches", component: CoachesList },
   { path: "/coaches/:id", component: CoachDetail },
+  { path: "/coaches/:id/edit", component: EditCoach, roles: ["Admin"] },
   { path: "/dojaangs", component: DojaangsList },
   { path: "/dojaangs/:id", component: DojaangDetail },
+  { path: "/dojaangs/:id/edit", component: EditDojaang, roles: ["Admin"] },
   { path: "/promotions", component: PromotionsList },
   { path: "/promotions/:id", component: PromotionDetail },
   { path: "/ranks", component: RanksList },
@@ -100,6 +122,16 @@ const routes: RouteConfig[] = [
   { path: "/tuls/:id", component: TulDetail },
 
   // Admin/Coach routes
+  {
+    path: "/events/manage",
+    component: EventsManagement,
+    roles: ["Admin", "Coach"],
+  },
+  {
+    path: "/students/manage",
+    component: StudentsManagement,
+    roles: ["Admin", "Coach"],
+  },
   {
     path: "/classes/manage",
     component: ClassesManagement,
@@ -124,6 +156,7 @@ const routes: RouteConfig[] = [
   // Admin-only routes
   { path: "/manage", component: DojaangAdmin, roles: ["Admin"] },
   { path: "/manage/dojaangs", component: DojaangAdmin, roles: ["Admin"] },
+  { path: "/blog/manage", component: BlogManagement, roles: ["Admin"] },
   { path: "/coaches/new", component: CreateCoach, roles: ["Admin"] },
   { path: "/dojaangs/new", component: CreateDojaang, roles: ["Admin"] },
   { path: "/users", component: UserAdministration, roles: ["Admin"] },
@@ -160,12 +193,19 @@ export default function App() {
   return (
     <RoleProvider>
       <ProfileProvider>
-        <BrowserRouter>
-          <Header />
-          <main className="app-container p-4">
-            <Routes>{routes.map(createRoute)}</Routes>
-          </main>
-        </BrowserRouter>
+        <ClassProvider>
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
+            <Header />
+            <main className="app-container p-4">
+              <Routes>{routes.map(createRoute)}</Routes>
+            </main>
+          </BrowserRouter>
+        </ClassProvider>
       </ProfileProvider>
       <ToastContainer
         position="top-right"

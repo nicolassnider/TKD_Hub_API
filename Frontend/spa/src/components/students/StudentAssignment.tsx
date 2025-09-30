@@ -97,6 +97,7 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
     students: StudentForAssignment[],
     searchTerm: string,
   ) => {
+    if (!Array.isArray(students)) return [];
     if (!searchTerm) return students;
 
     const term = searchTerm.toLowerCase();
@@ -213,7 +214,8 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                     </Box>
                   ))}
                 </Box>
-              ) : filteredEnrolledStudents.length === 0 ? (
+              ) : !Array.isArray(filteredEnrolledStudents) ||
+                filteredEnrolledStudents.length === 0 ? (
                 <Box
                   sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
                 >
@@ -344,7 +346,8 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                     </Box>
                   ))}
                 </Box>
-              ) : filteredAvailableStudents.length === 0 ? (
+              ) : !Array.isArray(filteredAvailableStudents) ||
+                filteredAvailableStudents.length === 0 ? (
                 <Box
                   sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
                 >

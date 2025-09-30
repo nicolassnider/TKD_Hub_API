@@ -1,7 +1,9 @@
 ﻿using TKDHubAPI.Application.DTOs.TrainingClass;
 using TKDHubAPI.Application.DTOs.User;
 
+
 namespace TKDHubAPI.WebAPI.Controllers;
+
 
 /// <summary>
 /// API controller for managing users, including creation, retrieval, update, deletion, and registration.
@@ -14,6 +16,7 @@ public partial class UsersController : BaseApiController
     private readonly IMapper _mapper;
     private readonly ITrainingClassService _trainingClassService;
     private readonly IPaginationService<UserDto> _paginationService;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UsersController"/> class.
@@ -35,6 +38,7 @@ public partial class UsersController : BaseApiController
         _paginationService = paginationService;
     }
 
+
     /// <summary>
     /// Retrieves all users as UserDto using mapping and returns a paginated, standardized success response.
     /// </summary>
@@ -46,21 +50,26 @@ public partial class UsersController : BaseApiController
         return SuccessResponse(paginatedResult);
     }
 
+
     /// <summary>
     /// Retrieves a user by their unique identifier.
     /// </summary>
     /// <param name="id">The user ID.</param>
     /// <returns>The user with the specified ID, or NotFound if not found.</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> Get(int id)
+    public async Task<IActionResult> Get(int id)
     {
         var user = await _userService.GetByIdAsync(id);
         if (user == null)
         {
-            return NotFound();
+            return ErrorResponse("User not found", 404);
         }
-        return Ok(user);
+
+        // Map to DTO to prevent circular reference issues
+        var userDto = _mapper.Map<UserDto>(user);
+        return SuccessResponse(userDto);
     }
+
 
     /// <summary>
     /// Creates a new user.
@@ -74,10 +83,12 @@ public partial class UsersController : BaseApiController
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
             return Unauthorized("Invalid user context.");
 
+
         var currentUserRoles = User.Claims
             .Where(c => c.Type == ClaimTypes.Role)
             .Select(c => c.Value)
             .ToList();
+
 
         try
         {
@@ -99,6 +110,7 @@ public partial class UsersController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Updates an existing user.
     /// </summary>
@@ -112,10 +124,12 @@ public partial class UsersController : BaseApiController
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
             return Unauthorized("Invalid user context.");
 
+
         var currentUserRoles = User.Claims
             .Where(c => c.Type == ClaimTypes.Role)
             .Select(c => c.Value)
             .ToList();
+
 
         try
         {
@@ -123,8 +137,10 @@ public partial class UsersController : BaseApiController
             if (user == null)
                 return NotFound();
 
+
             // Use AutoMapper to map the DTO to the existing user entity
             _mapper.Map(updateUserDto, user);
+
 
             await _userService.UpdateAsync(user);
             var userDto = _mapper.Map<UserDto>(user);
@@ -145,6 +161,7 @@ public partial class UsersController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Deletes a user by their unique identifier.
     /// </summary>
@@ -157,11 +174,13 @@ public partial class UsersController : BaseApiController
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
             return Unauthorized("Invalid user context.");
 
+
         try
         {
             var user = await _userService.GetByIdAsync(id);
             if (user == null)
                 return NotFound();
+
 
             await _userService.DeleteAsync(id);
             return NoContent();
@@ -181,6 +200,7 @@ public partial class UsersController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Registers a new user with a password.
     /// </summary>
@@ -194,10 +214,12 @@ public partial class UsersController : BaseApiController
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
             return Unauthorized("Invalid user context.");
 
+
         var currentUserRoles = User.Claims
             .Where(c => c.Type == ClaimTypes.Role)
             .Select(c => c.Value)
             .ToList();
+
 
         var newUserRoleNames = new List<string>();
         foreach (var roleId in dto.RoleIds ?? Enumerable.Empty<int>())
@@ -207,12 +229,14 @@ public partial class UsersController : BaseApiController
                 newUserRoleNames.Add(roleName);
         }
 
+
         // Students cannot create users
         if (currentUserRoles.Contains("Student") && !currentUserRoles.Contains("Admin") && !currentUserRoles.Contains("Coach"))
         {
             CustomErrorResponseMiddleware.SetErrorMessage(HttpContext, "Students cannot create users.");
             return Forbid();
         }
+
 
         // Only Admin can create Admins or Coaches for any dojaang
         if (newUserRoleNames.Any(r => r == "Admin" || r == "Coach"))
@@ -224,6 +248,7 @@ public partial class UsersController : BaseApiController
             }
         }
 
+
         // If current user is Coach (but not Admin), can only create Coach/Student for dojaangs they manage
         if (currentUserRoles.Contains("Coach") && !currentUserRoles.Contains("Admin"))
         {
@@ -233,8 +258,10 @@ public partial class UsersController : BaseApiController
                 return Forbid();
             }
 
+
             if (dto.DojaangId == null)
                 return BadRequest("DojaangId is required when a coach creates a user.");
+
 
             var manages = await _userService.CoachManagesDojaangAsync(requestingUserId, dto.DojaangId.Value);
             if (!manages)
@@ -244,18 +271,22 @@ public partial class UsersController : BaseApiController
             }
         }
 
+
         var user = await _userService.RegisterAsync(dto, password);
         if (user == null)
             return BadRequest("User already exists.");
 
+
         return Ok(user);
     }
+
 
     /// <summary>
     /// Retrieves all <see cref="TrainingClass"/> entities that are imparted by the currently logged-in coach.
     /// Only accessible to users with the "Coach" role.
     /// </summary>
     /// <returns>A list of <see cref="TrainingClassDto"/> representing the classes imparted by the current coach.</returns>  
+
 
     [HttpGet("coach/classes")]
     [Authorize(Roles = "Coach")]
@@ -264,6 +295,7 @@ public partial class UsersController : BaseApiController
         var classes = await _trainingClassService.GetClassesForCurrentCoachAsync();
         return Ok(classes);
     }
+
 
     /// <summary>
     /// Returns the currently authenticated user's profile information.
@@ -278,11 +310,13 @@ public partial class UsersController : BaseApiController
             return ErrorResponse("Invalid user context.", 401);
         }
 
+
         try
         {
             var user = await _userService.GetByIdAsync(userId);
             if (user == null)
                 return ErrorResponse("User not found.", 404);
+
 
             // Map to DTO for returning via standardized SuccessResponse
             var userDto = _mapper.Map<UserDto>(user);
@@ -294,6 +328,7 @@ public partial class UsersController : BaseApiController
             return ErrorResponse("An error occurred while retrieving the current user.", 500);
         }
     }
+
 
     /// <summary>
     /// Reactivates a user by setting their IsActive status to true.
@@ -313,6 +348,7 @@ public partial class UsersController : BaseApiController
             var user = await _userService.GetByIdAsync(userId);
             if (user == null)
                 return ErrorResponse("User not found.", 404);
+
 
             await _userService.ReactivateAsync(userId);
             return SuccessResponse(new { Message = "User reactivated." });

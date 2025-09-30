@@ -69,15 +69,17 @@ export const ClassForm: React.FC<ClassFormProps> = ({
   // Initialize form data
   useEffect(() => {
     if (trainingClass && mode === "edit") {
-      setName(trainingClass.name);
-      setDojaangId(trainingClass.dojaangId);
-      setCoachId(trainingClass.coachId);
+      setName(trainingClass.name || "");
+      setDojaangId(trainingClass.dojaangId || 0);
+      setCoachId(trainingClass.coachId || 0);
       setSchedules(
-        trainingClass.schedules.map((s) => ({
-          day: s.day,
-          startTime: s.startTime,
-          endTime: s.endTime,
-        })),
+        Array.isArray(trainingClass.schedules)
+          ? trainingClass.schedules.map((s) => ({
+              day: s.day,
+              startTime: s.startTime,
+              endTime: s.endTime,
+            }))
+          : [],
       );
     } else {
       // Reset for create mode
@@ -161,7 +163,12 @@ export const ClassForm: React.FC<ClassFormProps> = ({
   }, [coachId, schedules]);
 
   const handleSubmit = async () => {
-    if (!name.trim() || !dojaangId || !coachId || schedules.length === 0) {
+    if (
+      !(name || "").trim() ||
+      !dojaangId ||
+      !coachId ||
+      schedules.length === 0
+    ) {
       alert("Please fill in all required fields and add at least one schedule");
       return;
     }
@@ -214,7 +221,7 @@ export const ClassForm: React.FC<ClassFormProps> = ({
   };
 
   const isFormValid =
-    name.trim() && dojaangId && coachId && schedules.length > 0;
+    (name || "").trim() && dojaangId && coachId && schedules.length > 0;
 
   return (
     <Dialog

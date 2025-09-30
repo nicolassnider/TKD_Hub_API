@@ -102,24 +102,68 @@ export function useFormData(
   const dojaangsResult = useDojaangs(includeDojaangs);
   const ranksResult = useRanks(includeRanks);
 
-  const loading =
-    (includeStudents && studentsResult.loading) ||
-    (includeCoaches && coachesResult.loading) ||
-    (includeDojaangs && dojaangsResult.loading) ||
-    (includeRanks && ranksResult.loading);
+  const loading = useMemo(
+    () =>
+      (includeStudents && studentsResult.loading) ||
+      (includeCoaches && coachesResult.loading) ||
+      (includeDojaangs && dojaangsResult.loading) ||
+      (includeRanks && ranksResult.loading),
+    [
+      includeStudents,
+      studentsResult.loading,
+      includeCoaches,
+      coachesResult.loading,
+      includeDojaangs,
+      dojaangsResult.loading,
+      includeRanks,
+      ranksResult.loading,
+    ],
+  );
 
-  const error =
-    studentsResult.error ||
-    coachesResult.error ||
-    dojaangsResult.error ||
-    ranksResult.error;
+  const error = useMemo(
+    () =>
+      studentsResult.error ||
+      coachesResult.error ||
+      dojaangsResult.error ||
+      ranksResult.error,
+    [
+      studentsResult.error,
+      coachesResult.error,
+      dojaangsResult.error,
+      ranksResult.error,
+    ],
+  );
 
-  return {
-    students: includeStudents ? studentsResult.data : [],
-    coaches: includeCoaches ? coachesResult.data : [],
-    dojaangs: includeDojaangs ? dojaangsResult.data : [],
-    ranks: includeRanks ? ranksResult.data : [],
-    loading,
-    error,
-  };
+  // Memoize the returned arrays to prevent unnecessary re-renders
+  const students = useMemo(
+    () => (includeStudents ? studentsResult.data : []),
+    [includeStudents, studentsResult.data],
+  );
+
+  const coaches = useMemo(
+    () => (includeCoaches ? coachesResult.data : []),
+    [includeCoaches, coachesResult.data],
+  );
+
+  const dojaangs = useMemo(
+    () => (includeDojaangs ? dojaangsResult.data : []),
+    [includeDojaangs, dojaangsResult.data],
+  );
+
+  const ranks = useMemo(
+    () => (includeRanks ? ranksResult.data : []),
+    [includeRanks, ranksResult.data],
+  );
+
+  return useMemo(
+    () => ({
+      students,
+      coaches,
+      dojaangs,
+      ranks,
+      loading,
+      error,
+    }),
+    [students, coaches, dojaangs, ranks, loading, error],
+  );
 }

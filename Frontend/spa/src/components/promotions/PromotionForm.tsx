@@ -48,6 +48,8 @@ export default function PromotionForm({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [hasProcessedPreselection, setHasProcessedPreselection] =
+    useState(false);
 
   // Use the centralized form data hook - only fetch when dialog is open
   const { students, coaches, dojaangs, ranks } = useFormData({
@@ -59,6 +61,8 @@ export default function PromotionForm({
 
   // Set initial data when editing
   useEffect(() => {
+    if (!open) return; // Don't reset if dialog is closed
+
     if (initialData) {
       setFormData({
         studentId: initialData.studentId,
@@ -68,10 +72,7 @@ export default function PromotionForm({
         notes: initialData.notes || "",
         dojaangId: initialData.dojaangId,
       });
-
-      // Find and set selected student
-      const student = students.find((s) => s.id === initialData.studentId);
-      setSelectedStudent(student || null);
+      setHasProcessedPreselection(true);
     } else {
       setFormData({
         studentId: preselectedStudentId || 0,
@@ -82,17 +83,28 @@ export default function PromotionForm({
         dojaangId: 0,
       });
       setSelectedStudent(null);
+      setHasProcessedPreselection(false);
     }
     setErrors({});
-  }, [initialData, open, students, preselectedStudentId]);
+  }, [initialData, open, preselectedStudentId]);
+
+  // Set selected student when students are loaded and we have initialData
+  useEffect(() => {
+    if (initialData && students.length > 0 && !selectedStudent) {
+      const student = students.find((s) => s.id === initialData.studentId);
+      setSelectedStudent(student || null);
+    }
+  }, [initialData, students, selectedStudent]);
 
   // Handle preselected student and auto-suggest next rank
   useEffect(() => {
     if (
+      open &&
       preselectedStudentId &&
       students.length > 0 &&
       ranks.length > 0 &&
-      !initialData
+      !initialData &&
+      !hasProcessedPreselection
     ) {
       const student = students.find((s) => s.id === preselectedStudentId);
       if (student) {
@@ -129,9 +141,17 @@ export default function PromotionForm({
             }
           }
         }
+        setHasProcessedPreselection(true);
       }
     }
-  }, [preselectedStudentId, students, ranks, initialData]);
+  }, [
+    open,
+    preselectedStudentId,
+    students,
+    ranks,
+    initialData,
+    hasProcessedPreselection,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

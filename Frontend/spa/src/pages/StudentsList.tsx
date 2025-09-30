@@ -1,14 +1,20 @@
-import ApiTable from "components/common/ApiTable";
+import React, { useState, MouseEvent, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useApiItems } from "../hooks/useApiItems";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Box,
+  Chip,
+  Tooltip,
+} from "@mui/material";
 import {
   MoreVert,
   Visibility,
@@ -16,18 +22,16 @@ import {
   EmojiEvents,
   Add,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { useState, MouseEvent } from "react";
+import { PageLayout } from "../components/layout/PageLayout";
+import { LoadingSpinner } from "../components/common/LoadingSpinner";
+import { ErrorAlert } from "../components/common/ErrorAlert";
+import { EmptyState } from "../components/common/EmptyState";
+import ApiTable from "components/common/ApiTable";
 import PromotionFormDialog from "../components/promotions/PromotionFormDialog";
 import { usePromotionForm } from "../hooks/usePromotionForm";
 
 export default function StudentsList() {
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Students</h2>
-      <StudentsTable />
-    </div>
-  );
+  return <StudentsTable />;
 }
 
 function StudentsTable() {
@@ -104,49 +108,125 @@ function StudentsTable() {
     }
   };
 
-  const cols = [
-    { key: "id", label: "ID", sortable: true },
-    {
-      key: "fullName",
-      label: "Name",
-      render: (r: any) => `${r.firstName} ${r.lastName}`,
-      sortable: true,
-    },
-    { key: "email", label: "Email" },
-    { key: "phoneNumber", label: "Phone" },
-    {
-      key: "rankName",
-      label: "Rank",
-      render: (r: any) => r.rankName || "Not assigned",
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (r: any) => (
-        <IconButton size="small" onClick={(e) => handleMenuClick(e, r)}>
-          <MoreVert />
-        </IconButton>
-      ),
-    },
-  ];
-  if (loading) return <div>Loading table…</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  const cols = useMemo(
+    () => [
+      { key: "id", label: "ID", sortable: true },
+      {
+        key: "fullName",
+        label: "NAME",
+        render: (student: any) => (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {`${student.firstName} ${student.lastName}`}
+          </Box>
+        ),
+        sortable: true,
+      },
+      {
+        key: "email",
+        label: "EMAIL",
+        render: (student: any) => student.email || "-",
+      },
+      {
+        key: "phoneNumber",
+        label: "PHONE",
+        render: (student: any) => student.phoneNumber || "-",
+      },
+      {
+        key: "rankName",
+        label: "RANK",
+        render: (student: any) => (
+          <Chip
+            label={student.rankName || "Not assigned"}
+            variant="outlined"
+            size="small"
+            color={student.rankName ? "primary" : "default"}
+          />
+        ),
+      },
+      {
+        key: "actions",
+        label: "ACTIONS",
+        render: (student: any) => (
+          <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center" }}>
+            <Tooltip title="More Actions">
+              <IconButton
+                size="small"
+                onClick={(e) => handleMenuClick(e, student)}
+                sx={{ color: "primary.main" }}
+              >
+                <MoreVert />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
+      },
+    ],
+    [],
+  );
+  const pageActions = (
+    <Box
+      sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}
+    >
+      <Button
+        variant="outlined"
+        size="small"
+        onClick={() => reload()}
+        sx={{ textTransform: "none", borderRadius: 2 }}
+      >
+        REFRESH
+      </Button>
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => navigate("/students/new")}
+        startIcon={<Add />}
+        sx={{ textTransform: "none", borderRadius: 2 }}
+      >
+        ADD STUDENT
+      </Button>
+    </Box>
+  );
+
+  if (loading) {
+    return (
+      <PageLayout title="Students" actions={pageActions}>
+        <LoadingSpinner />
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout title="Students" actions={pageActions}>
+        <ErrorAlert error={error} onRetry={() => reload()} />
+      </PageLayout>
+    );
+  }
+
+  if (!items || items.length === 0) {
+    return (
+      <PageLayout title="Students" actions={pageActions}>
+        <EmptyState
+          title="No Students Found"
+          description="Add your first student to get started."
+          actionLabel="Add First Student"
+          onAction={() => navigate("/students/new")}
+        />
+      </PageLayout>
+    );
+  }
 
   return (
-    <div>
-      <div className="mb-3">
-        <Button variant="outlined" size="small" onClick={() => reload()}>
-          Refresh
-        </Button>
-      </div>
-
-      <ApiTable
-        rows={items}
-        columns={cols}
-        onRowClick={(r) => navigate(`/students/${r.id}`)}
-        defaultPageSize={10}
-        pageSizeOptions={[10, 25, 50]}
-      />
+    <>
+      <PageLayout title="Students" actions={pageActions}>
+        <ApiTable
+          rows={items}
+          columns={cols}
+          onRowClick={(r) => navigate(`/students/${r.id}`)}
+          defaultPageSize={10}
+          pageSizeOptions={[10, 25, 50]}
+        />
+      </PageLayout>
 
       {/* Actions Menu */}
       <Menu
@@ -201,6 +281,6 @@ function StudentsTable() {
         onSubmit={handlePromotionSubmit}
         student={studentForPromotion}
       />
-    </div>
+    </>
   );
 }

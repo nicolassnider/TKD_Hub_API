@@ -4,20 +4,37 @@ import { GenericDetailPage } from "../components/layout/GenericDetailPage";
 import { DetailLayout } from "../components/layout/DetailLayout";
 import { fetchJson } from "../lib/api";
 import { Restore } from "@mui/icons-material";
-import { tkdBrandColors, tkdStyling } from "../styles/tkdBrandColors";
-import { DojaangDto } from "../types/api";
 
-// TKD brand colors are now imported from the centralized theme file
+type Dojaang = {
+  id: number;
+  name: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+  headCoach?: string;
+  isActive?: boolean;
+};
+
+// TKD Logo-inspired colors (Traditional Taekwondo colors)
+const tkdColors = {
+  primary: "#DC2626", // Red - representing courage and determination
+  secondary: "#2563EB", // Blue - representing perseverance and wisdom
+  accent: "#1F2937", // Dark Gray/Black - representing maturity and honor
+  success: "#059669", // Green - representing growth and harmony
+  warning: "#F59E0B", // Gold/Yellow - representing excellence
+  neutral: "#6B7280", // Gray - representing balance
+};
 
 export default function DojaangDetail() {
-  const renderDojaangContent = (dojaang: DojaangDto) => {
+  const renderDojaangContent = (dojaang: Dojaang) => {
     const fields = [
       {
         label: "Name",
         value: (
           <Typography
             variant="body1"
-            sx={{ fontWeight: 500, color: tkdBrandColors.black.main }}
+            sx={{ fontWeight: 500, color: tkdColors.accent }}
           >
             {dojaang.name}
           </Typography>
@@ -32,10 +49,10 @@ export default function DojaangDetail() {
         ),
       },
       {
-        label: "Location",
+        label: "City",
         value: (
           <Typography variant="body1">
-            {dojaang.location || "Not provided"}
+            {dojaang.city || "Not provided"}
           </Typography>
         ),
       },
@@ -43,7 +60,7 @@ export default function DojaangDetail() {
         label: "Phone",
         value: (
           <Typography variant="body1">
-            {dojaang.phoneNumber || "Not provided"}
+            {dojaang.phone || "Not provided"}
           </Typography>
         ),
       },
@@ -61,29 +78,11 @@ export default function DojaangDetail() {
           <Typography
             variant="body1"
             sx={{
-              fontWeight: dojaang.coachName ? 500 : 400,
-              color: dojaang.coachName
-                ? tkdBrandColors.red.main
-                : "text.secondary",
+              fontWeight: dojaang.headCoach ? 500 : 400,
+              color: dojaang.headCoach ? tkdColors.primary : "text.secondary",
             }}
           >
-            {dojaang.coachName || "Not assigned"}
-          </Typography>
-        ),
-      },
-      {
-        label: "Korean Name",
-        value: (
-          <Typography variant="body1">
-            {dojaang.koreanName || "Not provided"}
-          </Typography>
-        ),
-      },
-      {
-        label: "Korean Name (Phonetic)",
-        value: (
-          <Typography variant="body1">
-            {dojaang.koreanNamePhonetic || "Not provided"}
+            {dojaang.headCoach || "Not assigned"}
           </Typography>
         ),
       },
@@ -94,8 +93,8 @@ export default function DojaangDetail() {
             label={dojaang.isActive ? "Active" : "Inactive"}
             sx={{
               backgroundColor: dojaang.isActive
-                ? tkdBrandColors.success.main
-                : tkdBrandColors.neutral.main,
+                ? tkdColors.success
+                : tkdColors.neutral,
               color: "white",
               fontWeight: 600,
               "& .MuiChip-label": {
@@ -120,7 +119,7 @@ export default function DojaangDetail() {
     );
   };
 
-  const customActions = (dojaang: DojaangDto) => (
+  const customActions = (dojaang: Dojaang) => (
     <>
       {!dojaang.isActive && (
         <Button
@@ -129,7 +128,7 @@ export default function DojaangDetail() {
           onClick={() => handleReactivate(dojaang)}
           sx={{
             textTransform: "none",
-            backgroundColor: tkdBrandColors.blue.main,
+            backgroundColor: tkdColors.success,
             "&:hover": {
               backgroundColor: "#047857", // Darker green on hover
             },
@@ -141,7 +140,7 @@ export default function DojaangDetail() {
     </>
   );
 
-  const handleReactivate = async (dojaang: DojaangDto) => {
+  const handleReactivate = async (dojaang: Dojaang) => {
     try {
       await fetchJson(`/api/Dojaangs/${dojaang.id}/reactivate`, {
         method: "POST",
@@ -156,7 +155,7 @@ export default function DojaangDetail() {
     }
   };
 
-  const handleDelete = async (dojaang: DojaangDto) => {
+  const handleDelete = async (dojaang: Dojaang) => {
     await fetchJson(`/api/Dojaangs/${dojaang.id}`, {
       method: "DELETE",
     });

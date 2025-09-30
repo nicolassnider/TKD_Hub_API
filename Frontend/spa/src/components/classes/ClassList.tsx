@@ -31,20 +31,13 @@ import { useNavigate } from "react-router-dom";
 
 import { ClassForm } from "./ClassForm";
 import { useClassContext } from "../../context/ClassContext";
-import { DAYS_OF_WEEK, TrainingClass } from "types/classes";
+import { DAYS_OF_WEEK, TrainingClass } from "../../types/classes";
 import { DeleteConfirmationDialog } from "components/forms/DeleteConfirmationDialog";
 
 export const ClassList: React.FC = () => {
   const navigate = useNavigate();
-  const {
-    classes,
-    loading,
-    error,
-    fetchClasses,
-    deleteClass,
-    getPermissions,
-    formatScheduleDisplay,
-  } = useClassContext();
+  const { classes, loading, error, fetchClasses, deleteClass, getPermissions } =
+    useClassContext();
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");

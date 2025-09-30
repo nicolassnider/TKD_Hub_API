@@ -78,8 +78,10 @@ export const GenericListPage: React.FC<GenericListPageProps> = ({
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate(createRoute)}
+          sx={{ textTransform: "none", borderRadius: 2 }}
         >
-          Add {title.slice(0, -1)} {/* Remove 's' from plural title */}
+          ADD {title.slice(0, -1).toUpperCase()}{" "}
+          {/* Remove 's' from plural title */}
         </Button>
       )}
       {customActions}

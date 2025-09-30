@@ -5,8 +5,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Alert from "@mui/material/Alert";
 import EditDojaang from "./EditDojaang";
 import { useRole } from "../../context/RoleContext";
-
-const baseUrl = "https://localhost:7046/api";
+import { fetchJson, ApiError } from "../../lib/api";
 
 type Dojaang = {
   id: number;
@@ -31,15 +30,15 @@ export default function DojaangAdmin() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${baseUrl}/Dojaang`, {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      });
-      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
-      const body = await res.json().catch(() => null);
+      const body = await fetchJson<Dojaang[] | { data: Dojaang[] }>(
+        "/api/Dojaang",
+      );
       const list = Array.isArray(body) ? body : (body?.data ?? []);
       setDojaangs(list);
     } catch (err: any) {
-      setError(err.message || "Unknown error");
+      setError(
+        err instanceof ApiError ? err.message : err.message || "Unknown error",
+      );
     } finally {
       setLoading(false);
     }
@@ -54,14 +53,14 @@ export default function DojaangAdmin() {
     if (!token) return alert("Not authorized");
     setDeleteId(id);
     try {
-      const res = await fetch(`${baseUrl}/Dojaang/${id}`, {
+      await fetchJson(`/api/Dojaang/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
       setDojaangs((s) => s.filter((d) => d.id !== id));
     } catch (err: any) {
-      alert(err.message || "Delete error");
+      const message =
+        err instanceof ApiError ? err.message : err.message || "Delete error";
+      alert(message);
     } finally {
       setDeleteId(null);
     }
