@@ -41,7 +41,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { ClassForm } from "./ClassForm";
 import { useClassContext } from "context/ClassContext";
-import { DAYS_OF_WEEK } from "../../types/classes";
+import { DAYS_OF_WEEK } from "../../types/api";
 import { StudentAssignment } from "components/students/StudentAssignment";
 import { DeleteConfirmationDialog } from "components/forms/DeleteConfirmationDialog";
 

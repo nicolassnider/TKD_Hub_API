@@ -28,7 +28,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../context/ProfileContext";
-import { DAYS_OF_WEEK } from "../../types/classes";
+import { DAYS_OF_WEEK } from "../../types/api";
 
 export const StudentClassSection: React.FC = () => {
   const navigate = useNavigate();
@@ -79,8 +79,8 @@ export const StudentClassSection: React.FC = () => {
     // Find next occurrence of any class schedule
     for (let i = 0; i < 7; i++) {
       const targetDay = (currentDay + i) % 7;
-      const schedule = enrolledClass.schedules.find((s) => {
-        const scheduleDay = s.day === 7 ? 0 : s.day; // Convert to JS day system
+      const schedule = enrolledClass.schedules.find((s: any) => {
+        const scheduleDay = Number(s.day) === 7 ? 0 : Number(s.day); // Convert to JS day system
         return (
           scheduleDay === targetDay && (i > 0 || s.startTime > currentTime)
         );
@@ -257,10 +257,10 @@ export const StudentClassSection: React.FC = () => {
                       </Typography>
                     </Box>
                     <Chip
-                      label={studentProfile.paymentStatus}
+                      label={String(studentProfile.paymentStatus || "Unknown")}
                       color={
                         getPaymentStatusColor(
-                          studentProfile.paymentStatus,
+                          String(studentProfile.paymentStatus || "Unknown"),
                         ) as any
                       }
                       size="small"
@@ -271,7 +271,10 @@ export const StudentClassSection: React.FC = () => {
                         color="text.secondary"
                         sx={{ mt: 1 }}
                       >
-                        Next payment due: {formatDate(nextPayment.dueDate)}
+                        Next payment due:{" "}
+                        {nextPayment.dueDate
+                          ? formatDate(nextPayment.dueDate)
+                          : "No due date"}
                       </Typography>
                     )}
                   </CardContent>
@@ -337,7 +340,7 @@ export const StudentClassSection: React.FC = () => {
               <List>
                 {enrolledClass.enrolledStudents
                   .slice(0, 5)
-                  .map((student, index) => (
+                  .map((student: any, index: number) => (
                     <React.Fragment key={student.id}>
                       {index > 0 && <Divider />}
                       <ListItem sx={{ px: 0 }}>

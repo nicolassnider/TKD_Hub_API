@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, UpdateUserRequest, Dojaang, Rank } from "../../types/user";
+import { User, UpdateUserRequest, Dojaang, Rank } from "../../types/api";
 import { fetchJson, ApiError } from "../../lib/api";
 
 interface UserEditModalProps {
@@ -77,15 +77,15 @@ export default function UserEditModal({
     setFormData((prev) => ({
       ...prev,
       roles: checked
-        ? [...prev.roles, role]
-        : prev.roles.filter((r) => r !== role),
+        ? [...(prev.roles || []), role]
+        : (prev.roles || []).filter((r) => r !== role),
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.roles.length === 0) {
+    if (!formData.roles || formData.roles.length === 0) {
       setError("User must have at least one role");
       return;
     }
@@ -235,7 +235,7 @@ export default function UserEditModal({
                   type="date"
                   id="dateOfBirth"
                   name="dateOfBirth"
-                  value={formData.dateOfBirth}
+                  value={formData.dateOfBirth || ""}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -299,7 +299,7 @@ export default function UserEditModal({
                   <label key={role} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.roles.includes(role)}
+                      checked={formData.roles?.includes(role) || false}
                       onChange={(e) => handleRoleChange(role, e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />

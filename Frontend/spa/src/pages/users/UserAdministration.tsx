@@ -9,7 +9,7 @@ import { useRole } from "context/RoleContext";
 import ApiTable from "components/common/ApiTable";
 import UserEditModal from "components/users/UserEditModal";
 import UserCreateModal from "components/users/UserCreateModal";
-import { User, CreateUserRequest, UpdateUserRequest } from "types/user";
+import { User, CreateUserRequest, UpdateUserRequest } from "../../types/api";
 import {
   Button,
   IconButton,

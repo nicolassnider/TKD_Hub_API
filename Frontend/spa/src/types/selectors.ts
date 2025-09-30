@@ -1,5 +1,5 @@
 // Shared interfaces for selector components across the application
-import { ID } from "./common";
+import { ID } from "./api";
 
 /**
  * Generic option interface for dropdown/autocomplete selectors

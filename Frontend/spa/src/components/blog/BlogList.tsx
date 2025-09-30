@@ -9,7 +9,7 @@ import { useBlogContext } from "../../context/BlogContext";
 import { useRole } from "../../context/RoleContext";
 import { BlogEditor } from "./BlogEditor";
 import { DeleteConfirmationDialog } from "../forms/DeleteConfirmationDialog";
-import { BlogPost } from "../../types/blog";
+import { BlogPost } from "../../types/api";
 import { decodeHtml, getHtmlPreview } from "../../utils/htmlUtils";
 import { GenericEntityList } from "../common/GenericEntityList";
 import {
@@ -115,7 +115,7 @@ export const BlogList: React.FC = () => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         <TimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
         <Typography variant="body2" color="text.secondary">
-          {formatDate(post.createdAt)}
+          {formatDate(post.createdDate)}
         </Typography>
       </Box>
 

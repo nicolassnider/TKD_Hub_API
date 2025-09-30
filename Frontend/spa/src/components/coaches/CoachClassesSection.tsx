@@ -34,7 +34,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../context/ProfileContext";
-import { TrainingClass, DAYS_OF_WEEK } from "../../types/classes";
+import { TrainingClass, DAYS_OF_WEEK } from "../../types/api";
 
 export const CoachClassesSection: React.FC = () => {
   const navigate = useNavigate();
@@ -120,9 +120,10 @@ export const CoachClassesSection: React.FC = () => {
 
     return managedClasses
       .filter((cls) => {
-        return cls.schedules?.some((schedule) => {
+        return cls.schedules?.some((schedule: any) => {
           // Convert our day system (1-7) to JS day system (0-6)
-          const scheduleDay = schedule.day === 7 ? 0 : schedule.day;
+          const scheduleDay =
+            Number(schedule.day) === 7 ? 0 : Number(schedule.day);
           return (
             scheduleDay >= currentDay &&
             (scheduleDay > currentDay || schedule.startTime > currentTime)

@@ -22,15 +22,7 @@ import {
 } from "@mui/material";
 import { Add, Delete, Search, ArrowBack } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
-import { TrainingClassDto, UserDto } from "../../types/api";
-
-interface Student {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  dojaangName?: string;
-}
+import { TrainingClassDto, UserDto, Student } from "../../types/api";
 
 export default function ClassStudentManagement() {
   const { classId } = useParams<{ classId: string }>();
@@ -232,9 +224,9 @@ export default function ClassStudentManagement() {
                           secondary={
                             <Box>
                               {student.email && <div>{student.email}</div>}
-                              {student.dojaangName && (
+                              {student.dojaang?.name && (
                                 <Chip
-                                  label={student.dojaangName}
+                                  label={student.dojaang.name}
                                   size="small"
                                   sx={{ mt: 0.5 }}
                                 />
@@ -299,9 +291,9 @@ export default function ClassStudentManagement() {
                       {student.email}
                     </Typography>
                   )}
-                  {student.dojaangName && (
+                  {student.dojaang?.name && (
                     <Chip
-                      label={student.dojaangName}
+                      label={student.dojaang.name}
                       size="small"
                       sx={{ mt: 0.5 }}
                     />

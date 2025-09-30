@@ -4,7 +4,7 @@ import {
   SelectorConfig,
   LabelFormatter,
 } from "../types/selectors";
-import { ID } from "../types/common";
+import { ID } from "../types/api";
 
 /**
  * Creates selector options from an array of data items

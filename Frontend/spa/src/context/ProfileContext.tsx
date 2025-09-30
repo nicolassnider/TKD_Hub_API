@@ -19,8 +19,8 @@ import {
   PaymentFormData,
   MercadopagoPayment,
   ProfilePermissions,
-} from "../types/profile";
-import { TrainingClass } from "../types/classes";
+  TrainingClass,
+} from "../types/api";
 
 interface ProfileContextType {
   // Profile data
@@ -172,17 +172,18 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
         roles: apiData.roles || [],
         emergencyContact: apiData.emergencyContact,
         emergencyPhone: apiData.emergencyPhone,
+        isActive: apiData.isActive || false,
       };
 
       setProfile(profileData);
 
       // Calculate stats based on role
       const stats: ProfileStats = {
+        classesAttended: 0,
         totalClasses: 0,
         attendanceRate: 0,
+        currentStreak: 0,
         upcomingClasses: [],
-        recentPayments: [],
-        attendanceHistory: [],
       };
 
       if (hasRole("Coach") && apiData.managedClasses) {
@@ -222,17 +223,18 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
         dojaangName: "Demo Dojaang",
         beltLevel: "Black Belt 1st Dan",
         roles: ["Student"],
+        isActive: true,
       };
 
       setProfile(mockProfile);
 
       // Mock stats
       const mockStats: ProfileStats = {
+        classesAttended: 1,
         totalClasses: 1,
         attendanceRate: 85,
+        currentStreak: 5,
         upcomingClasses: [],
-        recentPayments: [],
-        attendanceHistory: [],
       };
 
       setProfileStats(mockStats);
@@ -303,10 +305,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
         dojaangName: "Demo Dojaang",
         coachId: 1,
         coachName: "Demo Coach",
+        enrolledStudentsCount: 15,
         schedules: [],
         studentCount: 15,
         enrolledStudents: [],
-        isActive: true,
       };
       setEnrolledClass(mockClass);
     }
@@ -323,7 +325,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Find next payment due
       const upcoming = payments.find(
-        (p) => p.status === "Pending" && new Date(p.dueDate) > new Date(),
+        (p) =>
+          p.status === "Pending" &&
+          p.dueDate &&
+          new Date(p.dueDate) > new Date(),
       );
       setNextPayment(upcoming || null);
     } catch (err) {
@@ -401,13 +406,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
     const role = effectiveRole();
 
     return {
+      canEdit: hasRole("Coach") || hasRole("Admin"),
+      canViewPrivate: hasRole("Coach") || hasRole("Admin"),
+      canManagePayments: hasRole("Student") || hasRole("Admin"),
       canEditProfile: true, // All users can edit their profile
-      canViewPayments: hasRole("Student") || hasRole("Admin"),
-      canMakePayments: hasRole("Student"),
-      canViewClasses: true, // All users can view their classes
-      canManageClasses: hasRole("Coach") || hasRole("Admin"),
-      canViewStudents: hasRole("Coach") || hasRole("Admin"),
-      canMarkAttendance: hasRole("Coach") || hasRole("Admin"),
     };
   }, [effectiveRole, hasRole]);
 

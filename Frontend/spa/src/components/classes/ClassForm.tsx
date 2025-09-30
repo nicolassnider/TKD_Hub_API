@@ -35,7 +35,7 @@ import {
   CreateClassScheduleDto,
   DAYS_OF_WEEK,
   ScheduleConflict,
-} from "../../types/classes";
+} from "../../types/api";
 
 interface ClassFormProps {
   open: boolean;

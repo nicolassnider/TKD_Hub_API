@@ -15,59 +15,11 @@ import { Save, Edit, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { fetchJson } from "../../lib/api";
 import { toast } from "react-toastify";
-
-interface ProfileData {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  dateOfBirth: string;
-  bio?: string;
-  profilePicture?: string;
-  emergencyContact?: string;
-  emergencyPhone?: string;
-  preferences: {
-    emailNotifications: boolean;
-    smsNotifications: boolean;
-    marketingEmails: boolean;
-  };
-  // Role-specific fields
-  currentRankId?: number;
-  currentRankName?: string;
-  dojaangId?: number;
-  dojaangName?: string;
-  joinDate?: string;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  medicalNotes?: string;
-  specializations?: string[];
-  certifications?: string;
-  hireDate?: string;
-}
-
-interface ProfileFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  dateOfBirth: string;
-  bio: string;
-  emergencyContact: string;
-  emergencyPhone: string;
-  parentName: string;
-  parentEmail: string;
-  parentPhone: string;
-  medicalNotes: string;
-  emailNotifications: boolean;
-  smsNotifications: boolean;
-  marketingEmails: boolean;
-}
+import { ProfileDto, ProfileFormData } from "../../types/api";
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: "",
     lastName: "",
@@ -94,7 +46,7 @@ export default function EditProfile() {
 
   const loadProfileData = async () => {
     try {
-      const profileData = (await fetchJson("/api/profile")) as ProfileData;
+      const profileData = (await fetchJson("/api/profile")) as ProfileDto;
 
       setProfile(profileData);
       setFormData({
@@ -192,7 +144,7 @@ export default function EditProfile() {
       <Paper sx={{ p: 3 }}>
         <Box display="flex" alignItems="center" mb={3}>
           <Avatar
-            src={profile.profilePicture}
+            src={profile.profilePicture || ""}
             sx={{ width: 80, height: 80, mr: 2 }}
           >
             {profile.firstName[0]}

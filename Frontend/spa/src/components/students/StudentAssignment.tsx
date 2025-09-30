@@ -33,7 +33,7 @@ import {
   PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
 import { useClassContext } from "../../context/ClassContext";
-import { StudentForAssignment } from "../../types/classes";
+import { StudentForAssignment } from "../../types/api";
 
 interface StudentAssignmentProps {
   open: boolean;

@@ -30,33 +30,7 @@ import {
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { fetchJson } from "../../lib/api";
 import { toast } from "react-toastify";
-import { EventType } from "../../types/api";
-
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  eventDate: string;
-  location: string;
-  eventType: string;
-  maxParticipants?: number;
-  currentParticipants: number;
-  registrationDeadline?: string;
-  price?: number;
-  isActive: boolean;
-}
-
-interface EventFormData {
-  title: string;
-  description: string;
-  eventDate: string;
-  location: string;
-  eventType: string;
-  maxParticipants: number | "";
-  registrationDeadline: string;
-  price: number | "";
-  isActive: boolean;
-}
+import { EventType, EventFormData, EventManagementDto } from "../../types/api";
 
 const initialFormData: EventFormData = {
   title: "",
@@ -79,11 +53,13 @@ const eventTypes = [
 ];
 
 export default function EventsManagement() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventManagementDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventManagementDto | null>(
+    null,
+  );
   const [formData, setFormData] = useState<EventFormData>(initialFormData);
 
   useEffect(() => {
@@ -94,7 +70,7 @@ export default function EventsManagement() {
     try {
       setLoading(true);
       setError(null);
-      const data = (await fetchJson("/api/events")) as Event[];
+      const data = (await fetchJson("/api/events")) as EventManagementDto[];
       setEvents(data);
     } catch (error) {
       setError("Failed to load events");
@@ -104,7 +80,7 @@ export default function EventsManagement() {
     }
   };
 
-  const handleOpenDialog = (event?: Event) => {
+  const handleOpenDialog = (event?: EventManagementDto) => {
     if (event) {
       setEditingEvent(event);
       setFormData({

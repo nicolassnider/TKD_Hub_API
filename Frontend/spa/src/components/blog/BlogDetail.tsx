@@ -201,18 +201,18 @@ export const BlogDetail: React.FC = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CalendarIcon sx={{ fontSize: 20, color: "text.secondary" }} />
               <Typography variant="body2" color="text.secondary">
-                {formatDateOnly(currentPost.createdAt)}
+                {formatDateOnly(currentPost.createdDate)}
               </Typography>
             </Box>
 
-            {currentPost.updatedAt &&
-              currentPost.updatedAt !== currentPost.createdAt && (
+            {currentPost.updatedDate &&
+              currentPost.updatedDate !== currentPost.createdDate && (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <AccessTimeIcon
                     sx={{ fontSize: 20, color: "text.secondary" }}
                   />
                   <Typography variant="body2" color="text.secondary">
-                    Updated {formatDate(currentPost.updatedAt)}
+                    Updated {formatDate(currentPost.updatedDate)}
                   </Typography>
                 </Box>
               )}

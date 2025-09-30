@@ -11,7 +11,7 @@ import {
   CreateBlogPostDto,
   UpdateBlogPostDto,
   BlogPermissions,
-} from "../types/blog";
+} from "../types/api";
 import { useRole } from "./RoleContext";
 
 interface BlogContextType {
@@ -229,6 +229,7 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
         canCreate,
         canEdit,
         canDelete,
+        canPublish: canCreate, // Same as create permissions
       };
     },
     [hasRole, isAdmin, token],

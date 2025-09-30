@@ -7,18 +7,7 @@ import {
   eventTypeColors,
   tkdStyling,
 } from "../../styles/tkdBrandColors";
-import { EventDto } from "../../types/api";
-
-// Local Event type for display (extends EventDto with computed fields)
-type Event = EventDto & {
-  title?: string; // alias for name
-  eventDate?: string; // alias for startDate
-  eventType?: string; // alias for type
-  maxParticipants?: number;
-  currentParticipants?: number;
-  price?: number;
-  isActive?: boolean;
-};
+import { EventDto, EventDisplayDto } from "../../types/api";
 
 export default function EventDetail() {
   const getEventTypeColor = (type: string) => {
@@ -34,7 +23,7 @@ export default function EventDetail() {
     return colorMap[type] || tkdBrandColors.neutral.main;
   };
 
-  const renderEventContent = (event: Event) => (
+  const renderEventContent = (event: EventDisplayDto) => (
     <Paper sx={{ p: 3 }}>
       <Typography
         variant="h6"
@@ -126,7 +115,9 @@ export default function EventDetail() {
               <Chip
                 label={event.eventType}
                 sx={{
-                  backgroundColor: getEventTypeColor(event.eventType),
+                  backgroundColor: getEventTypeColor(
+                    event.eventType as unknown as string,
+                  ),
                   color: "white",
                   fontWeight: 600,
                   "& .MuiChip-label": { px: 2 },
@@ -234,7 +225,7 @@ export default function EventDetail() {
     </Paper>
   );
 
-  const handleDelete = async (event: Event) => {
+  const handleDelete = async (event: EventDisplayDto) => {
     await fetchJson(`/api/Events/${event.id}`, {
       method: "DELETE",
     });

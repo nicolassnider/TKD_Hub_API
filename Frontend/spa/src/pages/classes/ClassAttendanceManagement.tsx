@@ -37,47 +37,11 @@ import {
   TrainingClassDto,
   AttendanceHistoryDto,
   AttendanceStatus,
+  Student,
+  StudentClassRelation,
+  AttendanceRecord,
+  attendanceStatusOptions,
 } from "../../types/api";
-
-interface Student {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email?: string;
-}
-
-interface StudentClassRelation {
-  id: number;
-  student: Student;
-  trainingClass: TrainingClassDto;
-}
-
-interface AttendanceRecord {
-  studentClassId: number;
-  studentId: number;
-  studentName: string;
-  status: AttendanceStatus;
-  notes?: string;
-}
-
-const attendanceStatusOptions = [
-  {
-    value: AttendanceStatus.Present,
-    label: "Present",
-    color: "success" as const,
-  },
-  { value: AttendanceStatus.Absent, label: "Absent", color: "error" as const },
-  {
-    value: AttendanceStatus.Late,
-    label: "Late",
-    color: "warning" as const,
-  },
-  {
-    value: AttendanceStatus.Excused,
-    label: "Excused",
-    color: "info" as const,
-  },
-];
 
 export default function ClassAttendanceManagement() {
   const { classId } = useParams<{ classId: string }>();
@@ -430,7 +394,9 @@ export default function ClassAttendanceManagement() {
                   {selectedStudentHistory.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell>
-                        {new Date(record.attendedAt).toLocaleDateString()}
+                        {record.attendedAt
+                          ? new Date(record.attendedAt).toLocaleDateString()
+                          : "N/A"}
                       </TableCell>
                       <TableCell>
                         <Chip

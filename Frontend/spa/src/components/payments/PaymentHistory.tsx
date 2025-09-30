@@ -26,7 +26,7 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 import { useProfile } from "../../context/ProfileContext";
-import { PaymentInfo } from "../../types/profile";
+import { PaymentInfo } from "../../types/api";
 
 interface PaymentHistoryProps {
   compact?: boolean;
@@ -74,7 +74,8 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     const matchesStatus =
       filterStatus === "All" || payment.status === filterStatus;
     const matchesSearch =
-      payment.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (payment.description &&
+        payment.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
       payment.transactionId?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
@@ -235,7 +236,10 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                           color="text.secondary"
                           display="block"
                         >
-                          Due: {formatDate(payment.dueDate)}
+                          Due:{" "}
+                          {payment.dueDate
+                            ? formatDate(payment.dueDate)
+                            : "No due date"}
                         </Typography>
                       )}
                     </TableCell>

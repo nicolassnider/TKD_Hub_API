@@ -16,7 +16,7 @@ import {
   UpdateDojaangDto,
   UserDto,
 } from "../../types/api";
-import { ID } from "../../types/common";
+import { ID } from "../../types/api";
 
 // Props interface for better type safety
 export interface EditDojaangProps {

@@ -15,7 +15,7 @@ import {
   StudentClassAssignment,
   ClassPermissions,
   ScheduleConflict,
-} from "../types/classes";
+} from "../types/api";
 import { fetchJson, ApiError } from "../lib/api";
 
 interface ClassContextType {
@@ -370,6 +370,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           canDelete: true,
           canManageStudents: true,
           canViewAttendance: true,
+          canTakeAttendance: true,
         };
       }
 
@@ -385,6 +386,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           canDelete: isOwnClass,
           canManageStudents: isOwnClass,
           canViewAttendance: isOwnClass,
+          canTakeAttendance: isOwnClass,
         };
       }
 
@@ -395,6 +397,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         canDelete: false,
         canManageStudents: false,
         canViewAttendance: false,
+        canTakeAttendance: false,
       };
     },
     [hasRole],

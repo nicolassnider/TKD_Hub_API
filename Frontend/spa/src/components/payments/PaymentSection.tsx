@@ -34,7 +34,7 @@ import {
   Add as AddIcon,
   Receipt as ReceiptIcon,
 } from "@mui/icons-material";
-import { PaymentFormData } from "../../types/profile";
+import { PaymentFormData } from "../../types/api";
 import { useProfile } from "../../context/ProfileContext";
 
 export const PaymentSection: React.FC = () => {
@@ -55,6 +55,7 @@ export const PaymentSection: React.FC = () => {
     classId: enrolledClass?.id,
     dueDate: "",
     currency: "ARS",
+    method: "credit_card", // Default payment method
   });
 
   const handlePaymentSubmit = async () => {
@@ -114,7 +115,8 @@ export const PaymentSection: React.FC = () => {
   };
 
   const upcomingPayments = paymentHistory.filter(
-    (p) => p.status === "Pending" && new Date(p.dueDate) > new Date(),
+    (p) =>
+      p.status === "Pending" && p.dueDate && new Date(p.dueDate) > new Date(),
   );
   const recentPayments = paymentHistory
     .filter((p) => p.status === "Paid")
@@ -221,7 +223,10 @@ export const PaymentSection: React.FC = () => {
                   {formatCurrency(nextPayment.amount, nextPayment.currency)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Due: {formatDate(nextPayment.dueDate)}
+                  Due:{" "}
+                  {nextPayment.dueDate
+                    ? formatDate(nextPayment.dueDate)
+                    : "No due date"}
                 </Typography>
               </Box>
               <Button
@@ -232,8 +237,8 @@ export const PaymentSection: React.FC = () => {
                   setPaymentForm({
                     ...paymentForm,
                     amount: nextPayment.amount,
-                    description: nextPayment.description,
-                    dueDate: nextPayment.dueDate,
+                    description: nextPayment.description || undefined,
+                    dueDate: nextPayment.dueDate || undefined,
                   });
                   setPaymentDialogOpen(true);
                 }}
@@ -271,7 +276,7 @@ export const PaymentSection: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={payment.description}
-                    secondary={`Due: ${formatDate(payment.dueDate)} • ${formatCurrency(payment.amount, payment.currency)}`}
+                    secondary={`Due: ${payment.dueDate ? formatDate(payment.dueDate) : "No due date"} • ${formatCurrency(payment.amount, payment.currency)}`}
                   />
                   <Button
                     size="small"
@@ -281,8 +286,8 @@ export const PaymentSection: React.FC = () => {
                       setPaymentForm({
                         ...paymentForm,
                         amount: payment.amount,
-                        description: payment.description,
-                        dueDate: payment.dueDate,
+                        description: payment.description || undefined,
+                        dueDate: payment.dueDate || undefined,
                       });
                       setPaymentDialogOpen(true);
                     }}
@@ -315,7 +320,7 @@ export const PaymentSection: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={payment.description}
-                    secondary={`Due: ${formatDate(payment.dueDate)} • ${formatCurrency(payment.amount, payment.currency)}`}
+                    secondary={`Due: ${payment.dueDate ? formatDate(payment.dueDate) : "No due date"} • ${formatCurrency(payment.amount, payment.currency)}`}
                   />
                   <Chip
                     label={payment.status}

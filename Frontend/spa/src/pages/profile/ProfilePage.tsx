@@ -199,7 +199,7 @@ export const ProfilePage: React.FC = () => {
                   justifyContent: "center",
                 }}
               >
-                {profile.roles.map((role) => (
+                {profile.roles.map((role: string) => (
                   <Chip
                     key={role}
                     label={role}
@@ -212,7 +212,9 @@ export const ProfilePage: React.FC = () => {
               <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                 <Chip
                   label={profile.membershipStatus}
-                  color={getStatusColor(profile.membershipStatus) as any}
+                  color={
+                    getStatusColor(profile.membershipStatus || "Unknown") as any
+                  }
                   size="small"
                 />
               </Box>
@@ -316,7 +318,9 @@ export const ProfilePage: React.FC = () => {
 
               <Typography variant="body2">
                 <strong>Member Since:</strong>{" "}
-                {formatDate(profile.membershipStartDate)}
+                {profile.membershipStartDate
+                  ? formatDate(profile.membershipStartDate)
+                  : "Not set"}
               </Typography>
             </Box>
           </Paper>

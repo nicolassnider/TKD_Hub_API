@@ -17,49 +17,13 @@ import { Save, ArrowBack } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchJson } from "../../lib/api";
 import { toast } from "react-toastify";
-
-interface Coach {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  dateOfBirth: string;
-  specializations: string[];
-  isActive: boolean;
-  hireDate: string;
-  bio?: string;
-  certifications?: string;
-  dojaangId: number;
-  dojaangName: string;
-}
-
-interface CoachFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  dateOfBirth: string;
-  specializations: string;
-  isActive: boolean;
-  hireDate: string;
-  bio: string;
-  certifications: string;
-  dojaangId: number | "";
-}
-
-interface Dojaang {
-  id: number;
-  name: string;
-  address: string;
-  city: string;
-}
+import { CoachDto, CoachFormData, DojaangDto } from "../../types/api";
 
 export default function EditCoach() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [coach, setCoach] = useState<Coach | null>(null);
-  const [dojaangs, setDojaangs] = useState<Dojaang[]>([]);
+  const [coach, setCoach] = useState<CoachDto | null>(null);
+  const [dojaangs, setDojaangs] = useState<DojaangDto[]>([]);
   const [formData, setFormData] = useState<CoachFormData>({
     firstName: "",
     lastName: "",
@@ -85,8 +49,8 @@ export default function EditCoach() {
   const loadCoachData = async () => {
     try {
       const [coachData, dojaangsData] = await Promise.all([
-        fetchJson(`/api/coaches/${id}`) as Promise<Coach>,
-        fetchJson("/api/dojaangs") as Promise<Dojaang[]>,
+        fetchJson(`/api/coaches/${id}`) as Promise<CoachDto>,
+        fetchJson("/api/dojaangs") as Promise<DojaangDto[]>,
       ]);
 
       setCoach(coachData);
@@ -96,10 +60,14 @@ export default function EditCoach() {
         lastName: coachData.lastName,
         email: coachData.email,
         phoneNumber: coachData.phoneNumber || "",
-        dateOfBirth: coachData.dateOfBirth.split("T")[0],
-        specializations: coachData.specializations.join(", "),
+        dateOfBirth: coachData.dateOfBirth
+          ? coachData.dateOfBirth.split("T")[0]
+          : "",
+        specializations: coachData.specializations
+          ? coachData.specializations.join(", ")
+          : "",
         isActive: coachData.isActive,
-        hireDate: coachData.hireDate.split("T")[0],
+        hireDate: coachData.hireDate ? coachData.hireDate.split("T")[0] : "",
         bio: coachData.bio || "",
         certifications: coachData.certifications || "",
         dojaangId: coachData.dojaangId,
@@ -124,9 +92,11 @@ export default function EditCoach() {
       const updateData = {
         ...formData,
         specializations: formData.specializations
-          .split(",")
-          .map((spec) => spec.trim())
-          .filter((spec) => spec),
+          ? formData.specializations
+              .split(",")
+              .map((spec) => spec.trim())
+              .filter((spec) => spec)
+          : [],
         dojaangId: Number(formData.dojaangId),
         phoneNumber: formData.phoneNumber || null,
         bio: formData.bio || null,
@@ -239,7 +209,7 @@ export default function EditCoach() {
               >
                 {dojaangs.map((dojaang) => (
                   <MenuItem key={dojaang.id} value={dojaang.id}>
-                    {dojaang.name} - {dojaang.city}
+                    {dojaang.name} - {dojaang.location}
                   </MenuItem>
                 ))}
               </Select>

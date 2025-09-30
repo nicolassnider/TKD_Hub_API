@@ -17,35 +17,7 @@ import { Save, ArrowBack } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchJson } from "../../lib/api";
 import { toast } from "react-toastify";
-
-interface Dojaang {
-  id: number;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  phoneNumber?: string;
-  email?: string;
-  description?: string;
-  isActive: boolean;
-  establishedDate: string;
-  website?: string;
-}
-
-interface DojaangFormData {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  phoneNumber: string;
-  email: string;
-  description: string;
-  isActive: boolean;
-  establishedDate: string;
-  website: string;
-}
+import { DojaangEditDto, DojaangFormData } from "../../types/api";
 
 const US_STATES = [
   "AL",
@@ -103,10 +75,13 @@ const US_STATES = [
 export default function EditDojaang() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [dojaang, setDojaang] = useState<Dojaang | null>(null);
+  const [dojaang, setDojaang] = useState<DojaangEditDto | null>(null);
   const [formData, setFormData] = useState<DojaangFormData>({
     name: "",
     address: "",
+    location: "",
+    koreanName: "",
+    koreanNamePhonetic: "",
     city: "",
     state: "",
     zipCode: "",
@@ -128,20 +103,27 @@ export default function EditDojaang() {
 
   const loadDojaangData = async () => {
     try {
-      const dojaangData = (await fetchJson(`/api/dojaangs/${id}`)) as Dojaang;
+      const dojaangData = (await fetchJson(
+        `/api/dojaangs/${id}`,
+      )) as DojaangEditDto;
 
       setDojaang(dojaangData);
       setFormData({
         name: dojaangData.name,
         address: dojaangData.address,
-        city: dojaangData.city,
-        state: dojaangData.state,
-        zipCode: dojaangData.zipCode,
+        location: dojaangData.address, // Use address as location if needed
+        koreanName: dojaangData.koreanName || "",
+        koreanNamePhonetic: dojaangData.koreanNamePhonetic || "",
+        city: dojaangData.city || "",
+        state: dojaangData.state || "",
+        zipCode: dojaangData.zipCode || "",
         phoneNumber: dojaangData.phoneNumber || "",
         email: dojaangData.email || "",
         description: dojaangData.description || "",
         isActive: dojaangData.isActive,
-        establishedDate: dojaangData.establishedDate.split("T")[0],
+        establishedDate: dojaangData.establishedDate
+          ? dojaangData.establishedDate.split("T")[0]
+          : "",
         website: dojaangData.website || "",
       });
     } catch (error) {
