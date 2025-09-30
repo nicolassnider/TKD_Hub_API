@@ -202,8 +202,8 @@ export const ClassDetail: React.FC = () => {
   return (
     <Box
       sx={{
-        p: 2,
-        maxWidth: 1200,
+        p: 1.5,
+        maxWidth: 900,
         mx: "auto",
         bgcolor: "var(--bg)",
         minHeight: "100vh",
@@ -212,7 +212,7 @@ export const ClassDetail: React.FC = () => {
       {/* Breadcrumbs */}
       <Breadcrumbs
         sx={{
-          mb: 3,
+          mb: 2,
           "& .MuiBreadcrumbs-separator": { color: "var(--fg-muted)" },
         }}
       >
@@ -235,7 +235,7 @@ export const ClassDetail: React.FC = () => {
       </Breadcrumbs>
 
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 2 }}>
         <IconButton
           onClick={handleBack}
           sx={{
@@ -356,9 +356,9 @@ export const ClassDetail: React.FC = () => {
         )}
       </Box>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
         {/* Main Class Information */}
-        <Grid item xs={12} md={8}>
+        <Box sx={{ flex: "2 1 65%", minWidth: "400px" }}>
           <Card
             elevation={2}
             sx={{
@@ -371,7 +371,7 @@ export const ClassDetail: React.FC = () => {
             }}
             className="auth-card"
           >
-            <CardContent sx={{ p: 2.5 }}>
+            <CardContent sx={{ p: 2 }}>
               <Typography
                 variant="h6"
                 gutterBottom
@@ -392,7 +392,7 @@ export const ClassDetail: React.FC = () => {
               <Paper
                 variant="outlined"
                 sx={{
-                  p: 3,
+                  p: 2.5,
                   bgcolor: "var(--panel)",
                   borderColor: "var(--border)",
                   boxShadow: "var(--shadow)",
@@ -535,8 +535,6 @@ export const ClassDetail: React.FC = () => {
 
               <Divider sx={{ my: 3 }} />
 
-              <Divider sx={{ my: 3 }} />
-
               <Typography
                 variant="h6"
                 gutterBottom
@@ -570,7 +568,7 @@ export const ClassDetail: React.FC = () => {
                 <Paper
                   variant="outlined"
                   sx={{
-                    p: 2.5,
+                    p: 2,
                     bgcolor: "var(--panel)",
                     borderColor: "var(--border)",
                   }}
@@ -647,10 +645,10 @@ export const ClassDetail: React.FC = () => {
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Student List */}
-        <Grid item xs={12} md={4}>
+        <Box sx={{ flex: "1 1 32%", minWidth: "280px" }}>
           <Card
             elevation={2}
             sx={{
@@ -799,8 +797,8 @@ export const ClassDetail: React.FC = () => {
               )}
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Action Menu */}
       <Menu

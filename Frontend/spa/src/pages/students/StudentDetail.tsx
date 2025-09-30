@@ -1,19 +1,11 @@
-import React from "react";
-import {
-  Paper,
-  Typography,
-  Grid,
-  Divider,
-  Chip,
-  Box,
-  Button,
-} from "@mui/material";
+import React, { useCallback } from "react";
+import { Box, Button } from "@mui/material";
+import { School as SchoolIcon, Edit as EditIcon } from "@mui/icons-material";
 import { GenericDetailPage } from "../../components/layout/GenericDetailPage";
 import { fetchJson } from "../../lib/api";
 import PromotionFormDialog from "../../components/promotions/PromotionFormDialog";
 import { usePromotionForm } from "../../hooks/usePromotionForm";
-import { School } from "@mui/icons-material";
-import { tkdBrandColors, tkdStyling } from "../../styles/tkdBrandColors";
+import { StudentInfoCard } from "../../components/students/StudentInfoCard";
 import { UserDto } from "../../types/api";
 
 // Local Student type for display (extends UserDto with computed fields)
@@ -31,193 +23,78 @@ export default function StudentDetail() {
     handlePromotionSubmit,
   } = usePromotionForm();
 
-  const renderStudentContent = (student: Student) => (
-    <>
-      <Paper sx={{ p: 3, mb: 2 }}>
-        <Typography
-          variant="h6"
-          gutterBottom
-          sx={{ mb: 3, textTransform: "uppercase", fontWeight: 600 }}
+  const renderStudentContent = useCallback(
+    (student: Student) => {
+      console.log("StudentDetail - Received student data:", student);
+
+      return (
+        <Box
+          sx={{
+            p: 4,
+            maxWidth: 1200,
+            mx: "auto",
+            bgcolor: "var(--bg)",
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+          }}
         >
-          Student Details
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 600,
-                mb: 1,
-                textTransform: "uppercase",
-                fontSize: "0.75rem",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Full Name
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{ ...tkdStyling.importantText, mb: 2 }}
-            >
-              {student.fullName}
-            </Typography>
-            <Divider sx={{ my: 2 }} />
-          </Grid>
+          <StudentInfoCard student={student} />
 
-          <Grid item xs={12} md={6}>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 600,
-                mb: 1,
-                textTransform: "uppercase",
-                fontSize: "0.75rem",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Email
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {student.email || "Not provided"}
-            </Typography>
-            <Divider sx={{ my: 2 }} />
-          </Grid>
-
-          {student.currentRank && (
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  mb: 1,
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Current Rank
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Chip
-                  label={student.currentRank}
-                  sx={{
-                    backgroundColor: tkdBrandColors.gold.main,
-                    color: tkdBrandColors.gold.contrast,
-                    fontWeight: 600,
-                    "& .MuiChip-label": { px: 2 },
-                  }}
-                  size="small"
-                />
-              </Box>
-              <Divider sx={{ my: 2 }} />
-            </Grid>
-          )}
-
-          {student.dojaangName && (
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  mb: 1,
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Dojaang
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {student.dojaangName}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-            </Grid>
-          )}
-
-          {student.phone && (
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  mb: 1,
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Phone
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {student.phone}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-            </Grid>
-          )}
-
-          {student.dateOfBirth && (
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  mb: 1,
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Date of Birth
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {new Date(student.dateOfBirth).toLocaleDateString()}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-            </Grid>
-          )}
-
-          <Grid item xs={12} md={6}>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 600,
-                mb: 1,
-                textTransform: "uppercase",
-                fontSize: "0.75rem",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Status
-            </Typography>
-            <Box sx={{ mb: 2 }}>
-              <Chip
-                label={student.isActive ? "Active" : "Inactive"}
-                sx={tkdStyling.statusChip(student.isActive ?? false)}
-                size="small"
-              />
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      <PromotionFormDialog
-        open={promotionFormOpen}
-        onClose={closePromotionForm}
-        onSubmit={handlePromotionSubmit}
-        preselectedStudentId={student.id}
-      />
-    </>
+          <PromotionFormDialog
+            open={promotionFormOpen}
+            onClose={closePromotionForm}
+            onSubmit={handlePromotionSubmit}
+            preselectedStudentId={student.id}
+          />
+        </Box>
+      );
+    },
+    [promotionFormOpen, closePromotionForm, handlePromotionSubmit],
   );
 
   const customActions = (student: Student) => (
-    <Button
-      variant="contained"
-      startIcon={<School />}
-      onClick={() => openPromotionForm()}
-      sx={tkdStyling.primaryButton}
-    >
-      Add Promotion
-    </Button>
+    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+      <Button
+        variant="contained"
+        startIcon={<SchoolIcon />}
+        onClick={() => openPromotionForm()}
+        size="small"
+        sx={{
+          background:
+            "linear-gradient(135deg, var(--accent), var(--accent-700))",
+          color: "white",
+          fontWeight: 600,
+          textTransform: "none",
+          "&:hover": {
+            background:
+              "linear-gradient(135deg, var(--accent-600), var(--accent-900))",
+          },
+        }}
+      >
+        Add Promotion
+      </Button>
+      <Button
+        variant="outlined"
+        startIcon={<EditIcon />}
+        size="small"
+        sx={{
+          borderColor: "var(--primary)",
+          color: "var(--primary)",
+          fontWeight: 600,
+          textTransform: "none",
+          "&:hover": {
+            borderColor: "var(--primary-700)",
+            bgcolor: "var(--primary-50)",
+            color: "var(--primary-700)",
+          },
+        }}
+      >
+        Edit Student
+      </Button>
+    </Box>
   );
 
   const handleDelete = async (student: Student) => {
@@ -225,6 +102,21 @@ export default function StudentDetail() {
       method: "DELETE",
     });
   };
+
+  // Transform API response to extract data
+  const transformData = useCallback((response: any) => {
+    console.log("StudentDetail - API response:", response);
+
+    // If the response has a 'data' property, extract it
+    if (response && typeof response === "object" && "data" in response) {
+      console.log("StudentDetail - Extracted data:", response.data);
+      return response.data;
+    }
+
+    // Otherwise return the response as-is
+    console.log("StudentDetail - Using response directly:", response);
+    return response;
+  }, []);
 
   return (
     <GenericDetailPage
@@ -235,6 +127,7 @@ export default function StudentDetail() {
       renderContent={renderStudentContent}
       customActions={customActions}
       onDelete={handleDelete}
+      transformData={transformData}
     />
   );
 }

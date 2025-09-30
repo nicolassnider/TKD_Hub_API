@@ -194,7 +194,7 @@ export default function App() {
             }}
           >
             <Header />
-            <main className="app-container p-4">
+            <main className="app-container">
               <Routes>{routes.map(createRoute)}</Routes>
             </main>
           </BrowserRouter>
