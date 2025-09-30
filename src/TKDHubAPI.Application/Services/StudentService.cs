@@ -7,6 +7,7 @@ public class StudentService : IStudentService
     private readonly PasswordHasher<User> _passwordHasher = new();
     private readonly ICurrentUserService _currentUserService;
     private const int StudentRoleId = 3;
+    private const int CoachRoleId = 2;
     private const string DefaultStudentPassword = "StudentPassword123!";
 
     public StudentService(
@@ -42,13 +43,28 @@ public class StudentService : IStudentService
 
         // Assign the Student role
         user.UserUserRoles = new List<UserUserRole>
-    {
-        new UserUserRole
         {
-            User = user,
-            UserRoleId = StudentRoleId
+            new UserUserRole
+            {
+                User = user,
+                UserRoleId = StudentRoleId
+            }
+        };
+
+        // Check if student has black belt rank (DanLevel is not null) and add Coach role
+        if (user.CurrentRankId.HasValue)
+        {
+            var rank = await _unitOfWork.Ranks.GetByIdAsync(user.CurrentRankId.Value);
+            if (rank?.DanLevel.HasValue == true)
+            {
+                // Add Coach role for black belt students
+                user.UserUserRoles.Add(new UserUserRole
+                {
+                    User = user,
+                    UserRoleId = CoachRoleId
+                });
+            }
         }
-    };
 
         // Set JoinDate to now if not set
         user.JoinDate = user.JoinDate ?? DateTime.UtcNow;
@@ -80,6 +96,20 @@ public class StudentService : IStudentService
     {
         var users = await _userRepository.GetUsersByRoleAsync("Student");
         return users.Select(_mapper.Map<UserDto>);
+    }
+
+    public async Task<IEnumerable<UserDto>> GetStudentsNotInClassAsync(int classId)
+    {
+        // Get all students
+        var allStudents = await _userRepository.GetUsersByRoleAsync("Student");
+
+        // Get students enrolled in the specific class
+        var enrolledStudentIds = await _userRepository.GetStudentIdsByClassIdAsync(classId);
+
+        // Filter out enrolled students
+        var availableStudents = allStudents.Where(s => !enrolledStudentIds.Contains(s.Id));
+
+        return availableStudents.Select(_mapper.Map<UserDto>);
     }
 
     public async Task<UserDto?> UpdateStudentAsync(int id, UpdateStudentDto updateStudentDto)

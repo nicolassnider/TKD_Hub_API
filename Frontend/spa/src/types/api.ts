@@ -125,6 +125,16 @@ export interface StudentForAssignment {
   firstName: string;
   lastName: string;
   email: string;
+  phoneNumber?: string;
+  gender?: Gender | null;
+  dateOfBirth?: ISODateTime | null;
+  dojaangId?: ID | null;
+  currentRankId?: ID | null;
+  joinDate?: ISODateTime;
+  roles: string[];
+  managedDojaangIds: ID[];
+  isActive: boolean;
+  // Optional fields that might be populated by joins
   currentRankName?: string | null;
   dojaangName?: string | null;
   enrolledAt?: ISODateTime | null;

@@ -66,6 +66,16 @@ public interface ITrainingClassService
     Task AddStudentToClassAsync(int trainingClassId, int studentId);
 
     /// <summary>
+    /// Removes a student from a training class.
+    /// </summary>
+    /// <param name="trainingClassId">The unique identifier of the training class.</param>
+    /// <param name="studentId">The unique identifier of the student to remove.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if the training class or student does not exist.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the student is not enrolled in the class.</exception>
+    Task RemoveStudentFromClassAsync(int trainingClassId, int studentId);
+
+    /// <summary>
     /// Retrieves all <see cref="TrainingClass"/> entities given by a specific coach.
     /// </summary>
     /// <param name="coachId">The unique identifier of the coach.</param>

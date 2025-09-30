@@ -114,6 +114,26 @@ public class TrainingClassService : ITrainingClassService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task RemoveStudentFromClassAsync(int trainingClassId, int studentId)
+    {
+        var trainingClass = await _trainingClassRepository.GetByIdAsync(trainingClassId);
+        if (trainingClass == null)
+            throw new Exception("Training class not found.");
+
+        var student = await _userRepository.GetByIdAsync(studentId);
+        if (student == null)
+            throw new Exception("Student not found.");
+
+        // Find the student class relationship
+        var studentClass = trainingClass.StudentClasses.FirstOrDefault(sc => sc.StudentId == studentId);
+        if (studentClass == null)
+            throw new InvalidOperationException("Student is not enrolled in this class.");
+
+        trainingClass.StudentClasses.Remove(studentClass);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId)
     {
         return await _trainingClassRepository.GetByCoachIdAsync(coachId);

@@ -15,6 +15,7 @@ import {
   StudentsList,
   StudentDetail,
   StudentPromotionHistory,
+  CreateStudent,
 } from "pages/students";
 import { EventsList, EventDetail } from "pages/events";
 import { BlogList, BlogDetail } from "pages/blog";
@@ -101,6 +102,7 @@ const routes: RouteConfig[] = [
   { path: "/payments", component: PaymentHistory },
   { path: "/dashboard", component: Dashboard },
   { path: "/students", component: StudentsList },
+  { path: "/students/new", component: CreateStudent, roles: ["Admin", "Coach"] },
   { path: "/students/:id", component: StudentDetail },
   {
     path: "/students/:studentId/promotions",

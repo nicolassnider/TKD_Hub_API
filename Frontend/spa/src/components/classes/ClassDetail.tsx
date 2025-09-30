@@ -71,7 +71,7 @@ export const ClassDetail: React.FC = () => {
       fetchClass(classId);
       fetchStudentsForClass(classId);
     }
-  }, [id, fetchClass, fetchStudentsForClass]);
+  }, [id]); // Remove function dependencies to prevent infinite loops
 
   const handleBack = () => {
     navigate("/classes");

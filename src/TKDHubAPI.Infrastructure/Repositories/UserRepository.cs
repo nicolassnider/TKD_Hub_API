@@ -96,6 +96,14 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         return (dojaangId == null || dojaangId == 0) ? null : dojaangId;
     }
 
+    public async Task<IEnumerable<int>> GetStudentIdsByClassIdAsync(int classId)
+    {
+        return await _context.StudentClasses
+            .Where(sc => sc.TrainingClassId == classId)
+            .Select(sc => sc.StudentId)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId)
     {
         return await _context.UserUserRoles

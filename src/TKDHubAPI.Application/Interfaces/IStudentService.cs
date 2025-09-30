@@ -33,6 +33,13 @@ public interface IStudentService
     Task<IEnumerable<UserDto>> GetAllStudentsAsync();
 
     /// <summary>
+    /// Retrieves all students who are not enrolled in a specific training class asynchronously.
+    /// </summary>
+    /// <param name="classId">The identifier of the training class to exclude students from.</param>
+    /// <returns>A task that represents the asynchronous operation, containing a collection of UserDto representing students not enrolled in the specified class.</returns>
+    Task<IEnumerable<UserDto>> GetStudentsNotInClassAsync(int classId);
+
+    /// <summary>
     /// Updates an existing student asynchronously.
     /// </summary>
     /// <param name="id">The identifier of the student to update.</param>

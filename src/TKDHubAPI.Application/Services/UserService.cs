@@ -496,6 +496,14 @@ public class UserService : IUserService
 
 
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createCoachDto.RoleIds);
+
+        // Ensure coaches also have the Student role (all coaches should be students too)
+        var studentRole = await _userRoleRepository.GetByNameAsync("Student");
+        if (studentRole != null && !roles.Any(r => r.Id == studentRole.Id))
+        {
+            roles = roles.Append(studentRole).ToList();
+        }
+
         user.UserUserRoles = roles
             .Select(role => new UserUserRole
             {
@@ -589,6 +597,17 @@ public class UserService : IUserService
 
 
         var roles = await _userRoleRepository.GetRolesByIdsAsync(createUserDto.RoleIds);
+
+        // Ensure coaches also have the Student role (all coaches should be students too)
+        if (roles.Any(r => r.Name == "Coach"))
+        {
+            var studentRole = await _userRoleRepository.GetByNameAsync("Student");
+            if (studentRole != null && !roles.Any(r => r.Id == studentRole.Id))
+            {
+                roles = roles.Append(studentRole).ToList();
+            }
+        }
+
         user.UserUserRoles = roles
             .Select(role => new UserUserRole
             {

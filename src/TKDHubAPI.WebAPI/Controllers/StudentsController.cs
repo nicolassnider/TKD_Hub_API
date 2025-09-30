@@ -67,12 +67,15 @@ public class StudentsController : BaseApiController
     }
 
     /// <summary>
-    /// Gets all students.
+    /// Gets all students, optionally excluding students enrolled in a specific class.
     /// </summary>
+    /// <param name="excludeClassId">Optional class ID to exclude students who are enrolled in that class.</param>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int? excludeClassId = null)
     {
-        var students = await _studentService.GetAllStudentsAsync();
+        var students = excludeClassId.HasValue
+            ? await _studentService.GetStudentsNotInClassAsync(excludeClassId.Value)
+            : await _studentService.GetAllStudentsAsync();
         return SuccessResponse(new { data = students });
     }
 
@@ -132,6 +135,32 @@ public class StudentsController : BaseApiController
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error adding student to class");
+            return ErrorResponse(ex.Message, 400);
+        }
+    }
+
+    /// <summary>
+    /// Removes a student from a training class.
+    /// </summary>
+    /// <param name="studentId">The ID of the student to remove from the class.</param>
+    /// <param name="classId">The ID of the training class to remove the student from.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> indicating the success or failure of the operation.
+    /// </returns>
+    /// <remarks>
+    /// Returns HTTP 200 on success, or HTTP 400 with an error message if the operation fails.
+    /// </remarks>
+    [HttpDelete("{studentId}/trainingclasses/{classId}")]
+    public async Task<IActionResult> RemoveStudentFromClass(int studentId, int classId)
+    {
+        try
+        {
+            await _trainingClassService.RemoveStudentFromClassAsync(classId, studentId);
+            return SuccessResponse("Student removed from class.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error removing student from class");
             return ErrorResponse(ex.Message, 400);
         }
     }

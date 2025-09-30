@@ -31,6 +31,13 @@ public interface IUserRepository : IGenericRepository<User>
     Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId);
 
     /// <summary>
+    /// Gets the IDs of students enrolled in a specific training class.
+    /// </summary>
+    /// <param name="classId">The ID of the training class.</param>
+    /// <returns>A collection of student user IDs enrolled in the class.</returns>
+    Task<IEnumerable<int>> GetStudentIdsByClassIdAsync(int classId);
+
+    /// <summary>
     /// Gets all UserUserRoles for a user.
     /// </summary>
     Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId);

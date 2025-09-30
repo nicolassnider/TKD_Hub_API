@@ -25,6 +25,8 @@ interface ClassContextType {
   enrolledStudents: StudentForAssignment[];
   availableStudents: StudentForAssignment[];
   loading: boolean;
+  fetchingStudents: boolean;
+  fetchingAvailable: boolean;
   error: string | null;
 
   // Class CRUD operations
@@ -82,14 +84,16 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     StudentForAssignment[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [fetchingStudents, setFetchingStudents] = useState(false);
+  const [fetchingAvailable, setFetchingAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { hasRole, token } = useRole();
 
-  const getAuthHeaders = () => ({
+  const getAuthHeaders = useCallback(() => ({
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
-  });
+  }), [token]);
 
   const handleApiError = (error: any) => {
     if (error instanceof ApiError) {
@@ -120,7 +124,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [getAuthHeaders]);
 
   const fetchClass = useCallback(
     async (id: number): Promise<TrainingClass | null> => {
@@ -142,7 +146,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         setLoading(false);
       }
     },
-    [token],
+    [getAuthHeaders],
   );
 
   const createClass = useCallback(
@@ -167,7 +171,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         setLoading(false);
       }
     },
-    [token],
+    [getAuthHeaders],
   );
 
   const updateClass = useCallback(
@@ -229,8 +233,10 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
   // Student assignment operations
   const fetchStudentsForClass = useCallback(
     async (classId: number): Promise<void> => {
+      if (fetchingStudents) return; // Prevent concurrent calls
+      
       try {
-        setLoading(true);
+        setFetchingStudents(true);
         setError(null);
 
         const response = (await fetchJson(`/api/classes/${classId}/students`, {
@@ -241,16 +247,18 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
       } catch (error) {
         handleApiError(error);
       } finally {
-        setLoading(false);
+        setFetchingStudents(false);
       }
     },
-    [token],
+    [getAuthHeaders, fetchingStudents],
   );
 
   const fetchAvailableStudents = useCallback(
     async (classId?: number): Promise<void> => {
+      if (fetchingAvailable) return; // Prevent concurrent calls
+      
       try {
-        setLoading(true);
+        setFetchingAvailable(true);
         setError(null);
 
         const url = classId
@@ -259,22 +267,21 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
 
         const response = (await fetchJson(url, {
           headers: getAuthHeaders(),
-        })) as StudentForAssignment[];
+        })) as { data: { data: StudentForAssignment[] } };
 
-        setAvailableStudents(response);
+        setAvailableStudents(response.data?.data || []);
       } catch (error) {
         handleApiError(error);
       } finally {
-        setLoading(false);
+        setFetchingAvailable(false);
       }
     },
-    [token],
+    [getAuthHeaders, fetchingAvailable],
   );
 
   const assignStudentToClass = useCallback(
     async (studentId: number, classId: number): Promise<void> => {
       try {
-        setLoading(true);
         setError(null);
 
         await fetchJson(
@@ -285,25 +292,22 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           },
         );
 
-        // Refresh both lists
+        // Always refresh both lists after successful operation to ensure data consistency
         await Promise.all([
           fetchStudentsForClass(classId),
-          fetchAvailableStudents(classId),
+          fetchAvailableStudents(classId)
         ]);
       } catch (error) {
         handleApiError(error);
         throw error;
-      } finally {
-        setLoading(false);
       }
     },
-    [token, fetchStudentsForClass, fetchAvailableStudents],
+    [getAuthHeaders, fetchStudentsForClass, fetchAvailableStudents],
   );
 
   const removeStudentFromClass = useCallback(
     async (studentId: number, classId: number): Promise<void> => {
       try {
-        setLoading(true);
         setError(null);
 
         await fetchJson(
@@ -314,19 +318,17 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
           },
         );
 
-        // Refresh both lists
+        // Always refresh both lists after successful operation to ensure data consistency
         await Promise.all([
           fetchStudentsForClass(classId),
-          fetchAvailableStudents(classId),
+          fetchAvailableStudents(classId)
         ]);
       } catch (error) {
         handleApiError(error);
         throw error;
-      } finally {
-        setLoading(false);
       }
     },
-    [token, fetchStudentsForClass, fetchAvailableStudents],
+    [getAuthHeaders, fetchStudentsForClass, fetchAvailableStudents],
   );
 
   // Schedule validation
@@ -353,7 +355,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         return [];
       }
     },
-    [token],
+    [getAuthHeaders],
   );
 
   // Permissions
@@ -431,6 +433,8 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
     enrolledStudents,
     availableStudents,
     loading,
+    fetchingStudents,
+    fetchingAvailable,
     error,
 
     // Class CRUD operations
