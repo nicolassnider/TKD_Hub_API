@@ -173,7 +173,7 @@ export default function EditDojaang() {
 
   const loadDojaangData = async () => {
     try {
-      const response = await fetchJson(`/api/dojaangs/${id}`);
+      const response = await fetchJson(`/api/Dojaangs/${id}`);
       const dojaangData = (response as any)?.data ?? response;
 
       setDojaang(dojaangData);
@@ -230,7 +230,7 @@ export default function EditDojaang() {
         establishedDate: formData.establishedDate || null,
       };
 
-      await fetchJson(`/api/dojaangs/${id}`, {
+      await fetchJson(`/api/Dojaangs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),

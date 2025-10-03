@@ -117,15 +117,17 @@ public class CoachesController : BaseApiController
 
 
     /// <summary>
-    /// Gets all coaches.
+    /// Gets all coaches with pagination.
     /// </summary>
-    /// <returns>A standardized success response with a collection of all coaches.</returns>
+    /// <param name="page">The page number (default: 1).</param>
+    /// <param name="pageSize">The page size (default: 0 = use default page size).</param>
+    /// <returns>A paginated collection of all coaches with pagination headers.</returns>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 0)
     {
-        var query = new GetAllCoachesQuery();
+        var query = new GetAllCoachesQuery(page, pageSize);
         var coaches = await _mediator.Send(query);
-        return SuccessResponse(coaches);
+        return OkWithPagination(coaches);
     }
 
 

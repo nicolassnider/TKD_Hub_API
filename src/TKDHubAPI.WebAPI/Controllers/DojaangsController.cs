@@ -52,12 +52,18 @@ public class DojaangsController : BaseApiController
     /// <response code="200">Returns the list of dojaangs.</response>
     /// <response code="401">Unauthorized - user is not authenticated.</response>
     /// <returns>A list of all dojaangs as <see cref="DojaangDto"/> objects.</returns>
+    /// <summary>
+    /// Retrieves all dojaangs.
+    /// </summary>
+    /// <param name="page">The page number (default: 1).</param>
+    /// <param name="pageSize">The page size (default: 0 = use default page size).</param>
+    /// <returns>A paginated list of dojaangs.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<DojaangDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 0)
     {
-        var query = new GetAllDojaangsQuery();
+        var query = new GetAllDojaangsQuery(page, pageSize);
         var dojaangs = await _mediator.Send(query);
         return SuccessResponse(dojaangs);
     }

@@ -1,4 +1,5 @@
 ﻿using TKDHubAPI.Application.DTOs.BlogPost;
+using TKDHubAPI.Application.DTOs.Pagination;
 
 namespace TKDHubAPI.WebAPI.Controllers
 {
@@ -51,15 +52,99 @@ namespace TKDHubAPI.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Gets all blog posts.
+        /// Gets all blog posts with optional pagination and filtering.
         /// </summary>
-        /// <returns>A list of all blog posts.</returns>
+        /// <param name="page">The page number (1-based).</param>
+        /// <param name="pageSize">The number of items per page (0 = no pagination).</param>
+        /// <param name="searchTerm">Optional search term to filter blog posts.</param>
+        /// <param name="isPublished">Optional filter by publication status.</param>
+        /// <param name="authorId">Optional filter by author ID.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDirection">Sort direction (Ascending or Descending).</param>
+        /// <returns>A paginated list of blog posts.</returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+        [ProducesResponseType(typeof(PaginatedResult<BlogPostDto>), 200)]
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 0,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] bool? isPublished = null,
+            [FromQuery] int? authorId = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] string sortDirection = "Ascending"
+        )
         {
+            // For now, use the existing service method
+            // Enhanced pagination and filtering can be implemented in the service layer
             var result = await _blogPostService.GetAllAsync();
-            return SuccessResponse(result);
+            
+            // Apply basic filtering if parameters are provided
+            var filteredResult = result.AsQueryable();
+            
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                filteredResult = filteredResult.Where(x => x.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                                          x.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+            
+            if (isPublished.HasValue)
+            {
+                filteredResult = filteredResult.Where(x => x.IsActive == isPublished.Value);
+            }
+            
+            if (authorId.HasValue)
+            {
+                filteredResult = filteredResult.Where(x => x.AuthorId == authorId.Value);
+            }
+            
+            // Apply sorting
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                var isDescending = sortDirection.Equals("Descending", StringComparison.OrdinalIgnoreCase);
+                filteredResult = sortBy.ToLower() switch
+                {
+                    "title" => isDescending ? filteredResult.OrderByDescending(x => x.Title) : filteredResult.OrderBy(x => x.Title),
+                    "id" => isDescending ? filteredResult.OrderByDescending(x => x.Id) : filteredResult.OrderBy(x => x.Id),
+                    "authorname" => isDescending ? filteredResult.OrderByDescending(x => x.AuthorName) : filteredResult.OrderBy(x => x.AuthorName),
+                    _ => filteredResult.OrderByDescending(x => x.Id)
+                };
+            }
+            else
+            {
+                filteredResult = filteredResult.OrderByDescending(x => x.Id);
+            }
+            
+            var finalResult = filteredResult.ToList();
+            
+            // Apply pagination if requested
+            if (pageSize > 0)
+            {
+                var totalCount = finalResult.Count;
+                var skip = (page - 1) * pageSize;
+                var paginatedItems = finalResult.Skip(skip).Take(pageSize).ToList();
+                
+                var paginatedResult = new PaginatedResult<BlogPostDto>
+                {
+                    Items = paginatedItems,
+                    TotalCount = totalCount,
+                    Page = page,
+                    PageSize = pageSize
+                };
+                
+                return OkWithPagination(paginatedResult);
+            }
+            
+            // Return all items without pagination
+            var nonPaginatedResult = new PaginatedResult<BlogPostDto>
+            {
+                Items = finalResult,
+                TotalCount = finalResult.Count,
+                Page = 1,
+                PageSize = finalResult.Count
+            };
+            
+            return OkWithPagination(nonPaginatedResult);
         }
 
         /// <summary>

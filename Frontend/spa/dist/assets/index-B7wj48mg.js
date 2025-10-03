@@ -48826,38 +48826,36 @@ const N_ = () => {
                 }),
                 o.jsxs(Bn, {
                   children: [
-                    t.enrolledStudents
-                      .slice(0, 5)
-                      .map((y, h) =>
-                        o.jsxs(
-                          Oe.Fragment,
-                          {
-                            children: [
-                              h > 0 && o.jsx(mt, {}),
-                              o.jsxs(ln, {
-                                sx: { px: 0 },
-                                children: [
-                                  o.jsx(Yh, {
-                                    children: o.jsxs(Kn, {
-                                      sx: { bgcolor: "primary.main" },
-                                      children: [
-                                        y.firstName.charAt(0),
-                                        y.lastName.charAt(0),
-                                      ],
-                                    }),
+                    t.enrolledStudents.slice(0, 5).map((y, h) =>
+                      o.jsxs(
+                        Oe.Fragment,
+                        {
+                          children: [
+                            h > 0 && o.jsx(mt, {}),
+                            o.jsxs(ln, {
+                              sx: { px: 0 },
+                              children: [
+                                o.jsx(Yh, {
+                                  children: o.jsxs(Kn, {
+                                    sx: { bgcolor: "primary.main" },
+                                    children: [
+                                      y.firstName.charAt(0),
+                                      y.lastName.charAt(0),
+                                    ],
                                   }),
-                                  o.jsx(yn, {
-                                    primary: `${y.firstName} ${y.lastName}`,
-                                    secondary:
-                                      y.dojaangName && `From ${y.dojaangName}`,
-                                  }),
-                                ],
-                              }),
-                            ],
-                          },
-                          y.id,
-                        ),
+                                }),
+                                o.jsx(yn, {
+                                  primary: `${y.firstName} ${y.lastName}`,
+                                  secondary:
+                                    y.dojaangName && `From ${y.dojaangName}`,
+                                }),
+                              ],
+                            }),
+                          ],
+                        },
+                        y.id,
                       ),
+                    ),
                     t.enrolledStudents.length > 5 &&
                       o.jsx(ln, {
                         sx: { px: 0, textAlign: "center" },
@@ -51033,20 +51031,18 @@ function L_() {
                               spacing: 0.5,
                               flexWrap: "wrap",
                               children: [
-                                T.tags
-                                  .slice(0, 3)
-                                  .map((E) =>
-                                    o.jsx(
-                                      Pe,
-                                      {
-                                        label: E,
-                                        size: "small",
-                                        variant: "outlined",
-                                        sx: { fontSize: "0.75rem" },
-                                      },
-                                      E,
-                                    ),
+                                T.tags.slice(0, 3).map((E) =>
+                                  o.jsx(
+                                    Pe,
+                                    {
+                                      label: E,
+                                      size: "small",
+                                      variant: "outlined",
+                                      sx: { fontSize: "0.75rem" },
+                                    },
+                                    E,
                                   ),
+                                ),
                                 T.tags.length > 3 &&
                                   o.jsx(Pe, {
                                     label: `+${T.tags.length - 3}`,
@@ -51798,50 +51794,48 @@ const z_ = ({ compact: e = !1, maxItems: t = 10 }) => {
                   children: "No payment history available",
                 })
               : o.jsx($, {
-                  children: n
-                    .slice(0, 3)
-                    .map((h) =>
-                      o.jsxs(
-                        $,
-                        {
-                          sx: {
-                            display: "flex",
-                            justifyContent: "space-between",
-                            py: 1,
-                          },
-                          children: [
-                            o.jsxs($, {
-                              children: [
-                                o.jsx(M, {
-                                  variant: "body2",
-                                  children: h.description,
-                                }),
-                                o.jsx(M, {
-                                  variant: "caption",
-                                  color: "text.secondary",
-                                  children: d(h.paymentDate),
-                                }),
-                              ],
-                            }),
-                            o.jsxs($, {
-                              sx: { textAlign: "right" },
-                              children: [
-                                o.jsx(M, {
-                                  variant: "body2",
-                                  children: u(h.amount, h.currency),
-                                }),
-                                o.jsx(Pe, {
-                                  label: h.status,
-                                  color: f(h.status),
-                                  size: "small",
-                                }),
-                              ],
-                            }),
-                          ],
+                  children: n.slice(0, 3).map((h) =>
+                    o.jsxs(
+                      $,
+                      {
+                        sx: {
+                          display: "flex",
+                          justifyContent: "space-between",
+                          py: 1,
                         },
-                        h.id,
-                      ),
+                        children: [
+                          o.jsxs($, {
+                            children: [
+                              o.jsx(M, {
+                                variant: "body2",
+                                children: h.description,
+                              }),
+                              o.jsx(M, {
+                                variant: "caption",
+                                color: "text.secondary",
+                                children: d(h.paymentDate),
+                              }),
+                            ],
+                          }),
+                          o.jsxs($, {
+                            sx: { textAlign: "right" },
+                            children: [
+                              o.jsx(M, {
+                                variant: "body2",
+                                children: u(h.amount, h.currency),
+                              }),
+                              o.jsx(Pe, {
+                                label: h.status,
+                                color: f(h.status),
+                                size: "small",
+                              }),
+                            ],
+                          }),
+                        ],
+                      },
+                      h.id,
                     ),
+                  ),
                 }),
           ],
         })

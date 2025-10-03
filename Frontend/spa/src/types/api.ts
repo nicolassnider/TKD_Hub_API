@@ -846,19 +846,48 @@ export interface RegisterDto {
 export interface PaginatedResponse<T> {
   items: T[];
   totalCount: number;
-  pageNumber: number;
+  page: number;
   pageSize: number;
   totalPages: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
+  nextPage: number | null;
+  previousPage: number | null;
 }
 
-export interface PageRequest {
-  pageNumber?: number;
+export interface PaginationMetadata {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  nextPage: number | null;
+  previousPage: number | null;
+}
+
+export interface QueryParameters {
+  page?: number;
   pageSize?: number;
   sortBy?: string;
   sortDirection?: "asc" | "desc";
+}
+
+export interface StudentFilterParameters extends QueryParameters {
+  excludeClassId?: number;
+  dojaangId?: number;
   searchTerm?: string;
+  isActive?: boolean;
+  rankId?: number;
+}
+
+export interface PromotionFilterParameters extends QueryParameters {
+  studentId?: number;
+  dojaangId?: number;
+  fromRankId?: number;
+  toRankId?: number;
+  fromDate?: string;
+  toDate?: string;
 }
 
 // ============================================================================
@@ -890,6 +919,39 @@ export interface RouteConfig {
   component: React.ComponentType;
   roles?: string[];
   isPublic?: boolean;
+}
+
+// ============================================================================
+// BLOG MANAGEMENT TYPES
+// ============================================================================
+
+/**
+ * Extended BlogPost interface with additional fields for management UI.
+ * Extends the base BlogPostDto with fields needed for rich UI display.
+ */
+export interface BlogPostManagement extends Omit<BlogPostDto, "isActive"> {
+  excerpt: string;
+  authorName: string;
+  publishedAt?: string;
+  isPublished: boolean; // Maps to isActive from BlogPostDto
+  tags: string[];
+  slug: string;
+  featuredImage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Form data interface for blog post creation and editing.
+ * Used by BlogPostDialog component for form state management.
+ */
+export interface BlogFormData {
+  title: string;
+  content: string;
+  excerpt: string;
+  isPublished: boolean;
+  tags: string;
+  featuredImage: string;
 }
 
 export default {};

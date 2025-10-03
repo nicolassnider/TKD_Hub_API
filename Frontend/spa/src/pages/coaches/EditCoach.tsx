@@ -49,8 +49,8 @@ export default function EditCoach() {
   const loadCoachData = async () => {
     try {
       const [coachData, dojaangsData] = await Promise.all([
-        fetchJson(`/api/coaches/${id}`) as Promise<CoachDto>,
-        fetchJson("/api/dojaangs") as Promise<DojaangDto[]>,
+        fetchJson(`/api/Coaches/${id}`) as Promise<CoachDto>,
+        fetchJson("/api/Dojaangs") as Promise<DojaangDto[]>,
       ]);
 
       setCoach(coachData);
@@ -103,7 +103,7 @@ export default function EditCoach() {
         certifications: formData.certifications || null,
       };
 
-      await fetchJson(`/api/coaches/${id}`, {
+      await fetchJson(`/api/Coaches/${id}`, {
         method: "PUT",
         body: JSON.stringify(updateData),
       });

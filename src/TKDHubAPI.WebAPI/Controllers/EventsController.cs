@@ -35,12 +35,18 @@ public class EventsController : BaseApiController
     }
 
 
+    /// <summary>
+    /// Retrieves all events.
+    /// </summary>
+    /// <param name="page">The page number (default: 1).</param>
+    /// <param name="pageSize">The page size (default: 0 = use default page size).</param>
+    /// <returns>A paginated list of events.</returns>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 0)
     {
-        var query = new GetAllEventsQuery();
+        var query = new GetAllEventsQuery(page, pageSize);
         var events = await _mediator.Send(query);
         return SuccessResponse(events);
     }

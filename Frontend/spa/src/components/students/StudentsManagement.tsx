@@ -74,9 +74,9 @@ export default function StudentsManagement() {
   const loadData = async () => {
     try {
       const [studentsData, ranksData, dojaangsData] = await Promise.all([
-        fetchJson("/api/students") as Promise<Student[]>,
-        fetchJson("/api/ranks") as Promise<Rank[]>,
-        fetchJson("/api/dojaangs") as Promise<Dojaang[]>,
+        fetchJson("/api/Students") as Promise<Student[]>,
+        fetchJson("/api/Ranks") as Promise<Rank[]>,
+        fetchJson("/api/Dojaangs") as Promise<Dojaang[]>,
       ]);
 
       setStudents(studentsData);
@@ -143,13 +143,13 @@ export default function StudentsManagement() {
       };
 
       if (editingStudent) {
-        await fetchJson(`/api/students/${editingStudent.id}`, {
+        await fetchJson(`/api/Students/${editingStudent.id}`, {
           method: "PUT",
           body: JSON.stringify(studentData),
         });
         toast.success("Student updated successfully");
       } else {
-        await fetchJson("/api/students", {
+        await fetchJson("/api/Students", {
           method: "POST",
           body: JSON.stringify(studentData),
         });
@@ -172,7 +172,7 @@ export default function StudentsManagement() {
     if (!confirm("Are you sure you want to delete this student?")) return;
 
     try {
-      await fetchJson(`/api/students/${studentId}`, { method: "DELETE" });
+      await fetchJson(`/api/Students/${studentId}`, { method: "DELETE" });
       toast.success("Student deleted successfully");
       loadData();
     } catch (error) {

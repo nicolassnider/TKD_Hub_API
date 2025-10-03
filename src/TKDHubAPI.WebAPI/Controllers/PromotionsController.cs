@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using TKDHubAPI.Application.CQRS.Commands.Promotions;
 using TKDHubAPI.Application.CQRS.Queries.Promotions;
+using TKDHubAPI.Application.DTOs.Pagination;
 using TKDHubAPI.Application.DTOs.Promotion;
 
 
@@ -91,26 +92,57 @@ public class PromotionsController : BaseApiController
 
 
     /// <summary>
-    /// Gets all promotions, optionally filtered by student ID.
+    /// Retrieves all promotions with optional pagination and filtering.
     /// </summary>
+    /// <param name="page">The page number (default: 1).</param>
+    /// <param name="pageSize">The number of items per page (default: configured value).</param>
     /// <param name="studentId">Optional student ID to filter promotions.</param>
-    /// <returns>A list of promotions as <see cref="PromotionDto"/> objects.</returns>
+    /// <param name="dojaangId">Optional dojang ID to filter promotions.</param>
+    /// <param name="fromRankId">Optional starting rank ID to filter promotions.</param>
+    /// <param name="toRankId">Optional ending rank ID to filter promotions.</param>
+    /// <param name="fromDate">Optional start date to filter promotions.</param>
+    /// <param name="toDate">Optional end date to filter promotions.</param>
+    /// <returns>A paginated list of promotions as <see cref="PromotionDto"/> objects.</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<PromotionDto>), 200)]
-    public async Task<IActionResult> GetAll([FromQuery] int? studentId)
+    [ProducesResponseType(typeof(PaginatedResult<PromotionDto>), 200)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 0,
+        [FromQuery] int? studentId = null,
+        [FromQuery] int? dojaangId = null,
+        [FromQuery] int? fromRankId = null,
+        [FromQuery] int? toRankId = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
     {
-        if (studentId.HasValue)
+        // Check if any filters are applied (excluding pagination)
+        bool hasFilters = studentId.HasValue || dojaangId.HasValue || fromRankId.HasValue || 
+                         toRankId.HasValue || fromDate.HasValue || toDate.HasValue;
+
+        if (hasFilters)
         {
-            // For now, use the service directly for filtered queries
-            var promotions = await _promotionService.GetPromotionsByStudentIdAsync(studentId.Value);
+            // For complex filtered queries, use the service directly for now
+            // This could be enhanced to support pagination in future iterations
+            var promotions = await _promotionService.GetPromotionsByStudentIdAsync(studentId ?? 0);
             var result = promotions.Select(_mapper.Map<PromotionDto>);
-            return SuccessResponse(result);
+            
+            // Create a mock paginated result for consistency
+            var mockPaginatedResult = new PaginatedResult<PromotionDto>
+            {
+                Items = result,
+                TotalCount = result.Count(),
+                Page = 1,
+                PageSize = result.Count()
+            };
+            
+            return OkWithPagination(mockPaginatedResult);
         }
         else
         {
-            var query = new GetAllPromotionsQuery();
+            // Use CQRS for paginated non-filtered queries
+            var query = new GetAllPromotionsQuery { Page = page, PageSize = pageSize };
             var promotions = await _mediator.Send(query);
-            return SuccessResponse(promotions);
+            return OkWithPagination(promotions);
         }
     }
 

@@ -11,18 +11,20 @@ namespace TKDHubAPI.Application.CQRS.Queries.Promotions;
 public class GetAllPromotionsQueryHandler : IRequestHandler<GetAllPromotionsQuery, PaginatedResult<PromotionDto>>
 {
     private readonly IPromotionService _service;
+    private readonly IPaginationService<PromotionDto> _paginationService;
     private readonly IMapper _mapper;
 
-
-    public GetAllPromotionsQueryHandler(IPromotionService service, IMapper mapper)
+    public GetAllPromotionsQueryHandler(IPromotionService service, IPaginationService<PromotionDto> paginationService, IMapper mapper)
     {
         _service = service;
+        _paginationService = paginationService;
         _mapper = mapper;
     }
 
-
     public async Task<PaginatedResult<PromotionDto>> Handle(GetAllPromotionsQuery request, CancellationToken cancellationToken)
     {
-        return await _service.GetAllAsync(request.Page, request.PageSize);
+        var promotions = await _service.GetAllAsync();
+        var promotionDtos = _mapper.Map<IEnumerable<PromotionDto>>(promotions);
+        return await _paginationService.PaginateAsync(promotionDtos, request.Page, request.PageSize);
     }
 }

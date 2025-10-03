@@ -10,4 +10,5 @@ export { GenericEntityDetail } from "./GenericEntityDetail";
 export { default as ApiDetail } from "./ApiDetail";
 export { default as ApiList } from "./ApiList";
 export { default as ApiTable } from "./ApiTable";
+export { default as PaginatedTable } from "./PaginatedTable";
 // export { default as ApiListRefactored } from "./ApiListRefactored"; // Comment out missing file

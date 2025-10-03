@@ -67,7 +67,7 @@ export default function UserAdministration() {
     try {
       setLoading(true);
       setError(null);
-      const response = (await fetchJson("/api/users")) as any;
+      const response = (await fetchJson("/api/Users")) as any;
 
       // Handle the paginated response structure
       if (response?.data?.items) {
@@ -106,7 +106,7 @@ export default function UserAdministration() {
     }
 
     try {
-      await fetchJson(`/api/users/${userId}`, {
+      await fetchJson(`/api/Users/${userId}`, {
         method: "DELETE",
       });
       await loadUsers(); // Refresh the list
@@ -121,7 +121,7 @@ export default function UserAdministration() {
 
   const handleToggleActive = async (userId: number, isActive: boolean) => {
     try {
-      await fetchJson(`/api/users/${userId}`, {
+      await fetchJson(`/api/Users/${userId}`, {
         method: "PATCH",
         body: JSON.stringify({ isActive: !isActive }),
         headers: {
@@ -143,7 +143,7 @@ export default function UserAdministration() {
     updateData: UpdateUserRequest,
   ) => {
     try {
-      await fetchJson(`/api/users/${userId}`, {
+      await fetchJson(`/api/Users/${userId}`, {
         method: "PUT",
         body: JSON.stringify(updateData),
         headers: {
@@ -161,7 +161,7 @@ export default function UserAdministration() {
 
   const handleCreateUser = async (userData: CreateUserRequest) => {
     try {
-      await fetchJson("/api/users", {
+      await fetchJson("/api/Users", {
         method: "POST",
         body: JSON.stringify(userData),
         headers: {

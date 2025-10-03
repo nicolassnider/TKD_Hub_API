@@ -70,7 +70,7 @@ export default function EventsManagement() {
     try {
       setLoading(true);
       setError(null);
-      const data = (await fetchJson("/api/events")) as EventManagementDto[];
+      const data = (await fetchJson("/api/Events")) as EventManagementDto[];
       setEvents(data);
     } catch (error) {
       setError("Failed to load events");
@@ -124,13 +124,13 @@ export default function EventsManagement() {
       };
 
       if (editingEvent) {
-        await fetchJson(`/api/events/${editingEvent.id}`, {
+        await fetchJson(`/api/Events/${editingEvent.id}`, {
           method: "PUT",
           body: JSON.stringify(eventData),
         });
         toast.success("Event updated successfully");
       } else {
-        await fetchJson("/api/events", {
+        await fetchJson("/api/Events", {
           method: "POST",
           body: JSON.stringify(eventData),
         });
@@ -151,7 +151,7 @@ export default function EventsManagement() {
     if (!confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      await fetchJson(`/api/events/${eventId}`, { method: "DELETE" });
+      await fetchJson(`/api/Events/${eventId}`, { method: "DELETE" });
       toast.success("Event deleted successfully");
       loadEvents();
     } catch (error) {

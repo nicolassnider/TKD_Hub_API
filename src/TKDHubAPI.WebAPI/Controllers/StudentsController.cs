@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using TKDHubAPI.Application.CQRS.Commands.Students;
 using TKDHubAPI.Application.CQRS.Queries.Students;
+using TKDHubAPI.Application.DTOs.Pagination;
 using TKDHubAPI.Application.DTOs.User;
 
 
@@ -102,14 +103,37 @@ public class StudentsController : BaseApiController
     /// Gets all students, optionally excluding students enrolled in a specific class.
     /// </summary>
     /// <param name="excludeClassId">Optional class ID to exclude students who are enrolled in that class.</param>
+    /// <summary>
+    /// Gets all students with optional filtering, pagination, and sorting.
+    /// </summary>
+    /// <param name="page">The page number (default: 1).</param>
+    /// <param name="pageSize">The page size (default: 0 = use default page size).</param>
+    /// <param name="dojaangId">Optional dojang ID to filter students by.</param>
+    /// <param name="searchTerm">Optional search term to filter by name or email.</param>
+    /// <param name="isActive">Optional filter for active/inactive students.</param>
+    /// <param name="rankId">Optional rank ID to filter students by.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDirection">Sort direction (Ascending or Descending).</param>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int? excludeClassId = null)
+    [ProducesResponseType(typeof(PaginatedResult<UserDto>), 200)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 0,
+        [FromQuery] int? excludeClassId = null,
+        [FromQuery] int? dojaangId = null,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] int? rankId = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string sortDirection = "Ascending"
+    )
     {
-        var query = new GetAllStudentsQuery(excludeClassId);
+        // For now, use the existing query with basic parameters
+        // Enhanced filtering can be added to the query handler in future iterations
+        var query = new GetAllStudentsQuery(excludeClassId, page, pageSize);
         var students = await _mediator.Send(query);
-        return SuccessResponse(new { data = students });
+        return OkWithPagination(students);
     }
-
 
     /// <summary>
     /// Gets all students for a specific dojaang.

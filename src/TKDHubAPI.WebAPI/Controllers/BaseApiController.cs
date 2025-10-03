@@ -1,4 +1,6 @@
-﻿namespace TKDHubAPI.WebAPI.Controllers;
+﻿using TKDHubAPI.Application.DTOs.Pagination;
+
+namespace TKDHubAPI.WebAPI.Controllers;
 
 /// <summary>
 /// Serves as the base class for all API controllers, providing common functionality such as standardized success and error responses,
@@ -57,5 +59,47 @@ public abstract class BaseApiController : ControllerBase
             .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
             .Select(c => c.Value)
             .ToList();
+    }
+
+    /// <summary>
+    /// Adds pagination metadata headers to the response.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the paginated result</typeparam>
+    /// <param name="paginatedResult">The paginated result containing metadata</param>
+    protected void AddPaginationHeaders<T>(PaginatedResult<T> paginatedResult)
+    {
+        var paginationMetadata = new
+        {
+            currentPage = paginatedResult.Page,
+            totalPages = paginatedResult.TotalPages,
+            pageSize = paginatedResult.PageSize,
+            totalCount = paginatedResult.TotalCount,
+            hasNext = paginatedResult.HasNextPage,
+            hasPrevious = paginatedResult.HasPreviousPage,
+            nextPage = paginatedResult.NextPage,
+            previousPage = paginatedResult.PreviousPage
+        };
+
+        Response.Headers["X-Pagination"] = System.Text.Json.JsonSerializer.Serialize(paginationMetadata);
+        
+        // Individual headers for easier access
+        Response.Headers["X-Current-Page"] = paginatedResult.Page.ToString();
+        Response.Headers["X-Total-Pages"] = paginatedResult.TotalPages.ToString();
+        Response.Headers["X-Page-Size"] = paginatedResult.PageSize.ToString();
+        Response.Headers["X-Total-Count"] = paginatedResult.TotalCount.ToString();
+        Response.Headers["X-Has-Next"] = paginatedResult.HasNextPage.ToString();
+        Response.Headers["X-Has-Previous"] = paginatedResult.HasPreviousPage.ToString();
+    }
+
+    /// <summary>
+    /// Creates an OK response with pagination headers.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the paginated result</typeparam>
+    /// <param name="paginatedResult">The paginated result</param>
+    /// <returns>An OK result with pagination headers</returns>
+    protected IActionResult OkWithPagination<T>(PaginatedResult<T> paginatedResult)
+    {
+        AddPaginationHeaders(paginatedResult);
+        return Ok(paginatedResult);
     }
 }

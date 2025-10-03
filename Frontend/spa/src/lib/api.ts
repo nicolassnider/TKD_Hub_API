@@ -171,3 +171,113 @@ export async function fetchJson<T = unknown>(
     }
   }
 }
+
+// ============================================================================
+// PAGINATION UTILITIES
+// ============================================================================
+
+export interface PaginatedApiResponse<T> {
+  data: T;
+  pagination?: import("../types/api").PaginationMetadata;
+}
+
+/**
+ * Enhanced fetch function that extracts pagination metadata from headers
+ */
+export async function fetchJsonWithPagination<T>(
+  url: RequestInfo,
+  init?: RequestInit,
+): Promise<PaginatedApiResponse<T>> {
+  const resolvedUrl = resolveUrl(url);
+  const finalInit = { ...init };
+
+  // Set up headers including auth
+  const finalHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((init?.headers as Record<string, string>) || {}),
+  };
+
+  // Add auth token if available
+  try {
+    if (!finalHeaders["Authorization"]) {
+      const stored =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (stored)
+        finalHeaders["Authorization"] = stored.startsWith("Bearer ")
+          ? stored
+          : `Bearer ${stored}`;
+    }
+  } catch {
+    // ignore any localStorage access errors
+  }
+
+  finalInit.headers = finalHeaders;
+
+  const response = await fetch(resolvedUrl, finalInit);
+
+  if (!response.ok) {
+    let body: unknown = undefined;
+    try {
+      body = await response.json();
+    } catch {
+      try {
+        if (!response.bodyUsed) {
+          body = await response.text();
+        }
+      } catch {
+        body = undefined;
+      }
+    }
+    let msg: string | undefined;
+    if (body && typeof body === "object") {
+      const b = body as Record<string, unknown>;
+      if (typeof b.message === "string") msg = b.message;
+    }
+    msg = msg ?? `Request failed with status ${response.status}`;
+    throw new ApiError(msg, response.status, body);
+  }
+
+  // Extract pagination metadata from headers
+  let pagination: import("../types/api").PaginationMetadata | undefined;
+  const paginationHeader = response.headers.get("X-Pagination");
+  if (paginationHeader) {
+    try {
+      pagination = JSON.parse(paginationHeader);
+    } catch (e) {
+      console.warn("Failed to parse pagination header:", e);
+    }
+  }
+
+  // Get the response data
+  let data: T;
+  if (response.status === 204) {
+    data = undefined as unknown as T;
+  } else {
+    try {
+      data = await response.json();
+    } catch (e) {
+      throw new ApiError(
+        `Expected JSON but response body could not be read (status ${response.status})`,
+        response.status,
+      );
+    }
+  }
+
+  return { data, pagination };
+}
+
+/**
+ * Build query string from parameters
+ */
+export function buildQueryString(params: Record<string, any>): string {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.append(key, String(value));
+    }
+  });
+
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : "";
+}

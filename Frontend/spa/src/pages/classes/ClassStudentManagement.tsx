@@ -48,7 +48,7 @@ export default function ClassStudentManagement() {
       setLoading(true);
       const [classRes, enrolledRes, allStudentsRes] = await Promise.all([
         fetch(`/api/Classes/${classId}`),
-        fetch(`/api/classes/${classId}/students`),
+        fetch(`/api/Classes/${classId}/students`),
         fetch("/api/Students"),
       ]);
 
