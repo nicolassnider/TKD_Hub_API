@@ -102,7 +102,11 @@ const routes: RouteConfig[] = [
   { path: "/payments", component: PaymentHistory },
   { path: "/dashboard", component: Dashboard },
   { path: "/students", component: StudentsList },
-  { path: "/students/new", component: CreateStudent, roles: ["Admin", "Coach"] },
+  {
+    path: "/students/new",
+    component: CreateStudent,
+    roles: ["Admin", "Coach"],
+  },
   { path: "/students/:id", component: StudentDetail },
   {
     path: "/students/:studentId/promotions",

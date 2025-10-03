@@ -1,6 +1,11 @@
-﻿using TKDHubAPI.Application.DTOs.Dojaang;
+﻿using MediatR;
+using TKDHubAPI.Application.CQRS.Commands.Dojaangs;
+using TKDHubAPI.Application.CQRS.Queries.Dojaangs;
+using TKDHubAPI.Application.DTOs.Dojaang;
+
 
 namespace TKDHubAPI.WebAPI.Controllers;
+
 
 /// <summary>
 /// API controller for managing dojaangs (martial arts schools).
@@ -11,6 +16,8 @@ public class DojaangsController : BaseApiController
 {
     private readonly IDojaangService _dojaangService;
     private readonly IUserService _userService;
+    private readonly IMediator _mediator;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DojaangsController"/> class.
@@ -19,17 +26,21 @@ public class DojaangsController : BaseApiController
     /// <param name="userService">The user service instance.</param>
     /// <param name="logger">The logger instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
+    /// <param name="mediator">The MediatR instance.</param>
     public DojaangsController(
         IDojaangService dojaangService,
         IUserService userService,
         ILogger<DojaangsController> logger,
-        IMapper mapper
+        IMapper mapper,
+        IMediator mediator
     )
         : base(logger)
     {
         _dojaangService = dojaangService;
         _userService = userService;
+        _mediator = mediator;
     }
+
 
     /// <summary>
     /// Retrieves all dojaangs (martial arts schools).
@@ -46,9 +57,11 @@ public class DojaangsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll()
     {
-        var dojaangs = await _dojaangService.GetAllAsync();
+        var query = new GetAllDojaangsQuery();
+        var dojaangs = await _mediator.Send(query);
         return SuccessResponse(dojaangs);
     }
+
 
     /// <summary>
     /// Retrieves a dojaang by its unique identifier.
@@ -68,13 +81,15 @@ public class DojaangsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
-        var dojaang = await _dojaangService.GetByIdAsync(id);
+        var query = new GetDojaangByIdQuery { Id = id };
+        var dojaang = await _mediator.Send(query);
         if (dojaang == null)
         {
             return ErrorResponse("Dojaang not found", 404);
         }
         return SuccessResponse(dojaang);
     }
+
 
     /// <summary>
     /// Creates a new dojaang. Only admins are allowed to perform this action.
@@ -110,13 +125,17 @@ public class DojaangsController : BaseApiController
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             return ErrorResponse("Invalid user context.", 401);
 
+
         var currentUser = await _userService.GetByIdAsync(userId);
         if (currentUser == null)
             return ErrorResponse("User not found.", 404);
 
-        var dojaang = await _dojaangService.CreateDojaangAsync(dto, currentUser);
+
+        var command = new CreateDojaangCommand { CreateDojaangDto = dto, CurrentUser = currentUser };
+        var dojaang = await _mediator.Send(command);
         return SuccessResponse(dojaang);
     }
+
 
     /// <summary>
     /// Updates an existing dojaang. Only admins are allowed to perform this action.
@@ -144,15 +163,20 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("ID in URL does not match ID in body.", 400);
         }
 
-        var existingDojaang = await _dojaangService.GetByIdAsync(id);
+
+        var query = new GetDojaangByIdQuery { Id = id };
+        var existingDojaang = await _mediator.Send(query);
         if (existingDojaang == null)
         {
             return ErrorResponse("Dojaang not found", 404);
         }
 
-        await _dojaangService.UpdateAsync(updateDto);
+
+        var command = new UpdateDojaangCommand { UpdateDojaangDto = updateDto };
+        await _mediator.Send(command);
         return NoContent();
     }
+
 
     /// <summary>
     /// Deletes a dojaang by its unique identifier. Only admins are allowed to perform this action.
@@ -177,14 +201,16 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
+
         await _dojaangService.DeleteAsync(id);
         return NoContent();
     }
 
+
     /// <summary>
     /// Reactivates a previously deactivated dojaang. Only admins are allowed to perform this action.
     /// </summary>
-    /// <param name="id">The dojaang ID.</param>
+    /// <param name="dojaangId">The dojaang ID.</param>
     /// <response code="200">Returns the reactivated dojaang.</response>
     /// <response code="401">Unauthorized - user is not authenticated.</response>
     /// <response code="404">Dojaang not found.</response>
@@ -201,7 +227,9 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
+
         await _dojaangService.ReactivateAsync(dojaangId);
+
 
         var updated = await _dojaangService.GetByIdAsync(dojaangId);
         if (updated == null)

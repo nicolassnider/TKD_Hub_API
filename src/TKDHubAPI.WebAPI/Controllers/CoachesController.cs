@@ -1,16 +1,21 @@
-﻿using TKDHubAPI.Application.DTOs.User;
+﻿using MediatR;
+using TKDHubAPI.Application.CQRS.Commands.Coaches;
+using TKDHubAPI.Application.CQRS.Queries.Coaches;
+using TKDHubAPI.Application.DTOs.User;
+
 
 namespace TKDHubAPI.WebAPI.Controllers;
 
+
 /// <summary>
 /// API controller for managing coach users and their associated dojaangs.
-/// 
+///
 /// This controller provides endpoints for:
 /// - Creating, retrieving, updating, and deleting coach users
 /// - Assigning and removing managed dojaangs for coaches
 /// - Upserting (create or update) coach users
 /// - Reactivating deactivated coach users
-/// 
+///
 /// Only authorized users (admins or coaches with appropriate permissions) can perform these operations.
 /// </summary>
 [Authorize]
@@ -19,6 +24,8 @@ public class CoachesController : BaseApiController
     private readonly IUserService _userService;
     private readonly ICoachService _coachService;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CoachesController"/> class.
@@ -26,18 +33,22 @@ public class CoachesController : BaseApiController
     /// <param name="userService">The user service instance.</param>
     /// <param name="coachService">The coach service instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
+    /// <param name="mediator">The MediatR instance.</param>
     /// <param name="logger">The logger instance.</param>
     public CoachesController(
         IUserService userService,
         ICoachService coachService,
         IMapper mapper,
+        IMediator mediator,
         ILogger<CoachesController> logger
     ) : base(logger)
     {
         _userService = userService;
         _coachService = coachService;
         _mapper = mapper;
+        _mediator = mediator;
     }
+
 
     /// <summary>
     /// Creates a new coach user. Only admins or coaches of the dojaang can add a coach to a dojaang.
@@ -54,9 +65,15 @@ public class CoachesController : BaseApiController
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
                 return ErrorResponse("Invalid user context.", 401);
 
-            // Use the new service method to enforce business rules
-            var user = await _userService.AddCoachToDojaangAsync(requestingUserId, createCoachDto);
-            var resultDto = _mapper.Map<UserDto>(user);
+
+            var command = new CreateCoachCommand
+            {
+                RequestingUserId = requestingUserId,
+                CreateCoachDto = createCoachDto
+            };
+
+
+            var resultDto = await _mediator.Send(command);
             return SuccessResponse(resultDto);
         }
         catch (UnauthorizedAccessException ex)
@@ -71,6 +88,7 @@ public class CoachesController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Gets a coach by ID, including managed dojaangs.
     /// </summary>
@@ -79,21 +97,24 @@ public class CoachesController : BaseApiController
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var user = await _coachService.GetCoachByIdAsync(id);
-        if (user == null)
+        var query = new GetCoachByIdQuery { Id = id };
+        var coach = await _mediator.Send(query);
+       
+        if (coach == null)
             return ErrorResponse("Coach not found", 404);
 
-        var resultDto = _mapper.Map<UserDto>(user);
 
         // Get managed dojaangs for this coach
         var managedDojaangs = await _coachService.GetManagedDojaangsAsync(id);
 
+
         return SuccessResponse(new
         {
-            Coach = resultDto,
+            Coach = coach,
             ManagedDojaangs = managedDojaangs
         });
     }
+
 
     /// <summary>
     /// Gets all coaches.
@@ -102,10 +123,11 @@ public class CoachesController : BaseApiController
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var users = await _coachService.GetAllCoachesAsync();
-        var result = users.Select(_mapper.Map<UserDto>);
-        return SuccessResponse(result);
+        var query = new GetAllCoachesQuery();
+        var coaches = await _mediator.Send(query);
+        return SuccessResponse(coaches);
     }
+
 
     /// <summary>
     /// Removes a managed dojaang from a coach.
@@ -136,6 +158,7 @@ public class CoachesController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Updates the list of managed dojaangs for a coach.
     /// </summary>
@@ -148,10 +171,12 @@ public class CoachesController : BaseApiController
         if (coachId != dto.CoachId)
             return ErrorResponse("Coach ID in URL and body do not match.", 400);
 
+
         try
         {
             // Get current managed dojaang IDs
             var currentManagedIds = await _userService.GetManagedDojaangIdsAsync(coachId);
+
 
             // Only add new managed dojaangs not already managed
             var toAdd = dto.ManagedDojaangIds.Except(currentManagedIds).ToList();
@@ -160,6 +185,7 @@ public class CoachesController : BaseApiController
                 // Implement AddManagedDojaangAsync in your service if not already present
                 await _coachService.AddManagedDojaangAsync(coachId, dojaangId);
             }
+
 
             // Return updated managed dojaangs
             var updatedManagedDojaangs = await _coachService.GetManagedDojaangsAsync(coachId);
@@ -176,6 +202,7 @@ public class CoachesController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Creates or updates a coach user (upsert operation).
     /// </summary>
@@ -189,6 +216,7 @@ public class CoachesController : BaseApiController
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
                 return ErrorResponse("Invalid user context.", 401);
+
 
             var user = await _userService.UpsertCoachAsync(requestingUserId, upsertCoachDto);
             var resultDto = _mapper.Map<UserDto>(user);
@@ -206,6 +234,7 @@ public class CoachesController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Deletes a coach by their unique identifier.
     /// </summary>
@@ -219,6 +248,7 @@ public class CoachesController : BaseApiController
             var coach = await _coachService.GetCoachByIdAsync(coachId);
             if (coach == null)
                 return ErrorResponse("Coach not found.", 404);
+
 
             await _userService.DeleteAsync(coachId);
             return NoContent();
@@ -235,11 +265,12 @@ public class CoachesController : BaseApiController
         }
     }
 
+
     [HttpGet("by-dojaang/{dojaangId}")]
     public async Task<IActionResult> GetCoachesByDojaang(int dojaangId)
     {
-        var coaches = await _coachService.GetCoachesByDojaangAsync(dojaangId);
-        var result = coaches.Select(_mapper.Map<UserDto>);
-        return SuccessResponse(result);
+        var query = new GetCoachesByDojaangQuery { DojaangId = dojaangId };
+        var coaches = await _mediator.Send(query);
+        return SuccessResponse(coaches);
     }
 }

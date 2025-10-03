@@ -249,9 +249,15 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                 flexDirection: "column",
               }}
             >
-              <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
-                <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
-                  <PersonAddIcon sx={{ color: "var(--primary)", fontSize: "1.5rem" }} />
+              <CardContent
+                sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}
+              >
+                <Box
+                  sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}
+                >
+                  <PersonAddIcon
+                    sx={{ color: "var(--primary)", fontSize: "1.5rem" }}
+                  />
                   <Typography
                     variant="h6"
                     sx={{
@@ -312,7 +318,9 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                     >
                       <PersonIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
                       <Typography variant="body2">
-                        {searchAvailable ? "No students match your search" : "No available students"}
+                        {searchAvailable
+                          ? "No students match your search"
+                          : "No available students"}
                       </Typography>
                     </Box>
                   ) : (
@@ -363,7 +371,10 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                                 )}
                                 {(student.dojaangName || student.dojaangId) && (
                                   <Chip
-                                    label={student.dojaangName || `Dojaang ${student.dojaangId}`}
+                                    label={
+                                      student.dojaangName ||
+                                      `Dojaang ${student.dojaangId}`
+                                    }
                                     size="small"
                                     sx={{
                                       bgcolor: "var(--accent-100)",
@@ -418,9 +429,15 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                 flexDirection: "column",
               }}
             >
-              <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
-                <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
-                  <CheckCircleIcon sx={{ color: "var(--success)", fontSize: "1.5rem" }} />
+              <CardContent
+                sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}
+              >
+                <Box
+                  sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}
+                >
+                  <CheckCircleIcon
+                    sx={{ color: "var(--success)", fontSize: "1.5rem" }}
+                  />
                   <Typography
                     variant="h6"
                     sx={{
@@ -479,9 +496,13 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                         color: "var(--fg-muted)",
                       }}
                     >
-                      <CheckCircleIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                      <CheckCircleIcon
+                        sx={{ fontSize: 48, mb: 2, opacity: 0.5 }}
+                      />
                       <Typography variant="body2">
-                        {searchEnrolled ? "No students match your search" : "No enrolled students"}
+                        {searchEnrolled
+                          ? "No students match your search"
+                          : "No enrolled students"}
                       </Typography>
                     </Box>
                   ) : (
@@ -532,7 +553,10 @@ export const StudentAssignment: React.FC<StudentAssignmentProps> = ({
                                 )}
                                 {(student.dojaangName || student.dojaangId) && (
                                   <Chip
-                                    label={student.dojaangName || `Dojaang ${student.dojaangId}`}
+                                    label={
+                                      student.dojaangName ||
+                                      `Dojaang ${student.dojaangId}`
+                                    }
                                     size="small"
                                     sx={{
                                       bgcolor: "var(--gold-100)",

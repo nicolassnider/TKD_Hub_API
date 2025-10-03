@@ -90,10 +90,13 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
 
   const { hasRole, token } = useRole();
 
-  const getAuthHeaders = useCallback(() => ({
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  }), [token]);
+  const getAuthHeaders = useCallback(
+    () => ({
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    }),
+    [token],
+  );
 
   const handleApiError = (error: any) => {
     if (error instanceof ApiError) {
@@ -234,7 +237,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
   const fetchStudentsForClass = useCallback(
     async (classId: number): Promise<void> => {
       if (fetchingStudents) return; // Prevent concurrent calls
-      
+
       try {
         setFetchingStudents(true);
         setError(null);
@@ -256,7 +259,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
   const fetchAvailableStudents = useCallback(
     async (classId?: number): Promise<void> => {
       if (fetchingAvailable) return; // Prevent concurrent calls
-      
+
       try {
         setFetchingAvailable(true);
         setError(null);
@@ -295,7 +298,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         // Always refresh both lists after successful operation to ensure data consistency
         await Promise.all([
           fetchStudentsForClass(classId),
-          fetchAvailableStudents(classId)
+          fetchAvailableStudents(classId),
         ]);
       } catch (error) {
         handleApiError(error);
@@ -321,7 +324,7 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
         // Always refresh both lists after successful operation to ensure data consistency
         await Promise.all([
           fetchStudentsForClass(classId),
-          fetchAvailableStudents(classId)
+          fetchAvailableStudents(classId),
         ]);
       } catch (error) {
         handleApiError(error);

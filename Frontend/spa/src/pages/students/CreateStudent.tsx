@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 
 export default function CreateStudent() {
   const navigate = useNavigate();
-  
+
   return (
     <Box sx={{ pt: 2 }}>
       <Box sx={{ maxWidth: 1000, mx: "auto" }}>

@@ -10,6 +10,7 @@ public class StudentService : IStudentService
     private const int CoachRoleId = 2;
     private const string DefaultStudentPassword = "StudentPassword123!";
 
+
     public StudentService(
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
@@ -22,12 +23,14 @@ public class StudentService : IStudentService
         _currentUserService = currentUserService;
     }
 
+
     public async Task<UserDto> CreateStudentAsync(CreateStudentDto createStudentDto)
     {
         // Get the context user
         var contextUser = await _currentUserService.GetCurrentUserAsync();
         if (contextUser == null)
             throw new UnauthorizedAccessException("No context user found.");
+
 
         // If context user is a Coach, DojaangId must be present and managed by the coach
         if (contextUser.HasRole("Coach"))
@@ -38,8 +41,10 @@ public class StudentService : IStudentService
                 throw new UnauthorizedAccessException("Coach can only add students to dojaangs they manage.");
         }
 
+
         // Map to User entity
         var user = _mapper.Map<User>(createStudentDto);
+
 
         // Assign the Student role
         user.UserUserRoles = new List<UserUserRole>
@@ -50,6 +55,7 @@ public class StudentService : IStudentService
                 UserRoleId = StudentRoleId
             }
         };
+
 
         // Check if student has black belt rank (DanLevel is not null) and add Coach role
         if (user.CurrentRankId.HasValue)
@@ -66,17 +72,22 @@ public class StudentService : IStudentService
             }
         }
 
+
         // Set JoinDate to now if not set
         user.JoinDate = user.JoinDate ?? DateTime.UtcNow;
+
 
         // Set default password
         user.PasswordHash = _passwordHasher.HashPassword(user, DefaultStudentPassword);
 
+
         await _userRepository.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
+
         return _mapper.Map<UserDto>(user);
     }
+
 
     public async Task<UserDto?> GetStudentByIdAsync(int id)
     {
@@ -86,11 +97,13 @@ public class StudentService : IStudentService
         return _mapper.Map<UserDto>(user);
     }
 
+
     public async Task<IEnumerable<UserDto>> GetStudentsByDojaangIdAsync(int dojaangId)
     {
         var students = await _userRepository.GetStudentsByDojaangIdAsync(dojaangId);
         return students.Select(_mapper.Map<UserDto>);
     }
+
 
     public async Task<IEnumerable<UserDto>> GetAllStudentsAsync()
     {
@@ -98,19 +111,21 @@ public class StudentService : IStudentService
         return users.Select(_mapper.Map<UserDto>);
     }
 
+
     public async Task<IEnumerable<UserDto>> GetStudentsNotInClassAsync(int classId)
     {
         // Get all students
         var allStudents = await _userRepository.GetUsersByRoleAsync("Student");
-
+       
         // Get students enrolled in the specific class
         var enrolledStudentIds = await _userRepository.GetStudentIdsByClassIdAsync(classId);
-
+       
         // Filter out enrolled students
         var availableStudents = allStudents.Where(s => !enrolledStudentIds.Contains(s.Id));
-
+       
         return availableStudents.Select(_mapper.Map<UserDto>);
     }
+
 
     public async Task<UserDto?> UpdateStudentAsync(int id, UpdateStudentDto updateStudentDto)
     {
@@ -118,10 +133,13 @@ public class StudentService : IStudentService
         if (user == null || !user.UserUserRoles.Any(r => r.UserRoleId == StudentRoleId))
             return null;
 
+
         // Store the old DojaangId before mapping
         var oldDojaangId = user.DojaangId;
 
+
         _mapper.Map(updateStudentDto, user);
+
 
         // If DojaangId has changed, update UserDojaangs relation
         if (updateStudentDto.DojaangId.HasValue && updateStudentDto.DojaangId != oldDojaangId)
@@ -132,6 +150,7 @@ public class StudentService : IStudentService
                 .ToList();
             foreach (var rel in oldRelations)
                 user.UserDojaangs.Remove(rel);
+
 
             // Add new relation if DojaangId is set
             if (updateStudentDto.DojaangId.Value != 0)
@@ -145,8 +164,10 @@ public class StudentService : IStudentService
             }
         }
 
+
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
+
 
         return _mapper.Map<UserDto>(user);
     }

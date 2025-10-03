@@ -1,6 +1,11 @@
-﻿using TKDHubAPI.Application.DTOs.User;
+﻿using MediatR;
+using TKDHubAPI.Application.CQRS.Commands.Students;
+using TKDHubAPI.Application.CQRS.Queries.Students;
+using TKDHubAPI.Application.DTOs.User;
+
 
 namespace TKDHubAPI.WebAPI.Controllers;
+
 
 /// <summary>
 /// API controller for managing student users.
@@ -11,25 +16,32 @@ public class StudentsController : BaseApiController
 {
     private readonly IStudentService _studentService;
     private readonly ITrainingClassService _trainingClassService;
+    private readonly IMediator _mediator;
+
+
 
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StudentsController"/> class.
     /// </summary>
     /// <param name="studentService">The student service instance.</param>
-    /// <param name="mapper">The AutoMapper instance.</param>
+    /// <param name="trainingClassService">The training class service instance.</param>
+    /// <param name="mediator">The MediatR instance.</param>
     /// <param name="logger">The logger instance.</param>
     public StudentsController(
         IStudentService studentService,
         ITrainingClassService trainingClassService,
-
+        IMediator mediator,
         ILogger<StudentsController> logger
     ) : base(logger)
     {
         _studentService = studentService;
         _trainingClassService = trainingClassService;
+        _mediator = mediator;
+
 
     }
+
 
     /// <summary>
     /// Creates a new student user.
@@ -41,7 +53,22 @@ public class StudentsController : BaseApiController
     {
         try
         {
-            var userDto = await _studentService.CreateStudentAsync(createStudentDto);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var requestingUserId))
+                return Unauthorized("Invalid user context.");
+
+
+            var currentUserRoles = GetCurrentUserRoles();
+
+
+            var command = new CreateStudentCommand
+            {
+                CreateStudentDto = createStudentDto,
+                RequestingUserId = requestingUserId,
+                CurrentUserRoles = currentUserRoles
+            };
+
+            var userDto = await _mediator.Send(command);
             return SuccessResponse(userDto);
         }
         catch (Exception ex)
@@ -51,6 +78,7 @@ public class StudentsController : BaseApiController
         }
     }
 
+
     /// <summary>
     /// Gets a student by their unique identifier.
     /// </summary>
@@ -59,12 +87,16 @@ public class StudentsController : BaseApiController
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var userDto = await _studentService.GetStudentByIdAsync(id);
+        var query = new GetStudentByIdQuery(id);
+        var userDto = await _mediator.Send(query);
+
         if (userDto == null)
             return ErrorResponse("Student not found", 404);
 
+
         return SuccessResponse(userDto);
     }
+
 
     /// <summary>
     /// Gets all students, optionally excluding students enrolled in a specific class.
@@ -73,11 +105,11 @@ public class StudentsController : BaseApiController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? excludeClassId = null)
     {
-        var students = excludeClassId.HasValue
-            ? await _studentService.GetStudentsNotInClassAsync(excludeClassId.Value)
-            : await _studentService.GetAllStudentsAsync();
+        var query = new GetAllStudentsQuery(excludeClassId);
+        var students = await _mediator.Send(query);
         return SuccessResponse(new { data = students });
     }
+
 
     /// <summary>
     /// Gets all students for a specific dojaang.
@@ -85,9 +117,11 @@ public class StudentsController : BaseApiController
     [HttpGet("Dojaang/{dojaangId}")]
     public async Task<IActionResult> GetByDojaang(int dojaangId)
     {
-        var students = await _studentService.GetStudentsByDojaangIdAsync(dojaangId);
+        var query = new GetStudentsByDojaangIdQuery(dojaangId);
+        var students = await _mediator.Send(query);
         return SuccessResponse(new { data = students });
     }
+
 
     /// <summary>
     /// Updates an existing student user.
@@ -100,9 +134,16 @@ public class StudentsController : BaseApiController
     {
         try
         {
-            var updatedStudent = await _studentService.UpdateStudentAsync(id, updateStudentDto);
+            var command = new UpdateStudentCommand
+            {
+                Id = id,
+                UpdateStudentDto = updateStudentDto
+            };
+
+            var updatedStudent = await _mediator.Send(command);
             if (updatedStudent == null)
                 return ErrorResponse("Student not found", 404);
+
 
             return SuccessResponse(updatedStudent);
         }
@@ -112,6 +153,7 @@ public class StudentsController : BaseApiController
             return ErrorResponse(ex.Message, 500);
         }
     }
+
 
     /// <summary>
     /// Adds a student to a training class.
@@ -138,6 +180,7 @@ public class StudentsController : BaseApiController
             return ErrorResponse(ex.Message, 400);
         }
     }
+
 
     /// <summary>
     /// Removes a student from a training class.

@@ -1,7 +1,12 @@
-﻿using TKDHubAPI.Application.DTOs.TrainingClass;
+﻿using MediatR;
+using TKDHubAPI.Application.CQRS.Commands.TrainingClasses;
+using TKDHubAPI.Application.CQRS.Queries.TrainingClasses;
+using TKDHubAPI.Application.DTOs.TrainingClass;
 using TKDHubAPI.Application.DTOs.User;
 
+
 namespace TKDHubAPI.WebAPI.Controllers;
+
 
 /// <summary>
 /// API controller for managing <see cref="TrainingClass"/> entities.
@@ -11,6 +16,8 @@ public class ClassesController : BaseApiController
     private readonly ITrainingClassService _trainingClassService;
     private readonly IStudentClassService _studentClassService;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassesController"/> class.
@@ -19,18 +26,22 @@ public class ClassesController : BaseApiController
     /// <param name="trainingClassService">The service for managing training classes.</param>
     /// <param name="studentClassService">The service for managing student-class relationships and attendance.</param>
     /// <param name="mapper">The AutoMapper instance for object mapping.</param>
+    /// <param name="mediator">The MediatR instance.</param>
     public ClassesController(
         ILogger<ClassesController> logger,
         ITrainingClassService trainingClassService,
         IMapper mapper,
-        IStudentClassService studentClassService
+        IStudentClassService studentClassService,
+        IMediator mediator
     )
         : base(logger)
     {
         _trainingClassService = trainingClassService;
         _mapper = mapper;
         _studentClassService = studentClassService;
+        _mediator = mediator;
     }
+
 
     /// <summary>
     /// Retrieves all training classes.
@@ -46,10 +57,11 @@ public class ClassesController : BaseApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll()
     {
-        var classes = await _trainingClassService.GetAllAsync();
-        var dtos = _mapper.Map<List<TrainingClassDto>>(classes);
-        return SuccessResponse(dtos);
+        var query = new GetAllTrainingClassesQuery();
+        var classes = await _mediator.Send(query);
+        return SuccessResponse(classes);
     }
+
 
     /// <summary>
     /// Retrieves a training class by its unique identifier.
@@ -68,12 +80,13 @@ public class ClassesController : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
-        var trainingClass = await _trainingClassService.GetByIdAsync(id);
+        var query = new GetTrainingClassByIdQuery { Id = id };
+        var trainingClass = await _mediator.Send(query);
         if (trainingClass == null)
             return ErrorResponse("Training class not found.", 404);
-        var dto = _mapper.Map<TrainingClassDto>(trainingClass);
-        return SuccessResponse(dto);
+        return SuccessResponse(trainingClass);
     }
+
 
     /// <summary>
     /// Creates a new training class.
@@ -99,10 +112,9 @@ public class ClassesController : BaseApiController
     {
         try
         {
-            var entity = _mapper.Map<TrainingClass>(trainingClassDto);
-            var created = await _trainingClassService.CreateAsync(entity);
-            var resultDto = _mapper.Map<TrainingClassDto>(created);
-            return SuccessResponse(resultDto);
+            var command = new CreateTrainingClassCommand { CreateTrainingClassDto = trainingClassDto };
+            var result = await _mediator.Send(command);
+            return SuccessResponse(result);
         }
         catch (InvalidOperationException ex)
         {
@@ -111,6 +123,7 @@ public class ClassesController : BaseApiController
             return StatusCode(400);
         }
     }
+
 
     /// <summary>
     /// Updates an existing training class.
@@ -130,10 +143,12 @@ public class ClassesController : BaseApiController
         if (id != trainingClassDto.Id)
             return ErrorResponse("ID mismatch.", 400);
 
+
         var entity = _mapper.Map<TrainingClass>(trainingClassDto);
         await _trainingClassService.UpdateAsync(entity);
         return SuccessResponse("Training class updated successfully.");
     }
+
 
     /// <summary>
     /// Deletes a training class by its unique identifier.
@@ -150,6 +165,7 @@ public class ClassesController : BaseApiController
         await _trainingClassService.DeleteAsync(id);
         return SuccessResponse("Training class deleted successfully.");
     }
+
 
     /// <summary>
     /// Retrieves all students enrolled in a specific training class.
@@ -168,6 +184,7 @@ public class ClassesController : BaseApiController
         return SuccessResponse(dtos);
     }
 
+
     /// <summary>
     /// Retrieves training classes scheduled for a specific day of the week.
     /// If no day is provided, returns classes for today.
@@ -183,14 +200,17 @@ public class ClassesController : BaseApiController
     {
         var targetDay = day ?? DateTime.Today.DayOfWeek;
 
+
         var classes = await _trainingClassService.GetAllAsync();
         var filtered = classes
             .Where(c => c.Schedules != null && c.Schedules.Any(s => s.Day == targetDay))
             .ToList();
 
+
         var dtos = _mapper.Map<List<TrainingClassDto>>(filtered);
         return SuccessResponse(dtos);
     }
+
 
     /// <summary>
     /// Retrieves all training classes given by a specific coach.
@@ -209,6 +229,7 @@ public class ClassesController : BaseApiController
         return SuccessResponse(dtos);
     }
 
+
     /// <summary>
     /// Retrieves all class attendance records for a specific student.
     /// </summary>
@@ -226,6 +247,7 @@ public class ClassesController : BaseApiController
         var dtos = _mapper.Map<List<StudentClassDto>>(records);
         return SuccessResponse(dtos);
     }
+
 
     /// <summary>
     /// Registers an attendance event for a student in a class.
@@ -254,6 +276,7 @@ public class ClassesController : BaseApiController
         );
         return SuccessResponse("Attendance registered successfully.");
     }
+
 
     /// <summary>
     /// Gets attendance history for a student in a class, optionally filtered by date range.

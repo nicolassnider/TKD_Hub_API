@@ -1,5 +1,6 @@
 ﻿namespace TKDHubAPI.Application.Interfaces;
 
+
 /// <summary>
 /// Interface for user-related operations, including user creation, retrieval, and management.
 /// </summary>
@@ -14,12 +15,14 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the created UserDto.</returns>
     Task<UserDto> CreateUserAsync(int requestingUserId, IEnumerable<string> currentUserRoles, CreateUserDto createUserDto);
 
+
     /// <summary>
     /// Retrieves a user by their email asynchronously.
     /// </summary>
     /// <param name="email">The email of the user to retrieve.</param>
     /// <returns>A task that represents the asynchronous operation, containing the User if found.</returns>
     Task<User> GetUserByEmailAsync(string email);
+
 
     /// <summary>
     /// Retrieves a user by their phone number asynchronously.
@@ -28,12 +31,14 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the User if found.</returns>
     Task<User> GetUserByPhoneNumberAsync(string phoneNumber);
 
+
     /// <summary>
     /// Retrieves a list of users associated with a specific role asynchronously.
     /// </summary>
     /// <param name="roleName">The name of the role to filter users.</param>
     /// <returns>A task that represents the asynchronous operation, containing a collection of Users associated with the specified role.</returns>
     Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName);
+
 
     /// <summary>
     /// Retrieves a list of users by their gender asynchronously.
@@ -42,12 +47,14 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing a collection of Users associated with the specified gender.</returns>
     Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender);
 
+
     /// <summary>
     /// Adds a new user and links the user to the specified roles.
     /// </summary>
     /// <param name="createUserDto">The DTO containing the information required to create a new user.</param>
     /// <returns>A task that represents the asynchronous operation, containing the created User.</returns>
     Task<User> AddUserWithRolesAsync(CreateUserDto createUserDto);
+
 
     /// <summary>
     /// Registers a new user with a password.
@@ -57,6 +64,7 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the registered User if successful; otherwise, null.</returns>
     Task<User?> RegisterAsync(CreateUserDto createUserDto, string password);
 
+
     /// <summary>
     /// Authenticates a user and returns the user if successful.
     /// </summary>
@@ -64,6 +72,7 @@ public interface IUserService : ICrudService<User>
     /// <param name="password">The password of the user to authenticate.</param>
     /// <returns>A task that represents the asynchronous operation, containing the authenticated User if successful; otherwise, null.</returns>
     Task<User?> LoginAsync(string email, string password);
+
 
     /// <summary>
     /// Authenticates a user and returns a JWT token if successful.
@@ -73,12 +82,14 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the JWT token if successful; otherwise, null.</returns>
     Task<string?> LoginWithTokenAsync(string email, string password);
 
+
     /// <summary>
     /// Authenticates a user and returns a JWT token and user info if successful.
     /// </summary>
     /// <param name="loginDto">The DTO containing the login information.</param>
     /// <returns>A task that represents the asynchronous operation, containing a tuple with the JWT token and UserDto if successful.</returns>
     Task<(string? Token, UserDto? User)> LoginAndGetTokenAsync(LoginDto loginDto);
+
 
     /// <summary>
     /// Gets the role name for a given role ID.
@@ -87,12 +98,14 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the role name if found; otherwise, null.</returns>
     Task<string?> GetRoleNameById(int roleId);
 
+
     /// <summary>
     /// Gets the role names for a list of role IDs.
     /// </summary>
     /// <param name="roleIds">The list of role IDs to retrieve names for.</param>
     /// <returns>A task that represents the asynchronous operation, containing a list of role names.</returns>
     Task<List<string>> GetRoleNamesByIdsAsync(List<int> roleIds);
+
 
     /// <summary>
     /// Checks if the current user (by id and roles) is allowed to create a user with the specified roles.
@@ -103,6 +116,7 @@ public interface IUserService : ICrudService<User>
     /// <returns>True if allowed, false otherwise.</returns>
     bool CanAssignRoles(IEnumerable<string> currentUserRoles, IEnumerable<string> newUserRoleNames);
 
+
     /// <summary>
     /// Checks if a coach manages a specific dojaang.
     /// </summary>
@@ -110,6 +124,7 @@ public interface IUserService : ICrudService<User>
     /// <param name="dojaangId">The dojaang ID.</param>
     /// <returns>True if the coach manages the dojaang, false otherwise.</returns>
     Task<bool> CoachManagesDojaangAsync(int coachId, int dojaangId);
+
 
     /// <summary>
     /// Allows a coach to add another coach only for the dojaang(s) they manage.
@@ -120,6 +135,7 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the created coach User.</returns>
     Task<User> AddCoachToDojaangAsync(int requestingUserId, CreateUserDto createCoachDto);
 
+
     /// <summary>
     /// Gets the list of dojaang IDs managed by the given user (coach).
     /// </summary>
@@ -127,12 +143,14 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing a list of managed dojaang IDs.</returns>
     Task<List<int>> GetManagedDojaangIdsAsync(int coachId);
 
+
     /// <summary>
     /// Gets all students belonging to a specific dojaang.
     /// </summary>
     /// <param name="dojaangId">The ID of the dojaang to retrieve students from.</param>
     /// <returns>A task that represents the asynchronous operation, containing a collection of Users belonging to the specified dojaang.</returns>
     Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId);
+
 
     /// <summary>
     /// Removes the association between a coach and a managed dojaang.
@@ -142,6 +160,7 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task RemoveCoachFromDojaangAsync(int coachId, int dojaangId);
 
+
     /// <summary>
     /// Adds a managed dojaang relation for a coach if not already present.
     /// </summary>
@@ -149,6 +168,7 @@ public interface IUserService : ICrudService<User>
     /// <param name="dojaangId">The dojaang ID to add to management.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task AddCoachToDojaangRelationAsync(int coachId, int dojaangId);
+
 
     /// <summary>
     /// Upserts a coach asynchronously, creating or updating the coach based on the provided DTO.
@@ -158,6 +178,7 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation, containing the upserted User.</returns>
     Task<User> UpsertCoachAsync(int requestingUserId, UpsertCoachDto dto);
 
+
     /// <summary>
     /// Reactivates a coach user by their user ID, typically by setting their account status to active.
     /// </summary>
@@ -165,25 +186,30 @@ public interface IUserService : ICrudService<User>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task ReactivateAsync(int coachId);
 
+
     /// <summary>
     /// Gets all UserUserRoles for a user.
     /// </summary>
     Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId);
+
 
     /// <summary>
     /// Adds a UserUserRole association.
     /// </summary>
     Task AddUserUserRoleAsync(UserUserRole userUserRole);
 
+
     /// <summary>
     /// Removes a UserUserRole association.
     /// </summary>
     Task RemoveUserUserRoleAsync(int userId, int userRoleId);
 
+
     /// <summary>
     /// Gets all users as DTOs with their roles.
     /// </summary>
     Task<IEnumerable<UserDto>> GetAllWithRolesAsync();
+
 
     /// <summary>
     /// Updates a user using the provided DTO.
@@ -192,4 +218,8 @@ public interface IUserService : ICrudService<User>
     /// <param name="updateUserDto">The DTO containing updated user information.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task UpdateUserFromDtoAsync(int id, UpdateUserDto updateUserDto);
+
+
+
+
 }

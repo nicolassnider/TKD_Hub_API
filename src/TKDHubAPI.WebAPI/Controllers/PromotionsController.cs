@@ -1,6 +1,11 @@
-﻿using TKDHubAPI.Application.DTOs.Promotion;
+﻿using MediatR;
+using TKDHubAPI.Application.CQRS.Commands.Promotions;
+using TKDHubAPI.Application.CQRS.Queries.Promotions;
+using TKDHubAPI.Application.DTOs.Promotion;
+
 
 namespace TKDHubAPI.WebAPI.Controllers;
+
 
 /// <summary>
 /// API controller for managing promotions.
@@ -13,6 +18,8 @@ public class PromotionsController : BaseApiController
     private readonly IUserService _userService;
     private readonly IRankService _rankService;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromotionsController"/> class.
@@ -22,19 +29,23 @@ public class PromotionsController : BaseApiController
     /// <param name="rankService">The rank service instance.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
     /// <param name="logger">The logger instance.</param>
+    /// <param name="mediator">The MediatR instance.</param>
     public PromotionsController(
         IPromotionService promotionService,
         IUserService userService,
         IRankService rankService,
         IMapper mapper,
-        ILogger<PromotionsController> logger
+        ILogger<PromotionsController> logger,
+        IMediator mediator
     ) : base(logger)
     {
         _promotionService = promotionService;
         _userService = userService;
         _rankService = rankService;
         _mapper = mapper;
+        _mediator = mediator;
     }
+
 
     /// <summary>
     /// Creates a new promotion and updates the student's current rank.
@@ -47,20 +58,9 @@ public class PromotionsController : BaseApiController
     {
         try
         {
-            var promotion = _mapper.Map<Promotion>(createPromotionDto);
-            await _promotionService.AddAsync(promotion);
-            var resultDto = _mapper.Map<PromotionDto>(promotion);
-
-            // Update the user's current rank
-            var user = await _userService.GetByIdAsync(promotion.StudentId);
-            if (user != null)
-            {
-                var rank = await _rankService.GetByIdAsync(promotion.RankId);
-                user.CurrentRank = rank;
-                await _userService.UpdateAsync(user);
-            }
-
-            return SuccessResponse(resultDto);
+            var command = new CreatePromotionCommand { CreatePromotionDto = createPromotionDto };
+            var result = await _mediator.Send(command);
+            return SuccessResponse(result);
         }
         catch (Exception ex)
         {
@@ -68,6 +68,7 @@ public class PromotionsController : BaseApiController
             return ErrorResponse(ex.Message, 500);
         }
     }
+
 
     /// <summary>
     /// Gets a promotion by its unique identifier.
@@ -79,13 +80,15 @@ public class PromotionsController : BaseApiController
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetById(int id)
     {
-        var promotion = await _promotionService.GetByIdAsync(id);
+        var query = new GetPromotionByIdQuery { Id = id };
+        var promotion = await _mediator.Send(query);
         if (promotion == null)
             return ErrorResponse("Promotion not found", 404);
 
-        var resultDto = _mapper.Map<PromotionDto>(promotion);
-        return SuccessResponse(resultDto);
+
+        return SuccessResponse(promotion);
     }
+
 
     /// <summary>
     /// Gets all promotions, optionally filtered by student ID.
@@ -96,19 +99,21 @@ public class PromotionsController : BaseApiController
     [ProducesResponseType(typeof(IEnumerable<PromotionDto>), 200)]
     public async Task<IActionResult> GetAll([FromQuery] int? studentId)
     {
-        IEnumerable<PromotionDto> result;
         if (studentId.HasValue)
         {
+            // For now, use the service directly for filtered queries
             var promotions = await _promotionService.GetPromotionsByStudentIdAsync(studentId.Value);
-            result = promotions.Select(_mapper.Map<PromotionDto>);
+            var result = promotions.Select(_mapper.Map<PromotionDto>);
+            return SuccessResponse(result);
         }
         else
         {
-            var promotions = await _promotionService.GetAllAsync();
-            result = promotions.Select(_mapper.Map<PromotionDto>);
+            var query = new GetAllPromotionsQuery();
+            var promotions = await _mediator.Send(query);
+            return SuccessResponse(promotions);
         }
-        return SuccessResponse(result);
     }
+
 
     /// <summary>
     /// Updates an existing promotion.
@@ -124,15 +129,18 @@ public class PromotionsController : BaseApiController
         if (id != updatePromotionDto.Id)
             return ErrorResponse("ID mismatch.", 400);
 
+
         var existing = await _promotionService.GetByIdAsync(id);
         if (existing == null)
             return ErrorResponse("Promotion not found", 404);
+
 
         _mapper.Map(updatePromotionDto, existing);
         await _promotionService.UpdateAsync(existing);
         var resultDto = _mapper.Map<PromotionDto>(existing);
         return SuccessResponse(resultDto);
     }
+
 
     /// <summary>
     /// Deletes a promotion by its unique identifier.
@@ -148,9 +156,11 @@ public class PromotionsController : BaseApiController
         if (existing == null)
             return ErrorResponse("Promotion not found", 404);
 
+
         await _promotionService.DeleteAsync(id);
         return NoContent();
     }
+
 
     /// <summary>
     /// Gets all promotions for a specific student by their ID.
@@ -165,5 +175,6 @@ public class PromotionsController : BaseApiController
         var result = promotions.Select(_mapper.Map<PromotionDto>);
         return SuccessResponse(result);
     }
+
 
 }

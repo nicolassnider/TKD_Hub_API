@@ -1,13 +1,16 @@
 ﻿namespace TKDHubAPI.Infrastructure.Repositories;
 
+
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
     private readonly TkdHubDbContext _context;
+
 
     public UserRepository(TkdHubDbContext context) : base(context)
     {
         _context = context;
     }
+
 
     public async Task<List<User>> GetAllAsync()
     {
@@ -17,6 +20,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .Include(u => u.UserDojaangs)
             .ToListAsync();
     }
+
 
     public async Task<User?> GetByIdAsync(int id)
     {
@@ -28,6 +32,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
+
     public async Task<User?> GetUserByEmailAsync(string email)
     {
         return await _context.Users
@@ -38,6 +43,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
+
     public async Task<User?> GetUserByPhoneNumberAsync(string phoneNumber)
     {
         return await _context.Users
@@ -47,6 +53,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
                 .ThenInclude(uur => uur.UserRole)
             .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
     }
+
 
     public async Task<IEnumerable<User>> GetUsersByGenderAsync(Gender gender)
     {
@@ -59,6 +66,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .ToListAsync();
     }
 
+
     public async Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName)
     {
         return await _context.Users
@@ -70,6 +78,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .ToListAsync();
     }
 
+
     public async Task<IEnumerable<User>> GetStudentsByDojaangIdAsync(int dojaangId)
     {
         var normalizedDojaangId = NormalizeDojaangId(dojaangId);
@@ -78,6 +87,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             // Return empty if dojaangId is 0 or null, as there is no such dojaang
             return new List<User>();
         }
+
 
         return await _context.Users
             .Include(u => u.UserDojaangs)
@@ -90,11 +100,13 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .ToListAsync();
     }
 
+
     // Add this helper method to the class:
     private int? NormalizeDojaangId(int? dojaangId)
     {
         return (dojaangId == null || dojaangId == 0) ? null : dojaangId;
     }
+
 
     public async Task<IEnumerable<int>> GetStudentIdsByClassIdAsync(int classId)
     {
@@ -104,6 +116,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .ToListAsync();
     }
 
+
     public async Task<IEnumerable<UserUserRole>> GetUserUserRolesAsync(int userId)
     {
         return await _context.UserUserRoles
@@ -112,11 +125,13 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .ToListAsync();
     }
 
+
     public async Task AddUserUserRoleAsync(UserUserRole userUserRole)
     {
         await _context.UserUserRoles.AddAsync(userUserRole);
         await _context.SaveChangesAsync();
     }
+
 
     public async Task RemoveUserUserRoleAsync(int userId, int userRoleId)
     {

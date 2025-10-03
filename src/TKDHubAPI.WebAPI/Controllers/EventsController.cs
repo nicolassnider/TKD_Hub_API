@@ -1,7 +1,12 @@
-﻿using TKDHubAPI.Application.DTOs.Event;
+﻿using MediatR;
+using TKDHubAPI.Application.CQRS.Commands.Events;
+using TKDHubAPI.Application.CQRS.Queries.Events;
+using TKDHubAPI.Application.DTOs.Event;
 using TKDHubAPI.Domain.Enums;
 
+
 namespace TKDHubAPI.WebAPI.Controllers;
+
 
 /// <summary>
 /// API controller for managing events.
@@ -11,29 +16,35 @@ public class EventsController : BaseApiController
     private readonly IEventService _eventService;
     private readonly IMapper _mapper;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IMediator _mediator;
+
 
     public EventsController(
         ILogger<EventsController> logger,
         IEventService eventService,
         IMapper mapper,
-        ICurrentUserService currentUserService
+        ICurrentUserService currentUserService,
+        IMediator mediator
     )
         : base(logger)
     {
         _eventService = eventService;
         _mapper = mapper;
         _currentUserService = currentUserService;
+        _mediator = mediator;
     }
+
 
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
-        var events = await _eventService.GetAllAsync();
-        var dtos = _mapper.Map<List<EventDto>>(events);
-        return SuccessResponse(dtos);
+        var query = new GetAllEventsQuery();
+        var events = await _mediator.Send(query);
+        return SuccessResponse(events);
     }
+
 
     [HttpGet("{id}")]
     [AllowAnonymous]
@@ -41,12 +52,13 @@ public class EventsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
-        var res = await _eventService.GetByIdResultAsync(id);
-        if (!res.IsSuccess)
-            return ErrorResponse(res.Error ?? "Event not found.", 404);
-        var dto = _mapper.Map<EventDto>(res.Value!);
-        return SuccessResponse(dto);
+        var query = new GetEventByIdQuery { Id = id };
+        var eventDto = await _mediator.Send(query);
+        if (eventDto == null)
+            return ErrorResponse("Event not found.", 404);
+        return SuccessResponse(eventDto);
     }
+
 
     [HttpPost]
     [Authorize]
@@ -56,11 +68,10 @@ public class EventsController : BaseApiController
     {
         try
         {
-            var entity = _mapper.Map<Event>(dto);
             var currentUser = await _currentUserService.GetCurrentUserAsync();
-            await _eventService.AddAsync(entity, currentUser!);
-            var resultDto = _mapper.Map<EventDto>(entity);
-            return SuccessResponse(resultDto);
+            var command = new CreateEventCommand { CreateEventDto = dto, CurrentUser = currentUser! };
+            var result = await _mediator.Send(command);
+            return SuccessResponse(result);
         }
         catch (InvalidOperationException ex)
         {
@@ -73,6 +84,7 @@ public class EventsController : BaseApiController
         }
     }
 
+
     [HttpPut("{id}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -82,18 +94,20 @@ public class EventsController : BaseApiController
         if (id != dto.Id)
             return ErrorResponse("ID mismatch.", 400);
 
+
         try
         {
-            var entity = _mapper.Map<Event>(dto);
             var currentUser = await _currentUserService.GetCurrentUserAsync();
-            await _eventService.UpdateAsync(entity, currentUser!);
-            return SuccessResponse("Event updated successfully.");
+            var command = new UpdateEventCommand { Id = id, UpdateEventDto = dto, CurrentUser = currentUser! };
+            var result = await _mediator.Send(command);
+            return SuccessResponse(result);
         }
         catch (UnauthorizedAccessException ex)
         {
             return ErrorResponse(ex.Message, 403);
         }
     }
+
 
     [HttpDelete("{id}")]
     [Authorize]
@@ -112,6 +126,7 @@ public class EventsController : BaseApiController
         }
     }
 
+
     // Filtering endpoints
     [HttpGet("dojaang/{dojaangId}")]
     [AllowAnonymous]
@@ -122,6 +137,7 @@ public class EventsController : BaseApiController
         return SuccessResponse(dtos);
     }
 
+
     [HttpGet("coach/{coachId}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetByCoach(int coachId)
@@ -131,6 +147,7 @@ public class EventsController : BaseApiController
         return SuccessResponse(dtos);
     }
 
+
     [HttpGet("by-type/{type}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetByType(EventType type)
@@ -139,6 +156,7 @@ public class EventsController : BaseApiController
         var dtos = _mapper.Map<List<EventDto>>(items);
         return SuccessResponse(dtos);
     }
+
 
     [HttpGet("by-date-range")]
     [AllowAnonymous]
@@ -151,6 +169,7 @@ public class EventsController : BaseApiController
         var dtos = _mapper.Map<List<EventDto>>(items);
         return SuccessResponse(dtos);
     }
+
 
     // Attendance endpoints
     [HttpGet("{eventId}/attendance")]

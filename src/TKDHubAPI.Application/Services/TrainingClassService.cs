@@ -1,6 +1,8 @@
 ﻿using TKDHubAPI.Application.DTOs.TrainingClass;
 
+
 namespace TKDHubAPI.Application.Services;
+
 
 public class TrainingClassService : ITrainingClassService
 {
@@ -10,6 +12,7 @@ public class TrainingClassService : ITrainingClassService
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStudentClassAttendanceRepository _attendanceRepository;
+
 
     public TrainingClassService(
         ITrainingClassRepository trainingClassRepository,
@@ -27,31 +30,38 @@ public class TrainingClassService : ITrainingClassService
         _attendanceRepository = attendanceRepository;
     }
 
+
     public async Task<TrainingClass> CreateAsync(TrainingClass trainingClass)
     {
         // Check for coach schedule conflicts
         await EnsureNoCoachScheduleConflict(trainingClass);
 
+
         return await _trainingClassRepository.AddAsync(trainingClass);
     }
+
 
     public async Task UpdateAsync(TrainingClass trainingClass)
     {
         // Check for coach schedule conflicts
         await EnsureNoCoachScheduleConflict(trainingClass);
 
+
         await _trainingClassRepository.UpdateAsync(trainingClass);
     }
+
 
     public async Task DeleteAsync(int id)
     {
         await _trainingClassRepository.DeleteAsync(id);
     }
 
+
     public async Task<TrainingClass> GetByIdAsync(int id)
     {
         return await _trainingClassRepository.GetByIdAsync(id);
     }
+
 
     public async Task<bool> HasCoachScheduleConflictAsync(int coachId, IEnumerable<ClassSchedule> schedules, int? excludeClassId = null)
     {
@@ -68,6 +78,7 @@ public class TrainingClassService : ITrainingClassService
         return false;
     }
 
+
     private async Task EnsureNoCoachScheduleConflict(TrainingClass trainingClass)
     {
         if (await HasCoachScheduleConflictAsync(trainingClass.CoachId, trainingClass.Schedules, trainingClass.Id))
@@ -76,10 +87,12 @@ public class TrainingClassService : ITrainingClassService
         }
     }
 
+
     public async Task<IEnumerable<TrainingClass>> GetAllAsync()
     {
         return await _trainingClassRepository.GetAllAsync();
     }
+
 
     public async Task<IEnumerable<TrainingClassDto>> GetClassesForCurrentCoachAsync()
     {
@@ -87,9 +100,11 @@ public class TrainingClassService : ITrainingClassService
         if (currentUser == null || !currentUser.HasRole("Coach"))
             return Enumerable.Empty<TrainingClassDto>();
 
+
         var classes = await _trainingClassRepository.GetByCoachIdAsync(currentUser.Id);
         return _mapper.Map<IEnumerable<TrainingClassDto>>(classes);
     }
+
 
     public async Task AddStudentToClassAsync(int trainingClassId, int studentId)
     {
@@ -97,13 +112,16 @@ public class TrainingClassService : ITrainingClassService
         if (trainingClass == null)
             throw new Exception("Training class not found.");
 
+
         var student = await _userRepository.GetByIdAsync(studentId);
         if (student == null)
             throw new Exception("Student not found.");
 
+
         // Prevent duplicates
         if (trainingClass.StudentClasses.Any(sc => sc.StudentId == studentId))
             throw new InvalidOperationException("Student is already enrolled in this class.");
+
 
         trainingClass.StudentClasses.Add(new StudentClass
         {
@@ -111,8 +129,10 @@ public class TrainingClassService : ITrainingClassService
             TrainingClassId = trainingClassId
         });
 
+
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task RemoveStudentFromClassAsync(int trainingClassId, int studentId)
     {
@@ -120,24 +140,30 @@ public class TrainingClassService : ITrainingClassService
         if (trainingClass == null)
             throw new Exception("Training class not found.");
 
+
         var student = await _userRepository.GetByIdAsync(studentId);
         if (student == null)
             throw new Exception("Student not found.");
+
 
         // Find the student class relationship
         var studentClass = trainingClass.StudentClasses.FirstOrDefault(sc => sc.StudentId == studentId);
         if (studentClass == null)
             throw new InvalidOperationException("Student is not enrolled in this class.");
 
+
         trainingClass.StudentClasses.Remove(studentClass);
+
 
         await _unitOfWork.SaveChangesAsync();
     }
+
 
     public async Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId)
     {
         return await _trainingClassRepository.GetByCoachIdAsync(coachId);
     }
+
 
     public async Task RegisterAttendanceAsync(int studentClassId, DateTime attendedAt, AttendanceStatus status, string? notes = null)
     {
@@ -146,8 +172,10 @@ public class TrainingClassService : ITrainingClassService
             .StudentClasses
             .GetByIdAsync(studentClassId);
 
+
         if (studentClass == null)
             throw new Exception("StudentClass relationship not found.");
+
 
         var attendance = new StudentClassAttendance
         {
@@ -157,8 +185,10 @@ public class TrainingClassService : ITrainingClassService
             Notes = notes
         };
 
+
         await _attendanceRepository.AddAsync(attendance);
     }
+
 
     public async Task<IEnumerable<StudentClassAttendance>> GetAttendanceHistoryAsync(int studentClassId, DateTime? from = null, DateTime? to = null)
     {
@@ -168,5 +198,6 @@ public class TrainingClassService : ITrainingClassService
         }
         return await _attendanceRepository.GetByStudentClassIdAsync(studentClassId);
     }
+
 
 }

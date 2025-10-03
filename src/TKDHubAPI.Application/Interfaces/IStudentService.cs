@@ -1,5 +1,6 @@
 ﻿namespace TKDHubAPI.Application.Interfaces;
 
+
 /// <summary>
 /// Defines a contract for managing students asynchronously, including operations to create a student, retrieve a student by ID, retrieve students by dojaang, and retrieve all students.
 /// </summary>
@@ -12,12 +13,14 @@ public interface IStudentService
     /// <returns>A task that represents the asynchronous operation, containing the created UserDto of the student.</returns>
     Task<UserDto> CreateStudentAsync(CreateStudentDto createStudentDto);
 
+
     /// <summary>
     /// Retrieves a student by their identifier asynchronously.
     /// </summary>
     /// <param name="id">The identifier of the student to retrieve.</param>
     /// <returns>A task that represents the asynchronous operation, containing the UserDto of the student if found; otherwise, null.</returns>
     Task<UserDto?> GetStudentByIdAsync(int id);
+
 
     /// <summary>
     /// Retrieves a list of students associated with a specific dojaang asynchronously.
@@ -26,11 +29,13 @@ public interface IStudentService
     /// <returns>A task that represents the asynchronous operation, containing a collection of UserDto representing the students associated with the specified dojaang.</returns>
     Task<IEnumerable<UserDto>> GetStudentsByDojaangIdAsync(int dojaangId);
 
+
     /// <summary>
     /// Retrieves all students asynchronously.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation, containing a collection of UserDto representing all students.</returns>
     Task<IEnumerable<UserDto>> GetAllStudentsAsync();
+
 
     /// <summary>
     /// Retrieves all students who are not enrolled in a specific training class asynchronously.
@@ -38,6 +43,7 @@ public interface IStudentService
     /// <param name="classId">The identifier of the training class to exclude students from.</param>
     /// <returns>A task that represents the asynchronous operation, containing a collection of UserDto representing students not enrolled in the specified class.</returns>
     Task<IEnumerable<UserDto>> GetStudentsNotInClassAsync(int classId);
+
 
     /// <summary>
     /// Updates an existing student asynchronously.
