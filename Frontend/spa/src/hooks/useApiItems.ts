@@ -23,13 +23,23 @@ export function useApiItems<T = any>(apiPath: string) {
       setItems([]);
       try {
         const res = await fetchJson<any>(apiPath);
-        // support several envelope shapes: array, { data: [...] }, { data: { data: [...] } }, { data: { items: [...] } }
+
+        // support several envelope shapes: array, { data: [...] }, { data: { data: [...] } }, { data: { items: [...] } }, { items: [...] }
         let data: any[] = [];
-        if (Array.isArray(res)) data = res;
-        else if (Array.isArray(res?.data)) data = res.data;
-        else if (Array.isArray(res?.data?.data)) data = res.data.data;
-        else if (Array.isArray(res?.data?.items)) data = res.data.items;
-        else data = [];
+        if (Array.isArray(res)) {
+          data = res;
+        } else if (Array.isArray(res?.data)) {
+          data = res.data;
+        } else if (Array.isArray(res?.data?.data)) {
+          data = res.data.data;
+        } else if (Array.isArray(res?.data?.items)) {
+          data = res.data.items;
+        } else if (Array.isArray(res?.items)) {
+          data = res.items;
+        } else {
+          data = [];
+        }
+
         if (!mounted) return;
         setItems(data as T[]);
       } catch (e) {

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TKDHubAPI.Domain.Constants;
 
 namespace TKDHubAPI.Infrastructure.Data;
+
 public class TkdHubDbContext : DbContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -10,7 +11,8 @@ public class TkdHubDbContext : DbContext
     public TkdHubDbContext(
         DbContextOptions<TkdHubDbContext> options,
         IHttpContextAccessor httpContextAccessor
-    ) : base(options)
+    )
+        : base(options)
     {
         _httpContextAccessor = httpContextAccessor;
     }
@@ -36,6 +38,8 @@ public class TkdHubDbContext : DbContext
     public DbSet<StudentClass> StudentClasses { get; set; }
     public DbSet<BlogPost> BlogPosts { get; set; }
     public DbSet<StudentClassAttendance> StudentClassAttendances { get; set; }
+    public DbSet<DashboardLayout> DashboardLayouts { get; set; }
+    public DbSet<Widget> Widgets { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,13 +58,23 @@ public class TkdHubDbContext : DbContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
-        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = _httpContextAccessor
+            .HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+            ?.Value;
         int? userId = int.TryParse(userIdClaim, out var id) ? id : null;
 
         var auditEntries = new List<AuditLog>();
         var pendingAdded = new List<(EntityEntry Entry, AuditLog Audit)>();
 
-        foreach (var entry in ChangeTracker.Entries().Where(e => !(e.Entity is AuditLog) && e.State != EntityState.Detached && e.State != EntityState.Unchanged))
+        foreach (
+            var entry in ChangeTracker
+                .Entries()
+                .Where(e =>
+                    !(e.Entity is AuditLog)
+                    && e.State != EntityState.Detached
+                    && e.State != EntityState.Unchanged
+                )
+        )
         {
             var audit = new AuditLog
             {
@@ -74,7 +88,10 @@ public class TkdHubDbContext : DbContext
             if (key != null)
             {
                 var keyProperty = key.Properties.FirstOrDefault();
-                if (keyProperty != null && entry.Properties.Any(p => p.Metadata.Name == keyProperty.Name))
+                if (
+                    keyProperty != null
+                    && entry.Properties.Any(p => p.Metadata.Name == keyProperty.Name)
+                )
                 {
                     entityId = entry.Property(keyProperty.Name).CurrentValue;
                 }
@@ -86,7 +103,9 @@ public class TkdHubDbContext : DbContext
                 case EntityState.Added:
                     // Defer Added entries until after save so generated keys are available
                     audit.Operation = AuditOperation.Create;
-                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
+                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(
+                        entry.CurrentValues.ToObject()
+                    );
                     pendingAdded.Add((entry, audit));
                     break;
                 case EntityState.Modified:
@@ -94,22 +113,30 @@ public class TkdHubDbContext : DbContext
                     var current = entry.CurrentValues.ToObject();
 
                     // Detect soft delete transitions via IsActive property
-                    var isActiveProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == PropertyNames.IsActive);
+                    var isActiveProp = entry.Properties.FirstOrDefault(p =>
+                        p.Metadata.Name == PropertyNames.IsActive
+                    );
                     var isSoftDelete = false;
                     if (isActiveProp != null)
                     {
-                        var originalIsActive = entry.OriginalValues[PropertyNames.IsActive] as bool? ?? true;
-                        var currentIsActive = entry.CurrentValues[PropertyNames.IsActive] as bool? ?? true;
+                        var originalIsActive =
+                            entry.OriginalValues[PropertyNames.IsActive] as bool? ?? true;
+                        var currentIsActive =
+                            entry.CurrentValues[PropertyNames.IsActive] as bool? ?? true;
                         isSoftDelete = originalIsActive && !currentIsActive;
                     }
 
                     audit.Operation = isSoftDelete ? AuditOperation.Delete : AuditOperation.Update;
-                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(new { Original = original, Current = current });
+                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(
+                        new { Original = original, Current = current }
+                    );
                     auditEntries.Add(audit);
                     break;
                 case EntityState.Deleted:
                     audit.Operation = AuditOperation.Delete;
-                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.OriginalValues.ToObject());
+                    audit.Changes = System.Text.Json.JsonSerializer.Serialize(
+                        entry.OriginalValues.ToObject()
+                    );
                     auditEntries.Add(audit);
                     break;
             }
@@ -125,7 +152,10 @@ public class TkdHubDbContext : DbContext
             if (key != null)
             {
                 var keyProperty = key.Properties.FirstOrDefault();
-                if (keyProperty != null && entry.Properties.Any(p => p.Metadata.Name == keyProperty.Name))
+                if (
+                    keyProperty != null
+                    && entry.Properties.Any(p => p.Metadata.Name == keyProperty.Name)
+                )
                 {
                     audit.EntityId = entry.Property(keyProperty.Name).CurrentValue as int?;
                 }
@@ -133,7 +163,9 @@ public class TkdHubDbContext : DbContext
 
             // If we didn't already set Changes, set it now
             if (string.IsNullOrEmpty(audit.Changes))
-                audit.Changes = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
+                audit.Changes = System.Text.Json.JsonSerializer.Serialize(
+                    entry.CurrentValues.ToObject()
+                );
 
             auditEntries.Add(audit);
         }

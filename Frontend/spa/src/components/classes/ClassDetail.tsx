@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Box } from "@mui/material";
+import { Box, Alert, Button } from "@mui/material";
+import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ClassForm } from "./ClassForm";
-import { ClassHeader } from "./ClassHeader.tsx";
+import { ClassHeader } from "./ClassHeader";
 import { ClassInformation } from "./ClassInformation";
 import { StudentsList } from "./StudentsList";
 import { ClassDetailSkeleton } from "./ClassDetailSkeleton";
-import { ClassDetailError } from "./ClassDetailError";
 import { ClassActionMenu } from "./ClassActionMenu";
 import { useClassContext } from "context/ClassContext";
 import { StudentAssignment } from "components/students/StudentAssignment";
@@ -15,7 +15,9 @@ import { DeleteConfirmationDialog } from "components/forms/DeleteConfirmationDia
 
 export const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+
   const navigate = useNavigate();
+
   const {
     currentClass,
     enrolledStudents,
@@ -182,9 +184,6 @@ export const ClassDetail: React.FC = () => {
     </Box>
   );
 };
-import React from "react";
-import { Box, Alert, Button } from "@mui/material";
-import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 
 interface ClassDetailErrorProps {
   error?: string;

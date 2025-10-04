@@ -9,27 +9,45 @@ namespace TKDHubAPI.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         // 1. Register the DbContext
         services.AddDbContext<TkdHubDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+        );
 
         // Configure MercadoPago settings and validate required fields at startup
         services.Configure<MercadoPagoSettings>(configuration.GetSection("MercadoPago"));
-        services.AddOptions<MercadoPagoSettings>()
+        services
+            .AddOptions<MercadoPagoSettings>()
             .Bind(configuration.GetSection("MercadoPago"))
-            .Validate(settings =>
-            {
-                // Run DataAnnotations validation manually
-                var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
-                var context = new System.ComponentModel.DataAnnotations.ValidationContext(settings);
-                bool valid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(settings, context, validationResults, true);
-                if (!valid) return false;
+            .Validate(
+                settings =>
+                {
+                    // Run DataAnnotations validation manually
+                    var validationResults =
+                        new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+                    var context = new System.ComponentModel.DataAnnotations.ValidationContext(
+                        settings
+                    );
+                    bool valid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
+                        settings,
+                        context,
+                        validationResults,
+                        true
+                    );
+                    if (!valid)
+                        return false;
 
-                // Additional predicate validation - only check required fields
-                return !string.IsNullOrWhiteSpace(settings.AccessToken) && !string.IsNullOrWhiteSpace(settings.PublicKey);
-            }, "MercadoPago AccessToken and PublicKey must be provided and valid")
+                    // Additional predicate validation - only check required fields
+                    return !string.IsNullOrWhiteSpace(settings.AccessToken)
+                        && !string.IsNullOrWhiteSpace(settings.PublicKey);
+                },
+                "MercadoPago AccessToken and PublicKey must be provided and valid"
+            )
             .ValidateOnStart();
 
         // Register IUnitOfWork for DI
@@ -42,7 +60,10 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<Tournament>, GenericRepository<Tournament>>();
         services.AddScoped<IGenericRepository<Event>, GenericRepository<Event>>();
         services.AddScoped<IGenericRepository<Tul>, GenericRepository<Tul>>();
-        services.AddScoped<IGenericRepository<EventAttendance>, GenericRepository<EventAttendance>>();
+        services.AddScoped<
+            IGenericRepository<EventAttendance>,
+            GenericRepository<EventAttendance>
+        >();
         services.AddScoped<IGenericRepository<UserRole>, GenericRepository<UserRole>>();
         services.AddScoped<IGenericRepository<Promotion>, GenericRepository<Promotion>>();
         services.AddScoped<IGenericRepository<TrainingClass>, GenericRepository<TrainingClass>>(); // Added TrainingClass
@@ -50,7 +71,6 @@ public static class DependencyInjection
         services.AddScoped<IGenericRepository<StudentClass>, GenericRepository<StudentClass>>(); // Added StudentClass
         services.AddScoped<IGenericRepository<BlogPost>, GenericRepository<BlogPost>>(); // Added BlogPost
         services.AddScoped<IGenericRepository<UserUserRole>, GenericRepository<UserUserRole>>();
-
 
         // Register MercadoPago implementation using typed HttpClient for EnhancedMercadoPagoService
         services.AddHttpClient<IMercadoPagoService, EnhancedMercadoPagoService>();
@@ -72,6 +92,10 @@ public static class DependencyInjection
         services.AddScoped<IBlogPostRepository, BlogPostRepository>();
         services.AddScoped<IStudentClassAttendanceRepository, StudentClassAttendanceRepository>();
         services.AddScoped<IUserUserRoleRepository, UserUserRoleRepository>();
+
+        // Register Dashboard services
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }

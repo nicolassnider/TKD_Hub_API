@@ -14,8 +14,8 @@ export { default as BlogManagement } from "./BlogManagement";
 // Blog management components (used by BlogManagement)
 export { BlogPostTable } from "./BlogPostTable";
 export { BlogPostDialog } from "./BlogPostDialog";
-export { BlogPostsLoadingState } from "./BlogPostsLoadingState";
-export { BlogPostsErrorState } from "./BlogPostsErrorState";
+export { BlogPostsLoadingState } from "./BlogPostLoadingState";
+export { BlogPostsErrorState } from "./BlogPostErrorState";
 
 // Blog types (exported from main types folder)
 export type {

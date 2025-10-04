@@ -244,9 +244,13 @@ export const ClassProvider: React.FC<ClassProviderProps> = ({ children }) => {
 
         const response = (await fetchJson(`/api/classes/${classId}/students`, {
           headers: getAuthHeaders(),
-        })) as { data: StudentForAssignment[] };
+        })) as
+          | { items: StudentForAssignment[] }
+          | { data: StudentForAssignment[] };
 
-        setEnrolledStudents(response.data || []);
+        // Handle both paginated response (items) and direct data response
+        const students = "items" in response ? response.items : response.data;
+        setEnrolledStudents(students || []);
       } catch (error) {
         handleApiError(error);
       } finally {

@@ -54,5 +54,30 @@ public interface ITrainingClassRepository
     /// <param name="coachId">The unique identifier of the coach.</param>
     /// <returns>An enumerable collection of <see cref="TrainingClass"/> entities coached by the specified user.</returns>
     Task<IEnumerable<TrainingClass>> GetByCoachIdAsync(int coachId);
-}
 
+    /// <summary>
+    /// Gets the total count of training classes.
+    /// </summary>
+    /// <returns>The total number of training classes.</returns>
+    Task<int> CountAsync();
+
+    /// <summary>
+    /// Gets the most recent training classes.
+    /// </summary>
+    /// <param name="count">The number of recent classes to retrieve.</param>
+    /// <returns>A collection of recent training classes.</returns>
+    Task<IEnumerable<TrainingClass>> GetRecentAsync(int count);
+
+    /// <summary>
+    /// Gets upcoming training classes.
+    /// </summary>
+    /// <param name="count">The number of upcoming classes to retrieve.</param>
+    /// <returns>A collection of upcoming training classes.</returns>
+    Task<IEnumerable<TrainingClass>> GetUpcomingAsync(int count);
+
+    /// <summary>
+    /// Gets statistics about training classes.
+    /// </summary>
+    /// <returns>Statistics object containing class metrics.</returns>
+    Task<object> GetStatisticsAsync();
+}

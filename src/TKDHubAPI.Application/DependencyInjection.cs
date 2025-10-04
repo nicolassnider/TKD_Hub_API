@@ -4,32 +4,30 @@ using System.Reflection;
 using TKDHubAPI.Application.Services;
 using TKDHubAPI.Application.Settings;
 
-
 namespace TKDHubAPI.Application;
+
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplication(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         // Register JWT settings
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
-
         // Register Dojaang settings
         services.Configure<DojaangSettings>(configuration.GetSection("DojaangSettings"));
-
 
         // Register all FluentValidation validators in this assembly
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-
         // Register MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly())
+        );
 
         services.Configure<PaginationSettings>(configuration.GetSection("PaginationSettings"));
-
-
-
 
         // Register application services
 
@@ -48,17 +46,14 @@ public static class DependencyInjection
         services.AddScoped<IClassScheduleService, ClassScheduleService>();
         services.AddScoped<IStudentClassService, StudentClassService>();
         services.AddScoped<IBlogPostService, BlogPostService>();
-        services.AddScoped<IDashboardService, DashboardService>();
-        services.AddScoped(typeof(IPaginationService<>), typeof(PaginationService<>));
 
+        services.AddScoped(typeof(IPaginationService<>), typeof(PaginationService<>));
 
         // Register AutoMapper profiles in this assembly
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-
         // Optionally, configure FluentValidation to use DataAnnotations as well
         ValidatorOptions.Global.LanguageManager.Enabled = true;
-
 
         return services;
     }

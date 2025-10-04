@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { RoleProvider } from "context/RoleContext";
 import { ProfileProvider } from "context/ProfileContext";
 import { ClassProvider } from "context/ClassContext";
+import { DashboardProvider } from "context/DashboardContext";
 import Header from "components/layout/Header";
 import ProtectedRoute from "components/auth/ProtectedRoute";
 import LoginForm from "./components/auth/LoginForm";
@@ -54,6 +55,7 @@ import { EventsManagement } from "components/events";
 import { BlogManagement } from "components/blog";
 import { StudentsManagement } from "components/students";
 import { PaymentHistory } from "components/payments";
+import Home from "pages/Home";
 
 import { RouteConfig } from "./types/api";
 
@@ -64,11 +66,7 @@ const routes: RouteConfig[] = [
   // Public routes
   {
     path: "/",
-    component: () => (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <h1 className="text-3xl font-bold">Welcome to TKD Hub</h1>
-      </div>
-    ),
+    component: Home,
     isPublic: true,
   },
   {
@@ -193,17 +191,19 @@ export default function App() {
     <RoleProvider>
       <ProfileProvider>
         <ClassProvider>
-          <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-            }}
-          >
-            <Header />
-            <main className="app-container">
-              <Routes>{routes.map(createRoute)}</Routes>
-            </main>
-          </BrowserRouter>
+          <DashboardProvider>
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
+              <Header />
+              <main className="app-container">
+                <Routes>{routes.map(createRoute)}</Routes>
+              </main>
+            </BrowserRouter>
+          </DashboardProvider>
         </ClassProvider>
       </ProfileProvider>
       <ToastContainer

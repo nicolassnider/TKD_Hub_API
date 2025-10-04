@@ -37,4 +37,10 @@ public interface IGenericRepository<TEntity>
     /// </summary>
     /// <param name="entity">The entity to remove.</param>
     void Remove(TEntity entity);
+
+    /// <summary>
+    /// Gets the total count of entities asynchronously.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation, containing the total count.</returns>
+    Task<int> CountAsync();
 }

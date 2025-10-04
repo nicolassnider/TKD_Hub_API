@@ -70,4 +70,54 @@ public class TrainingClassRepository : ITrainingClassRepository
             .Where(tc => tc.CoachId == coachId)
             .ToListAsync();
     }
+
+    public async Task<int> CountAsync()
+    {
+        return await _context.TrainingClasses.CountAsync();
+    }
+
+    public async Task<IEnumerable<TrainingClass>> GetRecentAsync(int count)
+    {
+        return await _context.TrainingClasses
+            .Include(tc => tc.Dojaang)
+            .Include(tc => tc.Coach)
+            .OrderByDescending(tc => tc.Id) // Use Id as proxy for creation order
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<TrainingClass>> GetUpcomingAsync(int count)
+    {
+        var today = DateTime.Today;
+        var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+        var currentDayOfWeek = (DayOfWeek)today.DayOfWeek;
+
+        return await _context.TrainingClasses
+            .Include(tc => tc.Schedules)
+            .Include(tc => tc.Dojaang)
+            .Include(tc => tc.Coach)
+            .Where(tc => tc.Schedules.Any(s =>
+                s.Day > currentDayOfWeek ||
+                (s.Day == currentDayOfWeek && s.StartTime > currentTime)))
+            .OrderBy(tc => tc.Schedules.Min(s => s.StartTime))
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<object> GetStatisticsAsync()
+    {
+        var totalClasses = await _context.TrainingClasses.CountAsync();
+        var totalStudents = await _context.StudentClasses
+            .Select(sc => sc.StudentId)
+            .Distinct()
+            .CountAsync();
+
+        return new
+        {
+            TotalClasses = totalClasses,
+            ActiveClasses = totalClasses, // Assuming all are active since no IsActive property
+            TotalEnrolledStudents = totalStudents,
+            AverageStudentsPerClass = totalClasses > 0 ? (double)totalStudents / totalClasses : 0,
+        };
+    }
 }

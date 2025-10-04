@@ -8,8 +8,8 @@ import { PageLayout } from "../layout/PageLayout";
 import { EmptyState } from "../common/EmptyState";
 import { BlogPostTable } from "./BlogPostTable";
 import { BlogPostDialog } from "./BlogPostDialog";
-import { BlogPostsLoadingState } from "./BlogPostsLoadingState";
-import { BlogPostsErrorState } from "./BlogPostsErrorState";
+import { BlogPostsLoadingState } from "./BlogPostLoadingState";
+import { BlogPostsErrorState } from "./BlogPostErrorState";
 import { BlogPostManagement as BlogPost, BlogFormData } from "../../types/api";
 
 export default function BlogManagement() {

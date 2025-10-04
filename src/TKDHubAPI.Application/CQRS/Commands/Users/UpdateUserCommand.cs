@@ -1,9 +1,7 @@
 using MediatR;
 using TKDHubAPI.Application.DTOs.User;
 
-
 namespace TKDHubAPI.Application.CQRS.Commands.Users;
-
 
 public class UpdateUserCommand : IRequest<UserDto>
 {
