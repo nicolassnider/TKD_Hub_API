@@ -35,27 +35,27 @@ GO
 USE [TKDHubDb]
 GO
 
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (32, 3, 30);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (33, 3, 31);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (34, 3, 32);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (35, 3, 33);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (36, 3, 34);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (37, 3, 35);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (38, 3, 36);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (39, 3, 37);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (40, 3, 38);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (41, 3, 39);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (42, 3, 40);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (43, 3, 41);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (44, 3, 42);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (45, 3, 43);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (46, 3, 44);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (47, 3, 45);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (48, 3, 46);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (49, 3, 47);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (50, 3, 48);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (51, 3, 49);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (52, 3, 50);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (53, 3, 51);
-INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId], [Id]) VALUES (54, 3, 52);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (32, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (33, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (34, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (35, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (36, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (37, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (38, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (39, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (40, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (41, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (42, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (43, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (44, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (45, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (46, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (47, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (48, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (49, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (50, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (51, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (52, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (53, 3);
+INSERT INTO [dbo].[UserUserRoles] ([UserId], [UserRoleId]) VALUES (54, 3);
 GO

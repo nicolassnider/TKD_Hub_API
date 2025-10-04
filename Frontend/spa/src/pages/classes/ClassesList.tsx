@@ -1,34 +1,18 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useApiItems } from "../../hooks/useApiItems";
-import { Button, Box, Chip, Tooltip } from "@mui/material";
-import { Add, Visibility } from "@mui/icons-material";
-import { TrainingClassDto } from "../../types/api";
-import { PageLayout } from "../../components/layout/PageLayout";
-import { LoadingSpinner } from "../../components/common/LoadingSpinner";
-import { ErrorAlert } from "../../components/common/ErrorAlert";
-import { EmptyState } from "../../components/common/EmptyState";
-import ApiTable from "../../components/common/ApiTable";
+import { Box, Chip, Tooltip, Button } from "@mui/material";
+import { Visibility } from "@mui/icons-material";
+import { GenericListPage } from "../../components/layout/GenericListPage";
 
 export default function ClassesList() {
-  return <ClassesTable />;
-}
-
-function ClassesTable() {
   const navigate = useNavigate();
-  const {
-    items: rows,
-    loading,
-    error,
-    reload,
-  } = useApiItems<TrainingClassDto>("/api/Classes");
 
   const weekday = (n: number) => {
     const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return names[n] ?? String(n);
   };
 
-  const cols = useMemo(
+  const columns = useMemo(
     () => [
       { key: "id", label: "ID", sortable: true },
       { key: "name", label: "NAME", sortable: true },
@@ -103,68 +87,21 @@ function ClassesTable() {
     [navigate],
   );
 
-  const pageActions = (
-    <Box
-      sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}
-    >
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={() => reload()}
-        sx={{ textTransform: "none", borderRadius: 2 }}
-      >
-        REFRESH
-      </Button>
-      <Button
-        variant="contained"
-        size="small"
-        onClick={() => navigate("/classes/new")}
-        startIcon={<Add />}
-        sx={{ textTransform: "none", borderRadius: 2 }}
-      >
-        ADD CLASS
-      </Button>
-    </Box>
-  );
-
-  if (loading) {
-    return (
-      <PageLayout title="Classes" actions={pageActions}>
-        <LoadingSpinner />
-      </PageLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <PageLayout title="Classes" actions={pageActions}>
-        <ErrorAlert error={error} onRetry={() => reload()} />
-      </PageLayout>
-    );
-  }
-
-  if (!rows || rows.length === 0) {
-    return (
-      <PageLayout title="Classes" actions={pageActions}>
-        <EmptyState
-          title="No Classes Found"
-          description="Create your first training class to get started."
-          actionLabel="Create First Class"
-          onAction={() => navigate("/classes/new")}
-        />
-      </PageLayout>
-    );
-  }
+  const handleRowAction = (action: string, classItem: any) => {
+    if (action === "view") {
+      navigate(`/classes/${classItem.id}`);
+    }
+  };
 
   return (
-    <PageLayout title="Classes" actions={pageActions}>
-      <ApiTable
-        rows={rows}
-        columns={cols}
-        onRowClick={(r: TrainingClassDto) => navigate(`/classes/${r.id}`)}
-        defaultPageSize={5}
-        pageSizeOptions={[5, 10, 25]}
-      />
-    </PageLayout>
+    <GenericListPage
+      title="Classes"
+      apiEndpoint="/api/Classes"
+      columns={columns}
+      createRoute="/classes/new"
+      serverSide={true}
+      pageSize={10}
+      onRowAction={handleRowAction}
+    />
   );
 }

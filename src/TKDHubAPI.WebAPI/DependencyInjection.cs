@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
-using System.Text;
 using TKDHubAPI.Application.Settings;
 using TKDHubAPI.WebAPI.Converters;
 using TKDHubAPI.WebAPI.Swagger;
@@ -52,27 +52,64 @@ public static class DependencyInjection
                     var origins = corsSettings.AllowedOrigins ?? Array.Empty<string>();
 
                     // If configuration contains a single wildcard '*' we allow any origin (useful for local dev).
-                    if (origins.Length == 1 && (origins[0] == "*" || string.IsNullOrWhiteSpace(origins[0])))
+                    if (
+                        origins.Length == 1
+                        && (origins[0] == "*" || string.IsNullOrWhiteSpace(origins[0]))
+                    )
                     {
                         // In development it's OK to allow any origin, but credentials cannot be allowed together with AnyOrigin.
                         if (corsSettings.AllowCredentials)
                         {
                             // When AllowCredentials is true but origins is '*', fall back to echoing the Origin header at runtime.
                             // We'll set up the policy to allow any header/method and use a custom policy for credentials at runtime in middleware.
-                            policy.SetIsOriginAllowed(_ => true)
-                                  .AllowAnyHeader()
-                                  .AllowAnyMethod()
-                                  .AllowCredentials();
+                            policy
+                                .SetIsOriginAllowed(_ => true)
+                                .AllowAnyHeader()
+                                .AllowAnyMethod()
+                                .AllowCredentials()
+                                .WithExposedHeaders(
+                                    "X-Pagination",
+                                    "X-Current-Page",
+                                    "X-Total-Pages",
+                                    "X-Page-Size",
+                                    "X-Total-Count",
+                                    "X-Has-Next",
+                                    "X-Has-Previous"
+                                );
                         }
                         else
                         {
-                            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                            policy
+                                .AllowAnyOrigin()
+                                .AllowAnyHeader()
+                                .AllowAnyMethod()
+                                .WithExposedHeaders(
+                                    "X-Pagination",
+                                    "X-Current-Page",
+                                    "X-Total-Pages",
+                                    "X-Page-Size",
+                                    "X-Total-Count",
+                                    "X-Has-Next",
+                                    "X-Has-Previous"
+                                );
                         }
                     }
                     else
                     {
                         // Use explicit origins. When credentials are allowed, this is the correct pattern.
-                        policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+                        policy
+                            .WithOrigins(origins)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithExposedHeaders(
+                                "X-Pagination",
+                                "X-Current-Page",
+                                "X-Total-Pages",
+                                "X-Page-Size",
+                                "X-Total-Count",
+                                "X-Has-Next",
+                                "X-Has-Previous"
+                            );
                         if (corsSettings.AllowCredentials)
                         {
                             policy.AllowCredentials();

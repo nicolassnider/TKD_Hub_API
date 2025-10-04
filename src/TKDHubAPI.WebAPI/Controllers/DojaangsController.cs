@@ -3,9 +3,7 @@ using TKDHubAPI.Application.CQRS.Commands.Dojaangs;
 using TKDHubAPI.Application.CQRS.Queries.Dojaangs;
 using TKDHubAPI.Application.DTOs.Dojaang;
 
-
 namespace TKDHubAPI.WebAPI.Controllers;
-
 
 /// <summary>
 /// API controller for managing dojaangs (martial arts schools).
@@ -17,7 +15,6 @@ public class DojaangsController : BaseApiController
     private readonly IDojaangService _dojaangService;
     private readonly IUserService _userService;
     private readonly IMediator _mediator;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DojaangsController"/> class.
@@ -40,7 +37,6 @@ public class DojaangsController : BaseApiController
         _userService = userService;
         _mediator = mediator;
     }
-
 
     /// <summary>
     /// Retrieves all dojaangs (martial arts schools).
@@ -65,9 +61,8 @@ public class DojaangsController : BaseApiController
     {
         var query = new GetAllDojaangsQuery(page, pageSize);
         var dojaangs = await _mediator.Send(query);
-        return SuccessResponse(dojaangs);
+        return OkWithPagination(dojaangs);
     }
-
 
     /// <summary>
     /// Retrieves a dojaang by its unique identifier.
@@ -95,7 +90,6 @@ public class DojaangsController : BaseApiController
         }
         return SuccessResponse(dojaang);
     }
-
 
     /// <summary>
     /// Creates a new dojaang. Only admins are allowed to perform this action.
@@ -131,17 +125,18 @@ public class DojaangsController : BaseApiController
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             return ErrorResponse("Invalid user context.", 401);
 
-
         var currentUser = await _userService.GetByIdAsync(userId);
         if (currentUser == null)
             return ErrorResponse("User not found.", 404);
 
-
-        var command = new CreateDojaangCommand { CreateDojaangDto = dto, CurrentUser = currentUser };
+        var command = new CreateDojaangCommand
+        {
+            CreateDojaangDto = dto,
+            CurrentUser = currentUser
+        };
         var dojaang = await _mediator.Send(command);
         return SuccessResponse(dojaang);
     }
-
 
     /// <summary>
     /// Updates an existing dojaang. Only admins are allowed to perform this action.
@@ -169,7 +164,6 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("ID in URL does not match ID in body.", 400);
         }
 
-
         var query = new GetDojaangByIdQuery { Id = id };
         var existingDojaang = await _mediator.Send(query);
         if (existingDojaang == null)
@@ -177,12 +171,10 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
-
         var command = new UpdateDojaangCommand { UpdateDojaangDto = updateDto };
         await _mediator.Send(command);
         return NoContent();
     }
-
 
     /// <summary>
     /// Deletes a dojaang by its unique identifier. Only admins are allowed to perform this action.
@@ -207,11 +199,9 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
-
         await _dojaangService.DeleteAsync(id);
         return NoContent();
     }
-
 
     /// <summary>
     /// Reactivates a previously deactivated dojaang. Only admins are allowed to perform this action.
@@ -233,9 +223,7 @@ public class DojaangsController : BaseApiController
             return ErrorResponse("Dojaang not found", 404);
         }
 
-
         await _dojaangService.ReactivateAsync(dojaangId);
-
 
         var updated = await _dojaangService.GetByIdAsync(dojaangId);
         if (updated == null)

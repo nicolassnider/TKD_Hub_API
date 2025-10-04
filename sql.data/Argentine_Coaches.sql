@@ -10,7 +10,7 @@ VALUES
 -- Master instructors (Dan ranks 4-6)
 ('Carlos', 'Fernández Almeyda', 'carlos.fernandez@tkdhub.com.ar', '$2a$11$dummy.hash.for.development', '1978-03-15', 'MALE', '+54 11 4567-8901', NULL, 19, '2010-01-15', 1, '2010-01-15', '2024-09-20'),
 ('María', 'Rodríguez Paz', 'maria.rodriguez@tkdhub.com.ar', '$2a$11$dummy.hash.for.development', '1980-11-22', 'FEMALE', '+54 11 4567-8902', NULL, 18, '2012-03-10', 1, '2012-03-10', '2024-09-20'),
-('Jorge', 'Morales Vega', 'jorge.morales@tkdhub.com.ar', '$2a$11$dummy.hash.for.development', '1975-07-08', 'MALE', '+54 11 4567-8903', NULL, 20, '2008-05-20', 1, '2008-05-20', '2024-09-20'),
+('Jorge', 'Morales Vega', 'jorge.morales@tkdhub.com.ar', '$2a$11$dummy.hash.for.development', '1975-07-08', 'MALE', '+54 11 4567-8903', NULL, 19, '2008-05-20', 1, '2008-05-20', '2024-09-20'),
 ('Silvia', 'Delgado Herrera', 'silvia.delgado@tkdhub.com.ar', '$2a$11$dummy.hash.for.development', '1982-12-03', 'FEMALE', '+54 11 4567-8904', NULL, 17, '2014-02-28', 1, '2014-02-28', '2024-09-20'),
 
 -- Senior instructors (Dan ranks 2-3)

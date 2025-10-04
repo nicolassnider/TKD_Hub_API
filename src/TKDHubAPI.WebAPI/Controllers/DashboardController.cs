@@ -1,4 +1,6 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TKDHubAPI.Application.CQRS.Commands.Dashboard;
 using TKDHubAPI.Application.CQRS.Queries.Dashboard;
 using TKDHubAPI.Application.DTOs.Dashboard;
@@ -6,25 +8,45 @@ using TKDHubAPI.Application.DTOs.Dashboard;
 namespace TKDHubAPI.WebAPI.Controllers;
 
 [Authorize]
-public class DashboardController : BaseApiController
+public class DashboardsController : BaseApiController
 {
     private readonly IMediator _mediator;
 
-    public DashboardController(
-        IMediator mediator,
-        ILogger<DashboardController> logger) : base(logger)
+    public DashboardsController(IMediator mediator, ILogger<DashboardsController> logger)
+        : base(logger)
     {
         _mediator = mediator;
     }
 
     [HttpGet]
-    public async Task<ActionResult<DashboardResponseDto>> GetDashboard([FromQuery] int? userId = null)
+    public async Task<ActionResult<DashboardResponseDto>> GetDashboard(
+        [FromQuery] int? userId = null,
+        [FromQuery] string? userRole = null,
+        [FromQuery] string? layoutId = null,
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null,
+        [FromQuery] string? filters = null,
+        [FromQuery] string? widgetIds = null
+    )
     {
         try
         {
             var currentUserId = userId ?? GetUserId();
-            Logger.LogInformation("Getting dashboard for user {UserId}", currentUserId);
-            var query = new GetDashboardQuery(currentUserId);
+            Logger.LogInformation(
+                "Getting dashboard for user {UserId} with role {UserRole}",
+                currentUserId,
+                userRole
+            );
+
+            var query = new GetDashboardQuery(
+                currentUserId,
+                userRole,
+                layoutId,
+                startDate,
+                endDate,
+                filters,
+                widgetIds
+            );
             var dashboard = await _mediator.Send(query);
             return Ok(dashboard);
         }
@@ -36,7 +58,9 @@ public class DashboardController : BaseApiController
     }
 
     [HttpGet("layouts")]
-    public async Task<ActionResult<List<DashboardLayoutDto>>> GetLayouts([FromQuery] int? userId = null)
+    public async Task<ActionResult<List<DashboardLayoutDto>>> GetLayouts(
+        [FromQuery] int? userId = null
+    )
     {
         try
         {
@@ -73,11 +97,18 @@ public class DashboardController : BaseApiController
     }
 
     [HttpGet("widgets/{widgetId}/data")]
-    public async Task<ActionResult<object>> GetWidgetData(string widgetId, [FromQuery] string widgetType)
+    public async Task<ActionResult<object>> GetWidgetData(
+        string widgetId,
+        [FromQuery] string widgetType
+    )
     {
         try
         {
-            Logger.LogInformation("Getting data for widget {WidgetId} of type {WidgetType}", widgetId, widgetType);
+            Logger.LogInformation(
+                "Getting data for widget {WidgetId} of type {WidgetType}",
+                widgetId,
+                widgetType
+            );
             var query = new GetWidgetDataQuery(widgetType, widgetId);
             var data = await _mediator.Send(query);
             return Ok(data);
@@ -90,7 +121,9 @@ public class DashboardController : BaseApiController
     }
 
     [HttpPost("layouts")]
-    public async Task<ActionResult<DashboardLayoutDto>> CreateLayout([FromBody] DashboardLayoutDto layout)
+    public async Task<ActionResult<DashboardLayoutDto>> CreateLayout(
+        [FromBody] DashboardLayoutDto layout
+    )
     {
         try
         {
@@ -107,7 +140,10 @@ public class DashboardController : BaseApiController
     }
 
     [HttpPut("layouts/{id}")]
-    public async Task<ActionResult<DashboardLayoutDto>> UpdateLayout(string id, [FromBody] DashboardLayoutDto layout)
+    public async Task<ActionResult<DashboardLayoutDto>> UpdateLayout(
+        string id,
+        [FromBody] DashboardLayoutDto layout
+    )
     {
         try
         {
@@ -150,7 +186,11 @@ public class DashboardController : BaseApiController
             Logger.LogInformation("Creating widget {WidgetTitle}", widget.Title);
             var command = new CreateWidgetCommand(widget);
             var created = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetWidgetData), new { widgetId = created.Id, widgetType = created.Type }, created);
+            return CreatedAtAction(
+                nameof(GetWidgetData),
+                new { widgetId = created.Id, widgetType = created.Type },
+                created
+            );
         }
         catch (Exception ex)
         {
@@ -196,12 +236,21 @@ public class DashboardController : BaseApiController
     }
 
     [HttpPatch("widgets/{id}/position")]
-    public async Task<ActionResult> UpdateWidgetPosition(string id, [FromBody] WidgetPositionDto position)
+    public async Task<ActionResult> UpdateWidgetPosition(
+        string id,
+        [FromBody] WidgetPositionDto position
+    )
     {
         try
         {
             Logger.LogInformation("Updating position for widget {WidgetId}", id);
-            var command = new UpdateWidgetPositionCommand(id, position.X, position.Y, position.Width, position.Height);
+            var command = new UpdateWidgetPositionCommand(
+                id,
+                position.X,
+                position.Y,
+                position.Width,
+                position.Height
+            );
             var result = await _mediator.Send(command);
             if (result)
                 return NoContent();

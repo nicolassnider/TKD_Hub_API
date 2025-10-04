@@ -1,53 +1,117 @@
-# Argentine Sample Data for TKD Hub
+# TKD Hub SQL Data Files
 
-This directory contains comprehensive sample data for the TKD Hub application featuring authentic Argentine names, locations, and cultural elements.
+This directory contains SQL scripts for populating the TKD Hub database with sample data and dashboard functionality.
 
 ## 📁 Files Overview
 
-### Individual Data Files
+### 🚀 **RECOMMENDED: Complete Database Population**
 
-- **`Argentine_Coaches.sql`** - 16 coaches with Argentine names and realistic ranking progression
-- **`Argentine_Students.sql`** - 30 students of various ages (8-25) with family relationships
+- **`Complete_Database_Population.sql`** - **✅ START HERE** - Master execution guide and base system setup
+- **`Ranks_Complete.sql`** - **✅ NEW** - Complete belt ranking system (White Belt to 9th Dan)
+- **`Techniques_Sample.sql`** - **✅ NEW** - Comprehensive Taekwondo techniques database  
+- **`Tuls_Sample.sql`** - **✅ NEW** - Traditional ITF forms with technique sequences
+- **`Tournaments_Sample.sql`** - **✅ NEW** - Tournament structure with matches and registrations
+- **`EventAttendance_Sample.sql`** - **✅ NEW** - Comprehensive attendance tracking system
+
+### 🎛️ Dashboard & Analytics
+
+- **`Initialize_Dashboard_Sample_Data_Final.sql`** - Complete dashboard sample data initialization
+- **`Add_Attendance_Records.sql`** - Supplements attendance data for dashboard testing  
+- **`Working_Dashboard_Analytics.sql`** - Verified analytics queries matching current database schema
+
+### 🇦🇷 Argentine Sample Data (UPDATED)
+
+- **`Argentine_Coaches.sql`** - **✅ FIXED** - 16 coaches with proper UserUserRoles (no Id column)
+- **`Argentine_Students.sql`** - **✅ FIXED** - 30 students with proper role assignments
 - **`Argentine_Dojangs.sql`** - 12 dojangs across Argentina with Korean names and locations
 - **`Argentine_Classes.sql`** - Training classes with schedules and student assignments
+- **`Master_Argentine_Data.sql`** - Complete Argentine data insertion script
 
-### Master Execution Script
+### 🔧 Database Structure
 
-- **`Master_Argentine_Data.sql`** - Complete script that executes all data insertion in proper order
+- **`Add_TrainingClass_Columns.sql`** - Database schema updates for training classes
 
-## 🏆 Data Features
+### 📊 Individual Data Files (LEGACY - FIXED)
 
-### Coaches (16 total)
+- **`Coaches.sql`** - **✅ FIXED** - Individual coach data (UserUserRoles corrected)
+- **`Students.sql`** - **✅ FIXED** - Individual student data (UserUserRoles corrected)
+- **`Dojaangs.sql`** - Individual dojaang data
 
-- **Master Instructors**: 4th-6th Dan ranks (Carlos Fernández, María Rodríguez, Jorge Morales, Silvia Delgado)
-- **Senior Instructors**: 2nd-3rd Dan ranks with 2-5 years experience
-- **Junior Instructors**: 1st Dan ranks, newer to teaching
-- **Regional Coverage**: Coaches from Buenos Aires, Córdoba, Mendoza, Rosario, and Tucumán
+## 🚀 Quick Start Guide
 
-### Students (30 total)
+### 🎯 **COMPLETE DATABASE SETUP (RECOMMENDED)**
 
-- **Children & Teens** (8-17 years): White to Blue belt progression
-- **Young Adults** (18-25 years): Blue to Black stripe ranks
-- **Family Groups**: Siblings and parent-child relationships included
-- **Regional Distribution**: Students from major Argentine cities
+**Option 1: Full Automated Setup**
 
-### Dojangs (12 total)
+```bash
+# Execute complete population in correct order
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Complete_Database_Population.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Argentine_Dojangs.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Argentine_Coaches.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Argentine_Students.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Techniques_Sample.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Tuls_Sample.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Argentine_Classes.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Tournaments_Sample.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "EventAttendance_Sample.sql"
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -i "Initialize_Dashboard_Sample_Data_Final.sql"
+```
 
-- **Buenos Aires Capital**: 5 dojangs in different neighborhoods (Balvanera, Recoleta, Flores, Once, Palermo)
-- **Buenos Aires Province**: La Plata, Tigre, Quilmes
-- **Interior Provinces**: Córdoba, Mendoza, Rosario, Tucumán
-- **Authentic Features**: Korean names with phonetic translations, realistic addresses
+**This gives you:**
+- ✅ Complete belt ranking system (via SeedData.cs - automatic)
+- ✅ 28+ Taekwondo techniques with difficulty progression
+- ✅ 18 traditional ITF forms (Tuls) with technique sequences
+- ✅ 30+ Argentine students and 16+ coaches with proper roles
+- ✅ 12 dojangs across Argentina
+- ✅ Comprehensive training classes and schedules
+- ✅ Tournament system with matches and registrations
+- ✅ Event attendance tracking
+- ✅ Dashboard configurations for all user roles
 
-### Training Classes (48 total)
+### For Dashboard Development Only
 
-- **Infantiles (6-9 años)**: Monday/Wednesday 16:00-17:00 for children
-- **Juveniles (10-14 años)**: Tuesday/Thursday 17:00-18:30 for pre-teens
-- **Adultos Principiantes**: Tuesday/Thursday 19:00-20:30 for beginner adults
-- **Adultos Avanzados**: Wednesday/Saturday for advanced practitioners
-- **Age-Based Assignment**: Students automatically assigned to appropriate classes
-- **Realistic Schedules**: Multiple time slots to avoid conflicts
+1. **Initialize Dashboard Data**:
 
-## 🇦🇷 Argentine Cultural Elements
+   ```sql
+   sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -E -i "Initialize_Dashboard_Sample_Data_Final.sql"
+   ```
+
+2. **Add Attendance Records**:
+
+   ```sql
+   sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -E -i "Add_Attendance_Records.sql"
+   ```
+
+3. **Test Analytics**:
+
+   ```sql
+   sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -E -i "Working_Dashboard_Analytics.sql"
+   ```
+
+### For Full Argentine Sample Data (Alternative)
+
+```sql
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d TKDHubDb -E -i "Master_Argentine_Data.sql"
+```
+
+## 📊 Dashboard Sample Data Features
+
+### Current Database Content
+- **👥 33 Active Students** - Various belt ranks and age groups
+- **🥋 5 Training Classes** - Including sample age-specific programs
+- **📅 3 Upcoming Events** - Belt tests, tournaments, seminars
+- **⭐ 10 Recent Promotions** - Student advancement tracking
+- **📝 4 Blog Posts** - Sample announcements and updates
+- **🎛️ 3 Dashboard Layouts** - Admin, Coach, Student role-specific views
+
+### Analytics Support
+- Student distribution by rank and age group
+- Class enrollment and capacity tracking  
+- Attendance patterns and trends
+- Promotion history and progress tracking
+- Event management and participation
+
+## 🇦🇷 Argentine Sample Data Features (LEGACY)
 
 ### Names
 
@@ -143,3 +207,34 @@ This data enables testing of:
 - **Student-Class Management**: Enrollment, transfers, and class capacity planning
 
 Perfect for demonstrating the TKD Hub application with realistic, culturally authentic data that reflects the Argentine Taekwondo community.
+
+## 🔧 File Cleanup & Maintenance
+
+### ✅ Current Active Files (Recommended for Use)
+
+- **`Initialize_Dashboard_Sample_Data_Final.sql`** - Verified dashboard initialization
+- **`Add_Attendance_Records.sql`** - Attendance data supplement  
+- **`Working_Dashboard_Analytics.sql`** - Tested analytics queries
+
+### 🗑️ Removed Files (Cleaned Up)
+
+The following files were removed due to schema mismatches or being outdated:
+
+- ~~`Initialize_Dashboard_Sample_Data.sql`~~ - Original version with schema errors
+- ~~`Initialize_Dashboard_Sample_Data_Corrected.sql`~~ - Partial correction attempt
+- ~~`Dashboard_Sample_Data.sql`~~ - Incorrect dashboard structure
+- ~~`Events_Attendance_Sample_Data.sql`~~ - Schema mismatch issues
+- ~~`Analytics_Dashboard_Queries.sql`~~ - Column name errors
+
+### 📋 Usage Guidelines
+
+**For Dashboard Development:**
+1. Use `Initialize_Dashboard_Sample_Data_Final.sql` first
+2. Supplement with `Add_Attendance_Records.sql` 
+3. Test with `Working_Dashboard_Analytics.sql`
+
+**For Legacy/Full Data:**
+- Use `Master_Argentine_Data.sql` for complete Argentine dataset
+- Individual files (Coaches.sql, Students.sql, etc.) for selective loading
+
+All active files have been verified against the current database schema and are ready for use.

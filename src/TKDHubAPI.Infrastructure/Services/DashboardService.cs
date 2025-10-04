@@ -1,9 +1,10 @@
+using System.Text.Json;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using TKDHubAPI.Application.DTOs.Dashboard;
 using TKDHubAPI.Application.Interfaces;
 using TKDHubAPI.Domain.Entities;
 using TKDHubAPI.Domain.Repositories;
-using AutoMapper;
 
 namespace TKDHubAPI.Infrastructure.Services;
 
@@ -24,7 +25,8 @@ public class DashboardService : IDashboardService
         IStudentClassRepository studentClassRepository,
         IDojaangRepository dojaangRepository,
         IMapper mapper,
-        ILogger<DashboardService> logger)
+        ILogger<DashboardService> logger
+    )
     {
         _dashboardRepository = dashboardRepository;
         _userRepository = userRepository;
@@ -35,22 +37,32 @@ public class DashboardService : IDashboardService
         _logger = logger;
     }
 
-    public async Task<DashboardResponseDto> GetDashboardAsync(int userId)
+    public async Task<DashboardResponseDto> GetDashboardAsync(
+        int userId,
+        string? requestedUserRole = null
+    )
     {
-        _logger.LogInformation("Getting dashboard for user {UserId}", userId);
-        
+        _logger.LogInformation(
+            "Getting dashboard for user {UserId} with requested role {RequestedRole}",
+            userId,
+            requestedUserRole
+        );
+
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
             throw new ArgumentException($"User with ID {userId} not found");
         }
 
+        // Use requested role if provided, otherwise get user's primary role
+        var userRole = requestedUserRole ?? GetUserPrimaryRole(user);
+
         // Get user's default layout or create one
         var layouts = await GetUserLayoutsAsync(userId);
-        var userRole = GetUserPrimaryRole(user);
-        var defaultLayout = layouts.FirstOrDefault(l => l.IsDefault) ?? 
-                           await GetDefaultLayoutAsync(userRole) ??
-                           await CreateDefaultLayoutForRole(userRole, userId);
+        var defaultLayout =
+            layouts.FirstOrDefault(l => l.IsDefault && l.UserRole == userRole)
+            ?? await GetDefaultLayoutAsync(userRole)
+            ?? await CreateDefaultLayoutForRole(userRole, userId);
 
         // Load widget data
         foreach (var widget in defaultLayout.Widgets)
@@ -95,19 +107,73 @@ public class DashboardService : IDashboardService
 
     public async Task<object?> GetWidgetDataAsync(string widgetType, string widgetId)
     {
-        _logger.LogInformation("Getting data for widget {WidgetId} of type {WidgetType}", widgetId, widgetType);
+        _logger.LogInformation(
+            "Getting data for widget {WidgetId} of type {WidgetType}",
+            widgetId,
+            widgetType
+        );
 
-        return widgetType.ToLower() switch
+        try
         {
-            "totalstudents" => await GetTotalStudentsData(),
-            "totalclasses" => await GetTotalClassesData(),
-            "totaldojaangs" => await GetTotalDojaangsData(),
-            "recentclasses" => await GetRecentClassesData(),
-            "studentprogress" => await GetStudentProgressData(),
-            "upcomingclasses" => await GetUpcomingClassesData(),
-            "classstatistics" => await GetClassStatisticsData(),
-            _ => null
-        };
+            // Get all default layouts to find the widget and read its configuration
+            Widget? widget = null;
+            var adminLayout = await _dashboardRepository.GetDefaultLayoutAsync("Admin");
+            var coachLayout = await _dashboardRepository.GetDefaultLayoutAsync("Coach");
+            var studentLayout = await _dashboardRepository.GetDefaultLayoutAsync("Student");
+
+            var allLayouts = new[] { adminLayout, coachLayout, studentLayout }
+                .Where(l => l != null)
+                .ToList();
+
+            foreach (var layout in allLayouts)
+            {
+                widget = layout!.Widgets?.FirstOrDefault(w => w.Id == widgetId);
+                if (widget != null)
+                    break;
+            }
+
+            if (widget == null)
+            {
+                _logger.LogWarning("Widget {WidgetId} not found in any layout", widgetId);
+                return await GetDefaultWidgetData(widgetType, "unknown");
+            }
+
+            // Parse configuration to get the metric name
+            var config = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
+                widget.ConfigJson ?? "{}"
+            );
+            var metric = config?.GetValueOrDefault("metric").GetString() ?? widgetType;
+
+            _logger.LogInformation(
+                "Loading data for metric {Metric} from widget {WidgetId}",
+                metric,
+                widgetId
+            );
+
+            return metric.ToLower() switch
+            {
+                "totalstudents" => await GetTotalStudentsData(),
+                "activeclasses" => await GetActiveClassesData(),
+                "monthlyrevenue" => await GetMonthlyRevenueData(),
+                "attendancerate" => await GetAttendanceRateData(),
+                "mystudents" => await GetMyStudentsData(),
+                "todayclasses" => await GetTodayClassesData(),
+                "weeklyattendance" => await GetWeeklyAttendanceData(),
+                "currentrank" => await GetCurrentRankData(),
+                "myattendancerate" => await GetMyAttendanceRateData(),
+                "recentclasses" => await GetRecentClassesData(),
+                "studentprogress" => await GetStudentProgressData(),
+                "upcomingclasses" => await GetUpcomingClassesData(),
+                "classstatistics" => await GetClassStatisticsData(),
+                "classattendance" => await GetClassAttendanceData(),
+                _ => await GetDefaultWidgetData(widgetType, metric)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting widget data for {WidgetId}", widgetId);
+            return await GetDefaultWidgetData(widgetType, "error");
+        }
     }
 
     public async Task<DashboardLayoutDto> CreateLayoutAsync(DashboardLayoutDto layout)
@@ -168,7 +234,13 @@ public class DashboardService : IDashboardService
         return await _dashboardRepository.DeleteWidgetAsync(id);
     }
 
-    public async Task<bool> UpdateWidgetPositionAsync(string id, int x, int y, int width, int height)
+    public async Task<bool> UpdateWidgetPositionAsync(
+        string id,
+        int x,
+        int y,
+        int width,
+        int height
+    )
     {
         _logger.LogInformation("Updating position for widget {WidgetId}", id);
         return await _dashboardRepository.UpdateWidgetPositionAsync(id, x, y, width, height);
@@ -176,8 +248,12 @@ public class DashboardService : IDashboardService
 
     private async Task<DashboardLayoutDto> CreateDefaultLayoutForRole(string role, int userId)
     {
-        _logger.LogInformation("Creating default layout for role {Role} and user {UserId}", role, userId);
-        
+        _logger.LogInformation(
+            "Creating default layout for role {Role} and user {UserId}",
+            role,
+            userId
+        );
+
         var widgets = GetDefaultWidgetsForRole(role);
         var layout = new DashboardLayoutDto
         {
@@ -249,7 +325,13 @@ public class DashboardService : IDashboardService
             Id = Guid.NewGuid().ToString(),
             Type = type,
             Title = title,
-            Position = new WidgetPositionDto { X = x, Y = y, Width = width, Height = height },
+            Position = new WidgetPositionDto
+            {
+                X = x,
+                Y = y,
+                Width = width,
+                Height = height
+            },
             Config = new Dictionary<string, object>(),
             Loading = true
         };
@@ -302,7 +384,14 @@ public class DashboardService : IDashboardService
     private Task<object> GetStudentProgressData()
     {
         // This would need to be implemented based on your progress tracking system
-        return Task.FromResult<object>(new { progress = 75, target = 100, subtitle = "Overall Progress" });
+        return Task.FromResult<object>(
+            new
+            {
+                progress = 75,
+                target = 100,
+                subtitle = "Overall Progress"
+            }
+        );
     }
 
     private async Task<object> GetUpcomingClassesData()
@@ -322,5 +411,146 @@ public class DashboardService : IDashboardService
         // Return the first role if available, or default to "Guest"
         var firstRole = user.UserUserRoles?.FirstOrDefault()?.UserRole?.Name;
         return firstRole ?? "Guest";
+    }
+
+    private async Task<object> GetActiveClassesData()
+    {
+        var count = await _classRepository.CountAsync();
+        return new
+        {
+            value = count,
+            subtitle = "Active Classes",
+            unit = "classes"
+        };
+    }
+
+    private Task<object> GetMonthlyRevenueData()
+    {
+        // TODO: Implement based on your payment system
+        return Task.FromResult<object>(
+            new
+            {
+                value = 2450,
+                subtitle = "This Month",
+                unit = "$",
+                previousValue = 2200
+            }
+        );
+    }
+
+    private async Task<object> GetAttendanceRateData()
+    {
+        // Calculate overall attendance rate
+        var totalClasses = await _classRepository.CountAsync();
+
+        // Mock calculation - implement based on your attendance tracking
+        var attendanceRate = totalClasses > 0 ? 85.5 : 0;
+        return new
+        {
+            value = attendanceRate,
+            subtitle = "Overall Rate",
+            unit = "%",
+            target = 90
+        };
+    }
+
+    private async Task<object> GetMyStudentsData()
+    {
+        // TODO: Filter by coach - for now return total users with student role
+        var allUsers = await _userRepository.GetAllAsync();
+        var studentCount = allUsers.Count(); // Could filter by student role here
+        return new
+        {
+            value = studentCount,
+            subtitle = "My Students",
+            unit = "students"
+        };
+    }
+
+    private Task<object> GetTodayClassesData()
+    {
+        // TODO: Implement based on class schedule
+        return Task.FromResult<object>(
+            new
+            {
+                value = 3,
+                subtitle = "Today",
+                unit = "classes"
+            }
+        );
+    }
+
+    private Task<object> GetWeeklyAttendanceData()
+    {
+        // TODO: Implement based on attendance tracking
+        return Task.FromResult<object>(
+            new
+            {
+                value = 42,
+                subtitle = "This Week",
+                unit = "attendances"
+            }
+        );
+    }
+
+    private Task<object> GetCurrentRankData()
+    {
+        // TODO: Implement based on user's current rank
+        return Task.FromResult<object>(
+            new
+            {
+                value = "Red Belt",
+                subtitle = "Current Rank",
+                progress = 75,
+                target = 100
+            }
+        );
+    }
+
+    private Task<object> GetMyAttendanceRateData()
+    {
+        // TODO: Implement based on user's attendance
+        return Task.FromResult<object>(
+            new
+            {
+                value = 92.5,
+                subtitle = "My Rate",
+                unit = "%",
+                target = 95
+            }
+        );
+    }
+
+    private Task<object> GetClassAttendanceData()
+    {
+        // TODO: Implement chart data for class attendance
+        var chartData = new[]
+        {
+            new { date = "Mon", attendance = 15 },
+            new { date = "Tue", attendance = 18 },
+            new { date = "Wed", attendance = 12 },
+            new { date = "Thu", attendance = 20 },
+            new { date = "Fri", attendance = 16 },
+            new { date = "Sat", attendance = 22 },
+            new { date = "Sun", attendance = 14 }
+        };
+        return Task.FromResult<object>(new { data = chartData, title = "7-Day Attendance" });
+    }
+
+    private Task<object> GetDefaultWidgetData(string widgetType, string metric)
+    {
+        _logger.LogWarning(
+            "No data handler found for widget type {WidgetType} with metric {Metric}",
+            widgetType,
+            metric
+        );
+        return Task.FromResult<object>(
+            new
+            {
+                value = 0,
+                subtitle = "No Data",
+                error = "Data handler not implemented"
+            }
+        );
     }
 }

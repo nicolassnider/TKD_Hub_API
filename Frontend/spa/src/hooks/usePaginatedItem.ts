@@ -56,18 +56,47 @@ export function usePaginatedItems<T = any>(
 
       // Handle different response shapes
       let data: T[] = [];
+      let paginationMetadata: PaginationMetadata | null = null;
       const responseData = response.data;
 
       if (Array.isArray(responseData)) {
         data = responseData;
       } else if (responseData?.items && Array.isArray(responseData.items)) {
         data = responseData.items;
+        // Extract pagination metadata from the same level as items
+        paginationMetadata = {
+          totalCount: responseData.totalCount || 0,
+          currentPage: responseData.page || 1,
+          pageSize: responseData.pageSize || 10,
+          totalPages: responseData.totalPages || 0,
+          hasNext: responseData.hasNextPage || false,
+          hasPrevious: responseData.hasPreviousPage || false,
+          nextPage: responseData.nextPage || null,
+          previousPage: responseData.previousPage || null,
+        };
+      } else if (
+        responseData?.data?.items &&
+        Array.isArray(responseData.data.items)
+      ) {
+        data = responseData.data.items;
+        // Extract pagination metadata from responseData.data
+        const paginationSource = responseData.data;
+        paginationMetadata = {
+          totalCount: paginationSource.totalCount || 0,
+          currentPage: paginationSource.page || 1,
+          pageSize: paginationSource.pageSize || 10,
+          totalPages: paginationSource.totalPages || 0,
+          hasNext: paginationSource.hasNextPage || false,
+          hasPrevious: paginationSource.hasPreviousPage || false,
+          nextPage: paginationSource.nextPage || null,
+          previousPage: paginationSource.previousPage || null,
+        };
       } else if (responseData?.data && Array.isArray(responseData.data)) {
         data = responseData.data;
       }
 
       setItems(data);
-      setPagination(response.pagination || null);
+      setPagination(paginationMetadata || response.pagination || null);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
       setItems([]);

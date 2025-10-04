@@ -7,7 +7,7 @@ namespace TKDHubAPI.Application.Interfaces;
 /// </summary>
 public interface IDashboardService
 {
-    Task<DashboardResponseDto> GetDashboardAsync(int userId);
+    Task<DashboardResponseDto> GetDashboardAsync(int userId, string? userRole = null);
     Task<List<DashboardLayoutDto>> GetUserLayoutsAsync(int userId);
     Task<DashboardLayoutDto?> GetDefaultLayoutAsync(string userRole);
     Task<object?> GetWidgetDataAsync(string widgetType, string widgetId);

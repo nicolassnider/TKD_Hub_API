@@ -94,14 +94,14 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
         }
 
         const response = (await fetchJson(
-          `/api/dashboard?${params.toString()}`,
+          `/api/Dashboards?${params.toString()}`,
           {
             headers: getAuthHeaders(),
           },
         )) as DashboardResponse;
 
         setCurrentDashboard(response.layout);
-        setWidgets(response.widgets);
+        setWidgets(response.widgets || []);
 
         // Set permissions based on user role
         setPermissions({
@@ -128,7 +128,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
 
       try {
         const response = (await fetchJson(
-          `/api/dashboard/widgets/${widgetId}/refresh`,
+          `/api/Dashboards/widgets/${widgetId}/data`,
           {
             method: "POST",
             headers: getAuthHeaders(),
@@ -136,7 +136,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
         )) as DashboardWidget;
 
         setWidgets((prev) =>
-          prev.map((widget) =>
+          (prev || []).map((widget) =>
             widget.id === widgetId ? { ...widget, ...response } : widget,
           ),
         );
@@ -163,14 +163,14 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
   const updateWidgetPosition = useCallback(
     (widgetId: string, position: DashboardWidget["position"]) => {
       setWidgets((prev) =>
-        prev.map((widget) =>
+        (prev || []).map((widget) =>
           widget.id === widgetId ? { ...widget, position } : widget,
         ),
       );
 
       // Optionally persist to backend
       if (permissions.canEdit) {
-        fetchJson(`/api/dashboard/widgets/${widgetId}/position`, {
+        fetchJson(`/api/Dashboards/widgets/${widgetId}/position`, {
           method: "PATCH",
           headers: getAuthHeaders(),
           body: JSON.stringify({ position }),
@@ -186,7 +186,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
       if (!token || !permissions.canEdit) return;
 
       try {
-        const response = (await fetchJson("/api/dashboard/widgets", {
+        const response = (await fetchJson("/api/Dashboards/widgets", {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify({
@@ -215,7 +215,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
       if (!token || !permissions.canDelete) return;
 
       try {
-        await fetchJson(`/api/dashboard/widgets/${widgetId}`, {
+        await fetchJson(`/api/Dashboards/widgets/${widgetId}`, {
           method: "DELETE",
           headers: getAuthHeaders(),
         });
@@ -238,7 +238,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
 
       try {
         const response = (await fetchJson(
-          `/api/dashboard/widgets/${widgetId}`,
+          `/api/Dashboards/widgets/${widgetId}`,
           {
             method: "PATCH",
             headers: getAuthHeaders(),
@@ -247,7 +247,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
         )) as DashboardWidget;
 
         setWidgets((prev) =>
-          prev.map((widget) =>
+          (prev || []).map((widget) =>
             widget.id === widgetId ? { ...widget, ...response } : widget,
           ),
         );
@@ -264,7 +264,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
       if (!token || !permissions.canCreate) return;
 
       try {
-        const response = (await fetchJson("/api/dashboard/layouts", {
+        const response = (await fetchJson("/api/Dashboards/layouts", {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify(layout),
@@ -281,12 +281,43 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({
   // Load pre-built template for specific role
   const loadDashboardTemplate = useCallback(
     async (roleKey: keyof DashboardTemplates): Promise<void> => {
-      const request: DashboardRequest = {
-        userRole: roleKey,
-      };
-      await loadDashboard(request);
+      if (!token) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = (await fetchJson(
+          `/api/Dashboards/default/${roleKey}`,
+          {
+            headers: getAuthHeaders(),
+          },
+        )) as DashboardResponse;
+
+        setCurrentDashboard(response.layout);
+        setWidgets(response.widgets || []);
+
+        // Set permissions based on user role
+        setPermissions({
+          canView: true,
+          canEdit: hasRole("Admin") || hasRole("Coach"),
+          canCreate: hasRole("Admin"),
+          canDelete: hasRole("Admin"),
+          canShare: hasRole("Admin") || hasRole("Coach"),
+          allowedWidgets: [],
+        });
+      } catch (err) {
+        console.error("Failed to load dashboard template:", err);
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : "Failed to load dashboard template",
+        );
+      } finally {
+        setLoading(false);
+      }
     },
-    [loadDashboard],
+    [token, hasRole, getAuthHeaders],
   );
 
   // Update filters

@@ -250,7 +250,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Dashboard Grid */}
-      {widgets.length === 0 ? (
+      {!widgets || widgets.length === 0 ? (
         <Paper
           elevation={0}
           sx={{
@@ -282,7 +282,7 @@ const Dashboard: React.FC = () => {
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {widgets.map((widget) => (
+          {widgets?.map((widget) => (
             <Grid item {...getGridSize(widget)} key={widget.id}>
               {renderWidget(widget)}
             </Grid>

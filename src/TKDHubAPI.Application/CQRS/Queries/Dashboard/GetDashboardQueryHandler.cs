@@ -9,15 +9,25 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Dashb
     private readonly IDashboardService _dashboardService;
     private readonly ILogger<GetDashboardQueryHandler> _logger;
 
-    public GetDashboardQueryHandler(IDashboardService dashboardService, ILogger<GetDashboardQueryHandler> logger)
+    public GetDashboardQueryHandler(
+        IDashboardService dashboardService,
+        ILogger<GetDashboardQueryHandler> logger
+    )
     {
         _dashboardService = dashboardService;
         _logger = logger;
     }
 
-    public async Task<DashboardResponseDto> Handle(GetDashboardQuery request, CancellationToken cancellationToken)
+    public async Task<DashboardResponseDto> Handle(
+        GetDashboardQuery request,
+        CancellationToken cancellationToken
+    )
     {
-        _logger.LogInformation("Getting dashboard for user {UserId}", request.UserId);
-        return await _dashboardService.GetDashboardAsync(request.UserId);
+        _logger.LogInformation(
+            "Getting dashboard for user {UserId} with role {UserRole}",
+            request.UserId,
+            request.UserRole
+        );
+        return await _dashboardService.GetDashboardAsync(request.UserId, request.UserRole);
     }
 }
