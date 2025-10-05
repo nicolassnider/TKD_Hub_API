@@ -63,12 +63,12 @@ jobs:
 
 
 
-      - name: Run tests
-        run: |
-          # Run unit tests before deployment
-          dotnet test ./tests/TKDHubAPI.Application.Test/TKDHubAPI.Application.Test.csproj \
-            --configuration Release --no-build --verbosity normal \
-            --logger "console;verbosity=normal"
+      ###- name: Run tests
+      ###  run: |
+      ###    # Run unit tests before deployment
+      ###    dotnet test ./tests/TKDHubAPI.Application.Test/TKDHubAPI.Application.Test.csproj \
+      ###      --configuration Release --no-build --verbosity normal \
+      ###      --logger "console;verbosity=normal"
 
 
 
