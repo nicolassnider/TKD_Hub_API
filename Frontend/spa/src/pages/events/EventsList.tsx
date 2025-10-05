@@ -51,10 +51,16 @@ export default function EventsList() {
           const value = event.eventType;
           return (
             <Chip
-              label={value}
+              label={value || "Other"}
               color={getEventTypeColor(value)}
               size="small"
               variant="outlined"
+              sx={{
+                fontWeight: 600,
+                "& .MuiChip-label": {
+                  fontSize: "0.75rem",
+                },
+              }}
             />
           );
         },
@@ -75,6 +81,23 @@ export default function EventsList() {
               color={value ? "success" : "default"}
               size="small"
               variant={value ? "filled" : "outlined"}
+              sx={{
+                fontWeight: 600,
+                "& .MuiChip-label": {
+                  fontSize: "0.75rem",
+                },
+                ...(value
+                  ? {
+                      backgroundColor: "rgba(76, 175, 80, 0.2)",
+                      color: "#81c784",
+                      border: "1px solid #4caf50",
+                    }
+                  : {
+                      backgroundColor: "rgba(158, 158, 158, 0.2)",
+                      color: "#bdbdbd",
+                      border: "1px solid #757575",
+                    }),
+              }}
             />
           );
         },

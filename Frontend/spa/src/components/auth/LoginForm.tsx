@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Alert from "@mui/material/Alert";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  CircularProgress,
+  Container,
+  Fade,
+} from "@mui/material";
+import { Login as LoginIcon } from "@mui/icons-material";
 import { useRole } from "context/RoleContext";
 import { fetchJson } from "lib/api";
 
@@ -49,52 +61,177 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="auth-card">
-      <h2 className="text-2xl font-semibold mb-4">Sign in</h2>
-      {error && (
-        <Alert severity="error" className="mb-2">
-          {error}
-        </Alert>
-      )}
-      <div className="mb-3">
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
+    <Container
+      maxWidth="sm"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        py: 4,
+      }}
+    >
+      <Fade in timeout={600}>
+        <Card
+          sx={{
+            width: "100%",
+            maxWidth: 450,
+            borderRadius: 4,
+            background: "linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)",
+            border: "2px solid #ff6b35",
+            boxShadow: "0 20px 40px rgba(255, 107, 53, 0.2)",
+            backdropFilter: "blur(10px)",
+          }}
         >
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 auth-input"
-          placeholder="you@example.com"
-          required
-        />
-      </div>
-      <div className="mb-3">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 auth-input"
-          placeholder="Your password"
-          required
-        />
-      </div>
-      <div className="flex justify-end">
-        <button type="submit" className="auth-button" disabled={loading}>
-          {loading ? "Signing..." : "Sign in"}
-        </button>
-      </div>
-    </form>
+          <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
+            {/* Header */}
+            <Box sx={{ textAlign: "center", mb: 4 }}>
+              <Typography
+                variant="h3"
+                component="h1"
+                sx={{
+                  fontWeight: 800,
+                  background:
+                    "linear-gradient(45deg, #ff6b35 30%, #2196f3 70%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  mb: 1,
+                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                }}
+              >
+                Sign in
+              </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ fontSize: "1.1rem" }}
+              >
+                Welcome back to TKD Hub
+              </Typography>
+            </Box>
+
+            {/* Error Alert */}
+            {error && (
+              <Fade in>
+                <Alert
+                  severity="error"
+                  sx={{
+                    mb: 3,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(211, 47, 47, 0.1)",
+                    border: "1px solid rgba(211, 47, 47, 0.3)",
+                  }}
+                >
+                  {error}
+                </Alert>
+              </Fade>
+            )}
+
+            {/* Form */}
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ width: "100%" }}
+            >
+              <TextField
+                fullWidth
+                id="email"
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                sx={{
+                  mb: 3,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff6b35",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff6b35",
+                      boxShadow: "0 0 0 2px rgba(255, 107, 53, 0.2)",
+                    },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ff6b35",
+                  },
+                }}
+              />
+
+              <TextField
+                fullWidth
+                id="password"
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+                required
+                sx={{
+                  mb: 4,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff6b35",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff6b35",
+                      boxShadow: "0 0 0 2px rgba(255, 107, 53, 0.2)",
+                    },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ff6b35",
+                  },
+                }}
+              />
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={loading}
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <LoginIcon />
+                  )
+                }
+                sx={{
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                  textTransform: "none",
+                  background: loading
+                    ? "linear-gradient(45deg, #666 30%, #888 90%)"
+                    : "linear-gradient(45deg, #ff6b35 30%, #ff9966 90%)",
+                  boxShadow: "0 4px 16px rgba(255, 107, 53, 0.3)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(45deg, #cc4400 30%, #ff6b35 90%)",
+                    boxShadow: "0 6px 20px rgba(255, 107, 53, 0.4)",
+                    transform: "translateY(-1px)",
+                  },
+                  "&:disabled": {
+                    background: "linear-gradient(45deg, #666 30%, #888 90%)",
+                    color: "rgba(255, 255, 255, 0.6)",
+                  },
+                  transition: "all 0.3s ease-in-out",
+                }}
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
+    </Container>
   );
 }

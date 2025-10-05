@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../../context/RoleContext";
 import { Button, Chip, Tooltip, CircularProgress, Box } from "@mui/material";
@@ -7,6 +7,7 @@ import { fetchJson } from "../../lib/api";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { GenericListPage } from "components/layout/GenericListPage";
+import { ConfirmationModal } from "../../components/common/ConfirmationModal";
 
 export default function CoachesList() {
   const navigate = useNavigate();
@@ -15,9 +16,16 @@ export default function CoachesList() {
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const isAdmin = Array.isArray(role) && role.includes("Admin");
 
+  const [confirmationModal, setConfirmationModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ open: false, title: "", message: "", onConfirm: () => {} });
+
   const handleReactivate = async (coach: any) => {
     try {
-      await fetchJson(`/api/Coaches/${coach.id}/reactivate`, {
+      await fetchJson(`/api/Users/${coach.id}/reactivate`, {
         method: "POST",
       });
       // Reload will happen automatically via GenericListPage
@@ -27,15 +35,15 @@ export default function CoachesList() {
     }
   };
 
-  const handleDelete = async (coach: any) => {
+  const handleDeactivate = async (coach: any) => {
     try {
-      await fetchJson(`/api/Coaches/${coach.id}`, {
+      await fetchJson(`/api/Users/${coach.id}`, {
         method: "DELETE",
       });
       // Reload will happen automatically via GenericListPage
       window.location.reload(); // Simple reload for now
     } catch (error) {
-      console.error("Failed to delete coach:", error);
+      console.error("Failed to deactivate coach:", error);
     }
   };
 
@@ -49,9 +57,20 @@ export default function CoachesList() {
         render: (coach: any) => (
           <Chip
             label={coach.isActive ? "Active" : "Inactive"}
-            color={coach.isActive ? "success" : "warning"}
-            variant={coach.isActive ? "filled" : "outlined"}
+            variant="outlined"
             size="small"
+            sx={{
+              borderColor: coach.isActive ? "#4caf50" : "#ff9800",
+              color: coach.isActive ? "#4caf50" : "#ff9800",
+              backgroundColor: coach.isActive
+                ? "rgba(76, 175, 80, 0.08)"
+                : "rgba(255, 152, 0, 0.08)",
+              "&:hover": {
+                backgroundColor: coach.isActive
+                  ? "rgba(76, 175, 80, 0.12)"
+                  : "rgba(255, 152, 0, 0.12)",
+              },
+            }}
           />
         ),
       },
@@ -65,56 +84,97 @@ export default function CoachesList() {
             {!coach.isActive ? (
               <Tooltip title="Reactivate Coach">
                 <Button
-                  variant="text"
+                  variant="outlined"
                   size="small"
-                  color="success"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleReactivate(coach);
                   }}
-                  startIcon={<Restore fontSize="small" />}
-                  sx={{ textTransform: "none", borderRadius: 2 }}
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 2,
+                    borderColor: "#4caf50",
+                    color: "#4caf50",
+                    minWidth: 40,
+                    width: 40,
+                    height: 36,
+                    padding: 0,
+                    "&:hover": {
+                      borderColor: "#ff6b35",
+                      color: "#ff6b35",
+                      backgroundColor: "rgba(255, 107, 53, 0.08)",
+                    },
+                  }}
                 >
-                  {!isSmall ? "Reactivate" : null}
+                  <Restore fontSize="small" />
                 </Button>
               </Tooltip>
             ) : (
               <>
                 <Tooltip title="View Details">
                   <Button
-                    variant="text"
+                    variant="outlined"
                     size="small"
-                    color="primary"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/coaches/${coach.id}`);
                     }}
-                    startIcon={<Edit fontSize="small" />}
-                    sx={{ textTransform: "none", borderRadius: 2 }}
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: 2,
+                      borderColor: "#2196f3",
+                      color: "#2196f3",
+                      minWidth: 40,
+                      width: 40,
+                      height: 36,
+                      padding: 0,
+                      "&:hover": {
+                        borderColor: "#ff6b35",
+                        color: "#ff6b35",
+                        backgroundColor: "rgba(255, 107, 53, 0.08)",
+                      },
+                    }}
                   >
-                    {!isSmall ? "DETAILS" : null}
+                    <Edit fontSize="small" />
                   </Button>
                 </Tooltip>
                 {isAdmin && (
-                  <Tooltip title="Delete Coach">
+                  <Tooltip title="Deactivate Coach">
                     <Button
-                      variant="text"
+                      variant="outlined"
                       size="small"
-                      color="error"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this coach?",
-                          )
-                        ) {
-                          handleDelete(coach);
-                        }
+                        setConfirmationModal({
+                          open: true,
+                          title: "Deactivate Coach",
+                          message: `Are you sure you want to deactivate ${coach.firstName} ${coach.lastName}? This action will disable their access to the system.`,
+                          onConfirm: () => {
+                            handleDeactivate(coach);
+                            setConfirmationModal((prev) => ({
+                              ...prev,
+                              open: false,
+                            }));
+                          },
+                        });
                       }}
-                      startIcon={<Delete fontSize="small" />}
-                      sx={{ textTransform: "none", borderRadius: 2 }}
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: 2,
+                        borderColor: "#f44336",
+                        color: "#f44336",
+                        minWidth: 40,
+                        width: 40,
+                        height: 36,
+                        padding: 0,
+                        "&:hover": {
+                          borderColor: "#ff6b35",
+                          color: "#ff6b35",
+                          backgroundColor: "rgba(255, 107, 53, 0.08)",
+                        },
+                      }}
                     >
-                      {!isSmall ? "DELETE" : null}
+                      <Delete fontSize="small" />
                     </Button>
                   </Tooltip>
                 )}
@@ -134,13 +194,28 @@ export default function CoachesList() {
   };
 
   return (
-    <GenericListPage
-      title="Coaches"
-      apiEndpoint="/api/Coaches"
-      columns={columns}
-      createRoute="/coaches/new"
-      showInactiveFilter={true}
-      onRowAction={handleRowAction}
-    />
+    <>
+      <GenericListPage
+        title="Coaches"
+        apiEndpoint="/api/Coaches"
+        columns={columns}
+        createRoute="/coaches/new"
+        showInactiveFilter={true}
+        onRowAction={handleRowAction}
+      />
+
+      <ConfirmationModal
+        open={confirmationModal.open}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        confirmText="Deactivate"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={confirmationModal.onConfirm}
+        onCancel={() =>
+          setConfirmationModal((prev) => ({ ...prev, open: false }))
+        }
+      />
+    </>
   );
 }

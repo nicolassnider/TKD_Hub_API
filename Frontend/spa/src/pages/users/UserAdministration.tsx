@@ -44,8 +44,8 @@ export default function UserAdministration() {
   const [selectedUserForMenu, setSelectedUserForMenu] = useState<User | null>(
     null,
   );
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
 
   // Redirect if not admin
   if (!hasRole("Admin")) {
@@ -96,10 +96,10 @@ export default function UserAdministration() {
     setShowEditModal(true);
   };
 
-  const handleDeleteUser = async (userId: number) => {
+  const handleDeactivateUser = async (userId: number) => {
     if (
       !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone.",
+        "Are you sure you want to deactivate this user? They will no longer be able to access the system.",
       )
     ) {
       return;
@@ -111,9 +111,9 @@ export default function UserAdministration() {
       });
       await loadUsers(); // Refresh the list
     } catch (err) {
-      console.error("Failed to delete user:", err);
+      console.error("Failed to deactivate user:", err);
       alert(
-        "Failed to delete user: " +
+        "Failed to deactivate user: " +
           (err instanceof ApiError ? err.message : "Unknown error"),
       );
     }
@@ -196,10 +196,10 @@ export default function UserAdministration() {
     handleMenuClose();
   };
 
-  const handleDeleteFromMenu = () => {
+  const handleDeactivateFromMenu = () => {
     if (selectedUserForMenu) {
-      setUserToDelete(selectedUserForMenu);
-      setDeleteDialogOpen(true);
+      setUserToDeactivate(selectedUserForMenu);
+      setDeactivateDialogOpen(true);
     }
     handleMenuClose();
   };
@@ -214,11 +214,11 @@ export default function UserAdministration() {
     handleMenuClose();
   };
 
-  const confirmDelete = async () => {
-    if (userToDelete) {
-      await handleDeleteUser(userToDelete.id!);
-      setDeleteDialogOpen(false);
-      setUserToDelete(null);
+  const confirmDeactivate = async () => {
+    if (userToDeactivate) {
+      await handleDeactivateUser(userToDeactivate.id!);
+      setDeactivateDialogOpen(false);
+      setUserToDeactivate(null);
     }
   };
 
@@ -410,28 +410,32 @@ export default function UserAdministration() {
           )}
           {selectedUserForMenu?.isActive ? "Deactivate" : "Activate"}
         </MenuItem>
-        <MenuItem onClick={handleDeleteFromMenu} sx={{ color: "error.main" }}>
-          <Delete fontSize="small" sx={{ mr: 1 }} />
-          Delete User
+        <MenuItem
+          onClick={handleDeactivateFromMenu}
+          sx={{ color: "error.main" }}
+        >
+          <PersonOff fontSize="small" sx={{ mr: 1 }} />
+          Deactivate User
         </MenuItem>
       </Menu>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Deactivate Confirmation Dialog */}
       <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        open={deactivateDialogOpen}
+        onClose={() => setDeactivateDialogOpen(false)}
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Confirm Deactivation</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete user "{userToDelete?.firstName}{" "}
-            {userToDelete?.lastName}"? This action cannot be undone.
+            Are you sure you want to deactivate user "
+            {userToDeactivate?.firstName} {userToDeactivate?.lastName}"? They
+            will no longer be able to access the system.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={confirmDelete} color="error" variant="contained">
-            Delete
+          <Button onClick={() => setDeactivateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmDeactivate} color="error" variant="contained">
+            Deactivate
           </Button>
         </DialogActions>
       </Dialog>

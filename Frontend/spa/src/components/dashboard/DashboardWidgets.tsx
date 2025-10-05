@@ -31,41 +31,89 @@ export const BaseWidget: React.FC<
 > = ({ widget, children, onRefresh, onEdit, onRemove }) => {
   return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        borderRadius: "12px",
-        border: "1px solid",
-        borderColor: "divider",
+        borderRadius: 3,
+        backgroundColor: "#1e1e1e",
+        border: "1px solid #404040",
         overflow: "hidden",
+        transition: "all 0.3s ease-in-out",
+        position: "relative",
+        "&:hover": {
+          borderColor: "#ff6b35",
+          boxShadow: "0 8px 32px rgba(255, 107, 53, 0.15)",
+          transform: "translateY(-4px)",
+          "& .widget-glow": {
+            opacity: 1,
+          },
+        },
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          background: "linear-gradient(90deg, #ff6b35 0%, #2196f3 100%)",
+          opacity: 0.8,
+        },
       }}
     >
       <CardHeader
         title={
-          <Typography variant="h6" component="h3" fontWeight={600}>
+          <Typography
+            variant="subtitle1"
+            component="h3"
+            fontWeight={600}
+            sx={{ color: "text.primary" }}
+          >
             {widget.title}
           </Typography>
         }
-        subheader={widget.description}
+        subheader={
+          widget.description && (
+            <Typography variant="caption" color="text.secondary">
+              {widget.description}
+            </Typography>
+          )
+        }
         action={
-          <Box>
+          <Box sx={{ display: "flex", gap: 0.5 }}>
             {onRefresh && (
               <IconButton
                 size="small"
                 onClick={onRefresh}
                 disabled={widget.loading}
+                sx={{
+                  opacity: 0.6,
+                  "&:hover": { opacity: 1 },
+                }}
               >
-                <RefreshIcon />
+                <RefreshIcon fontSize="small" />
               </IconButton>
             )}
-            <IconButton size="small">
-              <MoreIcon />
+            <IconButton
+              size="small"
+              sx={{
+                opacity: 0.6,
+                "&:hover": { opacity: 1 },
+              }}
+            >
+              <MoreIcon fontSize="small" />
             </IconButton>
           </Box>
         }
-        sx={{ pb: 1 }}
+        sx={{
+          pb: 0.5,
+          px: 2,
+          pt: 1.5,
+          "& .MuiCardHeader-content": {
+            overflow: "hidden",
+          },
+        }}
       />
       <CardContent
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column", pt: 0 }}
@@ -121,53 +169,156 @@ export const MetricWidget: React.FC<{ widget: DashboardWidget }> = ({
 
   return (
     <BaseWidget widget={widget} onRefresh={handleRefresh}>
-      <Box textAlign="center" py={2}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          py: 3,
+          px: 2,
+          minHeight: 140,
+          position: "relative",
+          background:
+            "linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(33, 150, 243, 0.05) 100%)",
+        }}
+      >
+        {/* Background Glow Effect */}
+        <Box
+          className="widget-glow"
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "radial-gradient(circle at center, rgba(255, 107, 53, 0.1) 0%, transparent 70%)",
+            opacity: 0,
+            transition: "opacity 0.3s ease-in-out",
+          }}
+        />
+
+        {/* Main Value with enhanced styling */}
         <Typography
-          variant="h3"
+          variant="h2"
           component="div"
-          fontWeight={700}
-          sx={{ color: "primary.main", mb: 1 }}
+          fontWeight={800}
+          sx={{
+            fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.75rem" },
+            background: "linear-gradient(45deg, #ff6b35 30%, #2196f3 70%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            mb: 1,
+            lineHeight: 1,
+            letterSpacing: "-0.02em",
+            position: "relative",
+            zIndex: 1,
+          }}
         >
+          {data.unit === "$" ? "$" : ""}
           {formatValue(value)}
+          {data.unit && data.unit !== "$" ? data.unit : ""}
         </Typography>
 
-        {widget.config.comparison?.enabled && (
+        {/* Subtitle */}
+        {data.subtitle && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mb: previousValue ? 1 : 0,
+              fontWeight: 500,
+              textAlign: "center",
+            }}
+          >
+            {data.subtitle}
+          </Typography>
+        )}
+
+        {/* Comparison indicator */}
+        {previousValue > 0 && (
           <Box
             display="flex"
             alignItems="center"
             justifyContent="center"
             gap={0.5}
+            sx={{
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 1.5,
+              position: "relative",
+              zIndex: 1,
+              backgroundColor: isFlat
+                ? "rgba(158, 158, 158, 0.15)"
+                : isPositive
+                  ? "rgba(76, 175, 80, 0.15)"
+                  : "rgba(244, 67, 54, 0.15)",
+              border: `1px solid ${
+                isFlat ? "#757575" : isPositive ? "#4caf50" : "#f44336"
+              }`,
+            }}
           >
             {isFlat ? (
-              <FlatIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+              <FlatIcon sx={{ fontSize: 16, color: "#bdbdbd" }} />
             ) : isPositive ? (
-              <TrendingUp sx={{ fontSize: 16, color: "success.main" }} />
+              <TrendingUp sx={{ fontSize: 16, color: "#66bb6a" }} />
             ) : (
-              <TrendingDown sx={{ fontSize: 16, color: "error.main" }} />
+              <TrendingDown sx={{ fontSize: 16, color: "#ef5350" }} />
             )}
             <Typography
-              variant="body2"
+              variant="caption"
               sx={{
-                color: isFlat
-                  ? "text.secondary"
-                  : isPositive
-                    ? "success.main"
-                    : "error.main",
-                fontWeight: 600,
+                color: isFlat ? "#bdbdbd" : isPositive ? "#66bb6a" : "#ef5350",
+                fontWeight: 700,
+                fontSize: "0.75rem",
               }}
             >
-              {isFlat ? "No change" : `${Math.abs(change).toFixed(1)}%`}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              vs {widget.config.comparison.period.replace("_", " ")}
+              {isFlat
+                ? "No change"
+                : `${isPositive ? "+" : ""}${change.toFixed(1)}%`}
             </Typography>
           </Box>
         )}
 
-        {data.subtitle && (
-          <Typography variant="body2" color="text.secondary" mt={1}>
-            {data.subtitle}
-          </Typography>
+        {/* Target progress indicator */}
+        {data.target && (
+          <Box sx={{ mt: 2, width: "100%", maxWidth: 200 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 0.5,
+              }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                Progress
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {Math.round((value / data.target) * 100)}%
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                width: "100%",
+                height: 4,
+                backgroundColor: "grey.200",
+                borderRadius: 2,
+                overflow: "hidden",
+              }}
+            >
+              <Box
+                sx={{
+                  width: `${Math.min((value / data.target) * 100, 100)}%`,
+                  height: "100%",
+                  backgroundColor: `${widget.config.color || "primary"}.main`,
+                  borderRadius: 2,
+                  transition: "width 0.5s ease",
+                }}
+              />
+            </Box>
+          </Box>
         )}
       </Box>
     </BaseWidget>

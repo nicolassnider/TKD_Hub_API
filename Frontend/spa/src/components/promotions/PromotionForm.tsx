@@ -15,6 +15,7 @@ import { CreatePromotionDto, PromotionDto } from "types/api";
 import { UserDto } from "../../types/api";
 import { useFormData } from "../../hooks/useFormData";
 
+
 // Type alias for this component
 type Student = UserDto;
 import {
@@ -22,6 +23,7 @@ import {
   DojaangSelect,
   RankSelect,
 } from "components/forms/FormFields";
+
 
 interface PromotionFormProps {
   open: boolean;
@@ -31,6 +33,7 @@ interface PromotionFormProps {
   title: string;
   preselectedStudentId?: number;
 }
+
 
 export default function PromotionForm({
   open,
@@ -49,11 +52,13 @@ export default function PromotionForm({
     dojaangId: 0,
   });
 
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [hasProcessedPreselection, setHasProcessedPreselection] =
     useState(false);
+
 
   // Use the centralized form data hook - only fetch when dialog is open
   const { students, coaches, dojaangs, ranks } = useFormData({
@@ -63,9 +68,11 @@ export default function PromotionForm({
     includeRanks: open,
   });
 
+
   // Set initial data when editing
   useEffect(() => {
     if (!open) return; // Don't reset if dialog is closed
+
 
     if (initialData) {
       setFormData({
@@ -92,20 +99,24 @@ export default function PromotionForm({
     setErrors({});
   }, [initialData, open, preselectedStudentId]);
 
+
   // Set selected student when students are loaded and we have initialData
   useEffect(() => {
-    if (initialData && students.length > 0 && !selectedStudent) {
+    if (initialData && students && students.length > 0 && !selectedStudent) {
       const student = students.find((s) => s.id === initialData.studentId);
       setSelectedStudent(student || null);
     }
   }, [initialData, students, selectedStudent]);
+
 
   // Handle preselected student and auto-suggest next rank
   useEffect(() => {
     if (
       open &&
       preselectedStudentId &&
+      students &&
       students.length > 0 &&
+      ranks &&
       ranks.length > 0 &&
       !initialData &&
       !hasProcessedPreselection
@@ -117,6 +128,7 @@ export default function PromotionForm({
           ...prev,
           studentId: student.id,
         }));
+
 
         // Auto-suggest next rank if student has a current rank
         if (student.currentRankId) {
@@ -132,10 +144,12 @@ export default function PromotionForm({
                   (firstRank.order || 0) - (secondRank.order || 0),
               );
 
+
             const currentRankIndex = sortedRanks.findIndex(
               (rank) => rank.id === student.currentRankId,
             );
             const nextRank = sortedRanks[currentRankIndex + 1];
+
 
             if (nextRank) {
               setFormData((prev) => ({
@@ -157,8 +171,10 @@ export default function PromotionForm({
     hasProcessedPreselection,
   ]);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
 
     // Validation
     const newErrors: Record<string, string> = {};
@@ -178,11 +194,14 @@ export default function PromotionForm({
       newErrors.promotionDate = "Promotion date is required";
     }
 
+
     setErrors(newErrors);
+
 
     if (Object.keys(newErrors).length > 0) {
       return;
     }
+
 
     setLoading(true);
     try {
@@ -195,6 +214,7 @@ export default function PromotionForm({
     }
   };
 
+
   const handleStudentChange = (student: Student | null) => {
     setSelectedStudent(student);
     setFormData((prev) => ({
@@ -204,20 +224,24 @@ export default function PromotionForm({
     }));
   };
 
+
   // Get available ranks (higher than current rank)
   const getAvailableRanks = () => {
-    if (!selectedStudent?.currentRankId) return ranks;
+    if (!ranks || !selectedStudent?.currentRankId) return ranks || [];
+
 
     const currentRank = ranks.find(
       (rank) => rank.id === selectedStudent.currentRankId,
     );
     if (!currentRank || currentRank.order === undefined) return ranks;
 
+
     const currentRankOrder = currentRank.order;
     return ranks.filter(
       (rank) => rank.order !== undefined && rank.order > currentRankOrder,
     );
   };
+
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -227,7 +251,7 @@ export default function PromotionForm({
           <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <Autocomplete
-                options={students}
+                options={students || []}
                 getOptionLabel={(student) =>
                   `${student.firstName} ${student.lastName}${student.currentRankName ? ` (${student.currentRankName})` : ""}`
                 }
@@ -269,9 +293,10 @@ export default function PromotionForm({
               />
             </Grid>
 
+
             <Grid item xs={12} md={6}>
               <RankSelect
-                ranks={ranks}
+                ranks={ranks || []}
                 availableRanks={getAvailableRanks()}
                 value={formData.rankId}
                 onChange={(value) =>
@@ -282,6 +307,7 @@ export default function PromotionForm({
                 required
               />
             </Grid>
+
 
             <Grid item xs={12} md={6}>
               <TextField
@@ -302,9 +328,10 @@ export default function PromotionForm({
               />
             </Grid>
 
+
             <Grid item xs={12} md={6}>
               <CoachSelect
-                coaches={coaches}
+                coaches={coaches || []}
                 value={formData.coachId}
                 onChange={(value) =>
                   setFormData((prev) => ({ ...prev, coachId: value }))
@@ -315,9 +342,10 @@ export default function PromotionForm({
               />
             </Grid>
 
+
             <Grid item xs={12} md={6}>
               <DojaangSelect
-                dojaangs={dojaangs}
+                dojaangs={dojaangs || []}
                 value={formData.dojaangId}
                 onChange={(value) =>
                   setFormData((prev) => ({ ...prev, dojaangId: value }))
@@ -326,6 +354,7 @@ export default function PromotionForm({
                 required
               />
             </Grid>
+
 
             <Grid item xs={12}>
               <TextField
@@ -340,6 +369,7 @@ export default function PromotionForm({
                 placeholder="Add any notes about this promotion..."
               />
             </Grid>
+
 
             {selectedStudent && (
               <Grid item xs={12}>
@@ -369,6 +399,7 @@ export default function PromotionForm({
             )}
           </Grid>
         </DialogContent>
+
 
         <DialogActions>
           <Button onClick={onClose} disabled={loading}>

@@ -55,7 +55,14 @@ export default function ClassesList() {
               label={scheduleText}
               variant="outlined"
               size="small"
-              sx={{ maxWidth: "200px" }}
+              sx={{
+                maxWidth: "200px",
+                borderColor: "#ff6b35",
+                color: "#ff6b35",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 107, 53, 0.08)",
+                },
+              }}
             />
           );
         },
@@ -67,17 +74,29 @@ export default function ClassesList() {
           <Box sx={{ display: "flex", gap: 0.5, justifyContent: "center" }}>
             <Tooltip title="View Details">
               <Button
-                variant="text"
+                variant="outlined"
                 size="small"
-                color="primary"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/classes/${classItem.id}`);
                 }}
-                startIcon={<Visibility fontSize="small" />}
-                sx={{ textTransform: "none", borderRadius: 2 }}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  borderColor: "#2196f3",
+                  color: "#2196f3",
+                  minWidth: 40,
+                  width: 40,
+                  height: 36,
+                  padding: 0,
+                  "&:hover": {
+                    borderColor: "#ff6b35",
+                    color: "#ff6b35",
+                    backgroundColor: "rgba(255, 107, 53, 0.08)",
+                  },
+                }}
               >
-                DETAILS
+                <Visibility fontSize="small" />
               </Button>
             </Tooltip>
           </Box>

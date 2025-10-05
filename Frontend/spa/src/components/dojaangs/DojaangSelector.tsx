@@ -1,3 +1,98 @@
+import { useApiItems } from "../../hooks/useApiItems";
+import { Autocomplete } from "@mui/material";
+import TextField from "@mui/material/TextField";
+import { SelectorOption, LoadingSelectorProps } from "../../types/selectors";
+import {
+  createSelectorOptions,
+  findSelectorOption,
+  selectorConfigs,
+} from "../../utils/selectorUtils";
+
+// Define Dojaang API response type
+interface DojaangDto {
+  id: number;
+  name: string;
+  address: string;
+  phoneNumber?: string;
+  isActive: boolean;
+}
+
+// Dojaang selector specific props extending the base selector props
+export interface DojaangSelectorProps
+  extends Omit<LoadingSelectorProps, "loading"> {
+  // Dojaang selector doesn't need any additional props beyond the base
+}
+
+export default function DojaangSelector({
+  value,
+  onChange,
+  label = "Dojaang",
+  readOnly,
+  disabled,
+  error,
+  helperText,
+  size = "small",
+  placeholder,
+  required,
+}: DojaangSelectorProps) {
+  const { items: dojaangs, loading } = useApiItems<DojaangDto>("/api/Dojaangs");
+
+  // Create options for dojaangs using name as label
+  const options: SelectorOption[] = dojaangs.map((dojaang) => ({
+    id: dojaang.id,
+    label: dojaang.name,
+    disabled: !dojaang.isActive,
+  }));
+
+  const selected = findSelectorOption(options, value);
+
+  if (readOnly) {
+    return (
+      <TextField
+        value={selected ? selected.label : ""}
+        label={label}
+        size={size}
+        error={error}
+        helperText={helperText}
+        required={required}
+        InputProps={{ readOnly: true }}
+        disabled
+      />
+    );
+  }
+
+  return (
+    <Autocomplete<SelectorOption>
+      options={options}
+      value={selected}
+      onChange={(_, selectedOption: SelectorOption | null) =>
+        onChange(selectedOption ? selectedOption.id : null)
+      }
+      getOptionLabel={(option: SelectorOption) =>
+        option.label ?? String(option.id)
+      }
+      loading={loading}
+      disabled={disabled}
+      isOptionEqualToValue={(a: SelectorOption, b: SelectorOption) =>
+        a.id === b.id
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={placeholder}
+          size={size}
+          error={error}
+          helperText={helperText}
+          required={required}
+        />
+      )}
+      clearOnEscape
+      sx={{ minWidth: 240 }}
+    />
+  );
+}
+
 import React from "react";
 import {
   FormControl,
@@ -8,12 +103,10 @@ import {
 } from "@mui/material";
 import { UserDto, DojaangDto, Rank } from "../../types/api";
 
-
 // Type aliases for this component
 type Student = UserDto;
 type Coach = UserDto;
 type Dojaang = DojaangDto;
-
 
 interface BaseSelectFieldProps {
   value: number;
@@ -23,12 +116,10 @@ interface BaseSelectFieldProps {
   fullWidth?: boolean;
 }
 
-
 interface StudentSelectProps extends BaseSelectFieldProps {
   students: Student[];
   label?: string;
 }
-
 
 export function StudentSelect({
   students,
@@ -61,12 +152,10 @@ export function StudentSelect({
   );
 }
 
-
 interface CoachSelectProps extends BaseSelectFieldProps {
   coaches: Coach[];
   label?: string;
 }
-
 
 export function CoachSelect({
   coaches = [],
@@ -98,12 +187,10 @@ export function CoachSelect({
   );
 }
 
-
 interface DojaangSelectProps extends BaseSelectFieldProps {
   dojaangs: Dojaang[];
   label?: string;
 }
-
 
 export function DojaangSelect({
   dojaangs = [],
@@ -135,13 +222,11 @@ export function DojaangSelect({
   );
 }
 
-
 interface RankSelectProps extends BaseSelectFieldProps {
   ranks: Rank[];
   label?: string;
   availableRanks?: Rank[]; // For filtered ranks (e.g., higher than current)
 }
-
 
 export function RankSelect({
   ranks = [],
@@ -154,7 +239,6 @@ export function RankSelect({
   availableRanks,
 }: RankSelectProps) {
   const ranksToShow = availableRanks || ranks || [];
-
 
   return (
     <FormControl fullWidth={fullWidth} error={!!error}>

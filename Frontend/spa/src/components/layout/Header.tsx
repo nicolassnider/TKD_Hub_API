@@ -1,20 +1,34 @@
 import React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import MenuIcon from "@mui/icons-material/Menu";
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Avatar,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
+import {
+  Menu as MenuIcon,
+  Dashboard as DashboardIcon,
+  Groups as StudentsIcon,
+  School as ClassesIcon,
+  EmojiEvents as EventsIcon,
+  Article as BlogIcon,
+  Home as DojaangsIcon,
+  Person as CoachesIcon,
+  AdminPanelSettings as AdminIcon,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../../context/RoleContext";
 
@@ -22,50 +36,39 @@ import { useRole } from "../../context/RoleContext";
 interface RouteConfig {
   path: string;
   label: string;
-  roles?: string[]; // If undefined, available to all authenticated users
+  icon?: React.ReactElement;
+  roles?: string[];
 }
 
 const guestRoutes: RouteConfig[] = [
-  { path: "/events", label: "Events" },
-  { path: "/blog", label: "Blog" },
-  { path: "/register", label: "Register" },
-  { path: "/login", label: "Login" },
+  { path: "/events", label: "Events", icon: <EventsIcon /> },
+  { path: "/blog", label: "Blog", icon: <BlogIcon /> },
 ];
 
 const authenticatedRoutes: RouteConfig[] = [
-  { path: "/", label: "Home" },
-  { path: "/students", label: "Students" },
-  { path: "/events", label: "Events" },
-  { path: "/blog", label: "Blog" },
-  { path: "/classes", label: "Classes" },
+  { path: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
+  { path: "/students", label: "Students", icon: <StudentsIcon /> },
+  { path: "/classes", label: "Classes", icon: <ClassesIcon /> },
+  { path: "/events", label: "Events", icon: <EventsIcon /> },
+  { path: "/coaches", label: "Coaches", icon: <CoachesIcon /> },
+  { path: "/dojaangs", label: "Dojaangs", icon: <DojaangsIcon /> },
+  { path: "/blog", label: "Blog", icon: <BlogIcon /> },
   {
-    path: "/classes/manage",
-    label: "Manage Classes",
-    roles: ["Admin", "Coach"],
+    path: "/users",
+    label: "User Administration",
+    icon: <AdminIcon />,
+    roles: ["Admin"],
   },
-  { path: "/coaches", label: "Coaches" },
-  { path: "/dojaangs", label: "Dojaangs" },
-  { path: "/promotions", label: "Promotions" },
-  {
-    path: "/promotions/manage",
-    label: "Manage Promotions",
-    roles: ["Admin", "Coach"],
-  },
-  { path: "/ranks", label: "Ranks" },
-  { path: "/tuls", label: "Tuls" },
-  { path: "/users", label: "User Administration", roles: ["Admin"] },
-  { path: "/dashboard", label: "Dashboard" },
-  { path: "/payments/mercadopago", label: "Payments" },
-  { path: "/manage", label: "Manage", roles: ["Admin"] },
 ];
 
 const desktopRoutes: RouteConfig[] = [
+  { path: "/dashboard", label: "Dashboard" },
   { path: "/students", label: "Students" },
-  { path: "/events", label: "Events" },
-  { path: "/blog", label: "Blog" },
   { path: "/classes", label: "Classes" },
+  { path: "/events", label: "Events" },
   { path: "/coaches", label: "Coaches" },
   { path: "/dojaangs", label: "Dojaangs" },
+  { path: "/blog", label: "Blog" },
 ];
 
 const desktopGuestRoutes: RouteConfig[] = [
@@ -74,6 +77,8 @@ const desktopGuestRoutes: RouteConfig[] = [
 ];
 
 export default function Header() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const {
     token,
@@ -86,16 +91,17 @@ export default function Header() {
     setAvatarUrl,
     hasRole,
   } = useRole();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [logoutOpen, setLogoutOpen] = React.useState(false);
+
   const open = Boolean(anchorEl);
+  const isGuest =
+    Array.isArray(role) && role.length === 1 && role[0] === "Guest";
+
   const handleMenu = (e: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
-  const [logoutOpen, setLogoutOpen] = React.useState(false);
-
-  const isGuest =
-    Array.isArray(role) && role.length === 1 && role[0] === "Guest";
 
   const logout = () => {
     setToken(null);
@@ -112,7 +118,7 @@ export default function Header() {
   // Helper function to check if user can access a route
   const canAccessRoute = (route: RouteConfig) => {
     if (!route.roles || route.roles.length === 0) {
-      return true; // No role restriction
+      return true;
     }
     return route.roles.some((requiredRole) => hasRole(requiredRole));
   };
@@ -129,13 +135,29 @@ export default function Header() {
           handleClose();
           navigate(route.path);
         }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          py: 1.5,
+          px: 2,
+          "&:hover": {
+            backgroundColor: "rgba(255, 107, 53, 0.1)",
+            color: "#ff9966",
+          },
+        }}
       >
-        {route.label}
+        {route.icon && (
+          <Box sx={{ display: "flex", alignItems: "center", minWidth: 24 }}>
+            {route.icon}
+          </Box>
+        )}
+        <Typography variant="body1">{route.label}</Typography>
       </MenuItem>
     );
   };
 
-  // Helper function to create buttons
+  // Helper function to create desktop buttons
   const createButton = (route: RouteConfig) => {
     if (!canAccessRoute(route)) {
       return null;
@@ -145,6 +167,17 @@ export default function Header() {
         key={route.path}
         color="inherit"
         onClick={() => navigate(route.path)}
+        sx={{
+          textTransform: "none",
+          fontWeight: 500,
+          px: 2,
+          py: 1,
+          borderRadius: "8px",
+          "&:hover": {
+            backgroundColor: "rgba(255, 107, 53, 0.15)",
+            color: "#ff9966",
+          },
+        }}
       >
         {route.label}
       </Button>
@@ -152,79 +185,86 @@ export default function Header() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={handleMenu}
+    <>
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{
+          background: "linear-gradient(135deg, #121212 0%, #1e1e1e 100%)",
+          borderBottom: "2px solid #ff6b35",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <Toolbar
+          sx={{
+            minHeight: { xs: 64, md: 72 },
+            px: { xs: 2, sm: 3, md: 4 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          {/* Mobile Menu Button */}
+          <Box sx={{ display: { xs: "flex", md: "none" } }}>
+            <IconButton
+              size="large"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleMenu}
+              sx={{
+                "&:hover": {
+                  backgroundColor: "rgba(255, 107, 53, 0.15)",
+                  color: "#ff9966",
+                },
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+
+          {/* Logo/Brand */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flexGrow: { xs: 1, md: 0 },
+            }}
           >
-            <MenuIcon />
-          </IconButton>
-          <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-            {/* Render routes based on user role */}
-            {isGuest ? (
-              <>{guestRoutes.map(createMenuItem)}</>
-            ) : (
-              <>
-                {authenticatedRoutes.map(createMenuItem).filter(Boolean)}
-                {/* Auth actions in menu */}
-                {token ? (
-                  <>
-                    <MenuItem
-                      onClick={() => {
-                        handleClose();
-                        navigate("/profile");
-                      }}
-                    >
-                      {displayName ??
-                        (Array.isArray(role) ? role[0] : role) ??
-                        "User"}
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        handleClose();
-                        confirmLogout();
-                      }}
-                    >
-                      Logout
-                    </MenuItem>
-                  </>
-                ) : (
-                  <>
-                    <MenuItem
-                      onClick={() => {
-                        handleClose();
-                        navigate("/register");
-                      }}
-                    >
-                      Register
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        handleClose();
-                        navigate("/login");
-                      }}
-                    >
-                      Login
-                    </MenuItem>
-                  </>
-                )}
-              </>
-            )}
-          </Menu>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            TKD Hub
-          </Typography>
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{
+                fontWeight: 800,
+                letterSpacing: "1px",
+                cursor: "pointer",
+                textDecoration: "none",
+                background: "linear-gradient(45deg, #ff6b35 30%, #2196f3 70%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                fontSize: { xs: "1.25rem", md: "1.5rem" },
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  filter: "brightness(1.2)",
+                },
+                transition: "all 0.3s ease-in-out",
+                textShadow: "0 0 20px rgba(255, 107, 53, 0.3)",
+              }}
+              onClick={() => navigate("/")}
+            >
+              TKD HUB
+            </Typography>
+          </Box>
+
+          {/* Desktop Navigation */}
           <Box
             sx={{
               display: { xs: "none", md: "flex" },
-              gap: 1,
               alignItems: "center",
+              gap: 1,
+              flexGrow: 1,
+              justifyContent: "center",
             }}
           >
             {isGuest ? (
@@ -234,63 +274,227 @@ export default function Header() {
             )}
           </Box>
 
-          {token ? (
-            <>
-              <Chip
-                avatar={
-                  displayName || avatarUrl ? (
-                    <Avatar
-                      alt={displayName ?? "User"}
-                      src={avatarUrl ?? undefined}
-                    />
-                  ) : undefined
-                }
-                label={
-                  displayName ??
-                  (Array.isArray(role) ? role[0] : role) ??
-                  "User"
-                }
-                variant="outlined"
-                sx={{
-                  mr: 1,
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-                onClick={() => navigate("/profile")}
-              />
-              <Button color="inherit" onClick={confirmLogout}>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button color="inherit" onClick={() => navigate("/register")}>
-                Register
-              </Button>
-              <Button color="inherit" onClick={() => navigate("/login")}>
-                Login
-              </Button>
-            </>
-          )}
-
-          <Dialog open={logoutOpen} onClose={cancelLogout}>
-            <DialogTitle>Confirm logout</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Are you sure you want to sign out?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={cancelLogout}>Cancel</Button>
-              <Button onClick={logout} color="primary">
-                Sign out
-              </Button>
-            </DialogActions>
-          </Dialog>
+          {/* User Actions */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexGrow: 0,
+            }}
+          >
+            {token ? (
+              <>
+                <Chip
+                  avatar={
+                    displayName || avatarUrl ? (
+                      <Avatar
+                        alt={displayName ?? "User"}
+                        src={avatarUrl ?? undefined}
+                        sx={{ width: 28, height: 28 }}
+                      />
+                    ) : (
+                      <Avatar
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          bgcolor: "secondary.main",
+                        }}
+                      >
+                        {(displayName ?? "U").charAt(0).toUpperCase()}
+                      </Avatar>
+                    )
+                  }
+                  label={
+                    displayName ??
+                    (Array.isArray(role) ? role[0] : role) ??
+                    "User"
+                  }
+                  variant="outlined"
+                  clickable
+                  sx={{
+                    cursor: "pointer",
+                    borderColor: "rgba(255,255,255,0.3)",
+                    color: "inherit",
+                    bgcolor: "rgba(255,255,255,0.05)",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 107, 53, 0.15)",
+                      borderColor: "rgba(255,255,255,0.5)",
+                    },
+                    "& .MuiChip-label": {
+                      px: 1.5,
+                      fontWeight: 500,
+                    },
+                  }}
+                  onClick={() => navigate("/profile")}
+                />
+                <Button
+                  color="inherit"
+                  onClick={confirmLogout}
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    borderColor: "rgba(255,255,255,0.3)",
+                    textTransform: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      borderColor: "rgba(255,255,255,0.5)",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  color="inherit"
+                  onClick={() => navigate("/register")}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 107, 53, 0.15)",
+                      color: "#ff9966",
+                    },
+                  }}
+                >
+                  Register
+                </Button>
+                <Button
+                  color="inherit"
+                  onClick={() => navigate("/login")}
+                  variant="outlined"
+                  sx={{
+                    borderColor: "rgba(255,255,255,0.5)",
+                    textTransform: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      borderColor: "rgba(255,255,255,0.7)",
+                    },
+                  }}
+                >
+                  Login
+                </Button>
+              </>
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
-    </Box>
+
+      {/* Mobile Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 250,
+            maxWidth: 300,
+            borderRadius: "12px",
+            boxShadow: theme.shadows[8],
+            "& .MuiMenuItem-root": {
+              borderRadius: "8px",
+              mx: 1,
+              my: 0.5,
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "left", vertical: "top" }}
+        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+      >
+        {isGuest ? (
+          <>
+            {guestRoutes.map(createMenuItem)}
+            <Box sx={{ borderTop: 1, borderColor: "divider", mt: 1, pt: 1 }}>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  navigate("/register");
+                }}
+              >
+                <Typography variant="body1">Register</Typography>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  navigate("/login");
+                }}
+              >
+                <Typography variant="body1">Login</Typography>
+              </MenuItem>
+            </Box>
+          </>
+        ) : (
+          <>
+            {authenticatedRoutes.map(createMenuItem).filter(Boolean)}
+            {token && (
+              <Box sx={{ borderTop: 1, borderColor: "divider", mt: 1, pt: 1 }}>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/profile");
+                  }}
+                >
+                  <Typography variant="body1">Profile</Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    confirmLogout();
+                  }}
+                >
+                  <Typography variant="body1">Logout</Typography>
+                </MenuItem>
+              </Box>
+            )}
+          </>
+        )}
+      </Menu>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutOpen}
+        onClose={cancelLogout}
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            minWidth: 300,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" fontWeight={600}>
+            Confirm Logout
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 2 }}>
+          <DialogContentText>
+            Are you sure you want to sign out? You'll need to log in again to
+            access your account.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button
+            onClick={cancelLogout}
+            variant="outlined"
+            sx={{ textTransform: "none" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={logout}
+            variant="contained"
+            color="primary"
+            sx={{ textTransform: "none" }}
+          >
+            Sign Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
