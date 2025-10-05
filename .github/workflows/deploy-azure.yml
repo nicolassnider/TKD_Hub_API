@@ -1,0 +1,240 @@
+name: Deploy TKD Hub to Azure
+
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - dev
+          - prod
+
+
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: './src/TKDHubAPI.WebAPI'
+  SPA_PATH: './frontend/spa'
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '18.x'
+
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+     
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+         
+      - name: Restore dependencies
+        run: dotnet restore
+       
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+       
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./test-results
+       
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ./test-results
+         
+  build-api:
+    name: Build Web API
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+     
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+         
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+       
+      - name: Build and publish
+        run: |
+          dotnet build --configuration Release --no-restore
+          dotnet publish --configuration Release --no-build --output ./publish
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+       
+      - name: Upload Web API artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-app
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/publish
+          retention-days: 1
+
+
+  build-spa:
+    name: Build SPA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+     
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.SPA_PATH }}/package-lock.json
+         
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{ env.SPA_PATH }}
+       
+      - name: Build SPA
+        run: npm run build
+        working-directory: ${{ env.SPA_PATH }}
+       
+      - name: Upload SPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spa-dist
+          path: ${{ env.SPA_PATH }}/dist
+          retention-days: 1
+
+
+  deploy-infrastructure:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+    outputs:
+      webAppName: ${{ steps.deploy.outputs.webAppName }}
+      webAppUrl: ${{ steps.deploy.outputs.webAppUrl }}
+      staticWebAppName: ${{ steps.deploy.outputs.staticWebAppName }}
+      staticWebAppUrl: ${{ steps.deploy.outputs.staticWebAppUrl }}
+    steps:
+      - uses: actions/checkout@v4
+     
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+         
+      - name: Deploy Bicep template
+        id: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          resourceGroupName: ${{ secrets.AZURE_RG_NAME }}
+          template: ./infra/main.bicep
+          scope: resourcegroup
+          parameters: >
+            appName=${{ secrets.APP_NAME }}
+            location=${{ secrets.AZURE_LOCATION || 'East US' }}
+            sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }}
+            sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
+            environment=${{ github.event.inputs.environment || 'prod' }}
+          failOnStdErr: false
+
+
+  deploy-web-app:
+    name: Deploy Web API
+    runs-on: ubuntu-latest
+    needs: [build-api, deploy-infrastructure]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+    steps:
+      - name: Download Web API artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-app
+          path: ./web-app
+         
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+         
+      - name: Deploy Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ needs.deploy-infrastructure.outputs.webAppName }}
+          package: ./web-app
+         
+  deploy-static-web-app:
+    name: Deploy Static Web App
+    runs-on: ubuntu-latest
+    needs: [build-spa, deploy-infrastructure]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+         
+      - name: Download SPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: spa-dist
+          path: ${{ env.SPA_PATH }}/dist
+         
+      - name: Build And Deploy Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: ${{ env.SPA_PATH }}
+          output_location: "dist"
+          skip_app_build: true
+         
+  post-deployment:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [deploy-web-app, deploy-static-web-app, deploy-infrastructure]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+         
+      - name: Run Database Migrations (Optional)
+        run: |
+          echo "Database migrations would run here"
+          echo "Consider using Entity Framework migrations or SQL scripts"
+         
+      - name: Health Check - Web API
+        run: |
+          WEB_API_URL="${{ needs.deploy-infrastructure.outputs.webAppUrl }}/api/health"
+          echo "Testing Web API health at: $WEB_API_URL"
+          for i in {1..5}; do
+            if curl -f "$WEB_API_URL"; then
+              echo "✅ Web API is healthy"
+              break
+            else
+              echo "⏳ Attempt $i failed, retrying in 30s..."
+              sleep 30
+            fi
+          done
+         
+      - name: Health Check - Static Web App
+        run: |
+          STATIC_URL="${{ needs.deploy-infrastructure.outputs.staticWebAppUrl }}"
+          echo "Testing Static Web App at: $STATIC_URL"
+          if curl -f "$STATIC_URL"; then
+            echo "✅ Static Web App is accessible"
+          else
+            echo "⚠️ Static Web App health check failed"
+          fi

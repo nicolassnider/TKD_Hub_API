@@ -1,0 +1,44 @@
+# Azure Static Web Apps Build Configuration
+# This file is used by Azure Static Web Apps to configure the build process
+
+
+version: 2
+
+
+build:
+  commands:
+    - echo "Installing dependencies..."
+    - npm ci
+    - echo "Building the application..."
+    - npm run build
+  output: dist
+
+
+# API configuration (if using Azure Functions as API backend)
+api:
+  location: ../src/TKDHubAPI.Functions
+  runtime: dotnet-isolated
+  version: 8.0
+
+
+# Routes configuration
+routes:
+  - route: "/api/*"
+    allowedRoles: ["anonymous"]
+  - route: "/admin/*"
+    allowedRoles: ["admin"]
+  - route: "/*"
+    rewrite: "/index.html"
+
+
+# Custom headers
+headers:
+  "/**":
+    - "X-Content-Type-Options: nosniff"
+    - "X-Frame-Options: DENY"
+    - "Referrer-Policy: strict-origin-when-cross-origin"
+
+
+# Environment variables for build
+environment:
+  NODE_ENV: production

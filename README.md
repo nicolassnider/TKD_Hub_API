@@ -1,333 +1,321 @@
-# TKD Hub API - Cloud-Native Platform
+# TKD Hub - Azure Deployment Guide
 
 
-TKD Hub is a modern cloud-native platform for managing Taekwondo dojaangs (schools), users, coaches, students, events, promotions, and ranks. Built with .NET 8, Entity Framework Core, and Azure Functions, following clean architecture principles.
+This guide covers the complete deployment of the TKD Hub application to Azure, including the .NET Azure Functions API, React SPA, and all supporting infrastructure.
 
 
-## 🏗️ **Architecture Overview**
+## 📋 Prerequisites
 
 
-### **Backend (Azure Functions)**
-- **Azure Functions v4** - Serverless API endpoints
-- **Clean Architecture** - Domain, Application, Infrastructure layers
-- **Entity Framework Core** - Data access with SQL Server
-- **JWT Authentication** - Secure user authentication
-- **MercadoPago Integration** - Payment processing
-
-
-### **Frontend (React SPA)**
-- **Vite + React** - Modern frontend framework
-- **TypeScript** - Type-safe development
-- **TailwindCSS** - Utility-first styling
-- **Azure Static Web Apps** - Hosting with integrated Functions
-
-
-### **Deployment Options**
-- **Ultra-Low-Cost**: Static Web Apps with embedded Functions (~$5-15/month)
-- **Production-Ready**: Static Web Apps + dedicated Function App (~$18-35/month)
-
-
-## 📁 **Project Structure**
-
-
-```
-TKD_Hub_API/
-├── src/
-│   ├── TKDHubAPI.Functions/         ← Azure Functions (API endpoints)
-│   ├── TKDHubAPI.Application/       ← Application services & DTOs
-│   ├── TKDHubAPI.Domain/           ← Domain entities & interfaces
-│   ├── TKDHubAPI.Infrastructure/    ← Data access & repositories
-│   └── TKDHubAPI.WebAPI/           ← Traditional Web API (optional)
-├── frontend/spa/                    ← React SPA frontend
-├── tests/                          ← Unit & integration tests
-├── .github/workflows/              ← CI/CD automation
-└── sql.data/                       ← Database seed data
-```
-
-
-## ⚡ **Azure Functions API Endpoints**
-
-
-| **Endpoint** | **Methods** | **Description** |
-|-------------|-------------|-----------------|
-| `/api/health` | GET | Health check |
-| `/api/login` | POST | User authentication |
-| `/api/register` | POST | User registration |
-| `/api/students` | GET, POST, PUT, DELETE | Student management |
-| `/api/coaches` | GET, POST, PUT, DELETE | Coach management |
-| `/api/dojaangs` | GET, POST, PUT, DELETE | Dojaang management |
-| `/api/classes` | GET, POST | Training class management |
-| `/api/blogposts` | GET, POST, PUT, DELETE | Blog post management |
-| `/api/ranks` | GET | Rank information |
-| `/api/tuls` | GET | Tul (pattern) information |
-| `/api/events` | GET, POST, PUT, DELETE | Event management |
-| `/api/promotions` | GET, POST, PUT, DELETE | Promotion management |
-| `/api/payments/*` | POST | MercadoPago payment processing |
-
-
-## 🎯 **Features**
-
-
-- **🔐 Authentication & Authorization** - JWT-based with role management (Admin, Coach, Student)
-- **🏫 Dojaang Management** - Complete CRUD operations for martial arts schools
-- **👥 User Management** - Students, coaches, and administrators
-- **📚 Training Classes** - Class scheduling and student enrollment
-- **🏆 Promotions & Rankings** - Belt progression tracking
-- **📝 Blog System** - Content management for school updates
-- **💰 Payment Processing** - MercadoPago integration for fees
-- **📊 Event Management** - Tournaments, competitions, and school events
-- **🥋 Tul (Patterns)** - Traditional form reference system
-- **☁️ Cloud-Native** - Serverless, scalable, cost-effective
-
-
-## 🚀 **Quick Start**
-
-
-### **Prerequisites**
-
-
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Node.js 18+](https://nodejs.org/) & npm
+### Required Tools
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
-- SQL Server (LocalDB works for development)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Node.js 18.x or later](https://nodejs.org/)
+- [PowerShell 7+](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell) (for deployment script)
+- [Git](https://git-scm.com/)
 
 
-### **Local Development Setup**
+### Azure Resources Needed
+- Azure subscription with appropriate permissions
+- Resource Group (or permissions to create one)
 
 
-1. **Clone the repository:**
+## 🚀 Quick Start Deployment
+
+
+### Option 1: PowerShell Script (Recommended)
+
+
+1. **Clone and prepare the repository:**
    ```powershell
-   git clone https://github.com/nicolassnider/TKD_Hub_API.git
+   git clone <your-repo-url>
    cd TKD_Hub_API
    ```
 
 
-2. **Setup the database:**
+2. **Login to Azure:**
    ```powershell
-   # Update connection string in src/TKDHubAPI.Functions/local.settings.json
-   # Migrations will auto-apply on Functions startup
+   Connect-AzAccount
    ```
 
 
-3. **Build the solution:**
+3. **Run deployment script:**
    ```powershell
-   dotnet build TKD_Hub_API.sln
+   .\Deploy-TKDHub-Complete.ps1 -ResourceGroupName "tkdhub-rg" -AppName "tkdhub" -Location "East US"
    ```
 
 
-4. **Run Azure Functions locally:**
-   ```powershell
-   # Using VS Code tasks (recommended)
-   Ctrl+Shift+P → "Tasks: Run Task" → "build (functions)"
+4. **Follow the prompts and note the generated SQL password**
+
+
+### Option 2: Manual Bicep Deployment
+
+
+1. **Deploy infrastructure:**
+   ```bash
+   az group create --name "tkdhub-rg" --location "East US"
    
-   # Or manually
-   cd src/TKDHubAPI.Functions
-   func start
+   az deployment group create \
+     --resource-group "tkdhub-rg" \
+     --template-file "./infra/main.bicep" \
+     --parameters \
+       appName="tkdhub" \
+       location="East US" \
+       sqlAdminLogin="tkdhubadmin" \
+       sqlAdminPassword="YourSecurePassword123!"
    ```
 
 
-5. **Run the React SPA:**
-   ```powershell
+2. **Deploy Function App:**
+   ```bash
+   cd src/TKDHubAPI.Functions
+   dotnet publish --configuration Release --output ./publish
+   
+   func azure functionapp publish tkdhub-func --csharp
+   ```
+
+
+3. **Deploy Static Web App:**
+   ```bash
    cd frontend/spa
    npm install
-   npm run dev
+   npm run build
+   
+   # Use Static Web Apps CLI or the deployment token from Azure
+   swa deploy ./dist --deployment-token $DEPLOYMENT_TOKEN
    ```
 
 
-6. **Access the application:**
-   - **Functions API**: `http://localhost:7071/api/health`
-   - **React SPA**: `http://localhost:5173`
+## 🔧 CI/CD Setup
 
 
-## ☁️ **Azure Deployment**
+### GitHub Actions Setup
 
 
-### **Automated Deployment (Recommended)**
+1. **Create GitHub repository secrets:**
+   ```
+   AZURE_CREDENTIALS              # Service principal credentials (JSON)
+   AZURE_SUBSCRIPTION_ID          # Your Azure subscription ID
+   AZURE_RG_NAME                 # Resource group name
+   APP_NAME                      # Application name
+   AZURE_LOCATION                # Azure region (e.g., "East US")
+   SQL_ADMIN_LOGIN              # SQL Server admin username
+   SQL_ADMIN_PASSWORD           # SQL Server admin password
+   AZURE_STATIC_WEB_APPS_API_TOKEN # Static Web App deployment token
+   ```
 
 
-The project includes GitHub Actions for automatic deployment:
+2. **Create Azure Service Principal:**
+   ```bash
+   az ad sp create-for-rbac --name "tkdhub-github" \
+     --role contributor \
+     --scopes /subscriptions/{subscription-id} \
+     --sdk-auth
+   ```
 
 
-1. **Fork this repository**
-2. **Follow the deployment guide**: [AZURE_MANUAL_DEPLOYMENT.MD](AZURE_MANUAL_DEPLOYMENT.MD)
-3. **Configure GitHub secrets** for your Azure resources
-4. **Push to master** - automatic deployment via GitHub Actions
+3. **Push code to main/master branch to trigger deployment**
 
 
-### **Manual Deployment Options**
+### Azure DevOps Setup
 
 
-**Option A: Ultra-Low-Cost (~$5-15/month)**
-- Azure Static Web Apps with embedded Functions
-- Perfect for MVPs and small schools
+1. **Create Variable Group "TKDHub-Variables":**
+   ```
+   azureServiceConnection         # Service connection name
+   resourceGroupName             # Resource group name
+   appName                      # Application name
+   location                     # Azure region
+   sqlAdminLogin               # SQL Server admin username
+   sqlAdminPassword            # SQL Server admin password (secure)
+   staticWebAppToken           # Static Web App deployment token (secure)
+   ```
 
 
-**Option B: Production-Ready (~$18-35/month)**  
-- Azure Static Web Apps + dedicated Function App
-- Better performance and scalability
+2. **Create Azure Service Connection in Azure DevOps**
 
 
-See [AZURE_MANUAL_DEPLOYMENT.MD](AZURE_MANUAL_DEPLOYMENT.MD) for detailed instructions.
+3. **Import the `azure-pipelines.yml` file**
 
 
-## 🔧 **Development Tools**
+## 🏗️ Infrastructure Overview
 
 
-### **VS Code Tasks**
-- `Ctrl+Shift+P` → "Tasks: Run Task"
-- **build (functions)** - Build Azure Functions
-- **clean (functions)** - Clean Functions build
-- **publish (functions)** - Publish for deployment
+### Deployed Resources
 
 
-### **Testing**
+| Resource Type | Name Pattern | Purpose |
+|---------------|--------------|---------|
+| Function App | `{appName}-func` | .NET 8 Isolated API |
+| Static Web App | `{appName}-swa` | React SPA hosting |
+| Storage Account | `{appName}storage` | Function App storage |
+| Key Vault | `{appName}-kv` | Secrets management |
+| SQL Server | `{appName}-sql` | Database server |
+| SQL Database | `TKDHubDb` | Application database |
+| Application Insights | `{appName}-ai` | Monitoring & telemetry |
 
 
-**🚀 Quick Test Commands:**
-```powershell
-# Run all tests (recommended)
-dotnet test
+### Security Features
 
 
-# Run specific test project
-dotnet test tests/TKDHubAPI.Application.Test
+- **Key Vault Integration**: All secrets stored in Azure Key Vault
+- **Managed Identity**: Function App uses System Assigned Managed Identity
+- **HTTPS Only**: All services enforce HTTPS
+- **CORS Configuration**: Proper CORS setup between SPA and API
+- **SQL Security**: Azure SQL with firewall rules
 
 
-# Run tests with coverage
-dotnet test --collect "XPlat Code Coverage" --settings coverlet.runsettings
+## 🔐 Configuration
 
 
-# Run tests in watch mode (continuous testing)
-dotnet watch test
+### Required Secrets in Key Vault
+
+
+| Secret Name | Description |
+|-------------|-------------|
+| `ConnectionStrings--DefaultConnection` | SQL Server connection string |
+| `APPLICATIONINSIGHTS-CONNECTION-STRING` | Application Insights connection string |
+
+
+### Environment Variables
+
+
+Function App automatically configured with:
+- Key Vault references for sensitive settings
+- Application Insights integration
+- Proper runtime configuration
+
+
+## 🧪 Testing Deployment
+
+
+### Function App Health Check
+```bash
+curl https://{appName}-func.azurewebsites.net/api/health
 ```
 
 
-**📋 VS Code Tasks (Ctrl+Shift+P → "Tasks: Run Task"):**
-- **test** - Run all tests (default test task)
-- **test with coverage** - Run tests with code coverage collection
-- **test (watch)** - Run tests in watch mode
-- **clean test results** - Clean test result files
-
-
-**🎯 Advanced Test Runner:**
-```powershell
-# Use the custom test runner script for enhanced output
-.\run-tests.ps1                    # Run all tests
-.\run-tests.ps1 -Coverage          # Run with coverage
-.\run-tests.ps1 -Watch             # Watch mode
-.\run-tests.ps1 -Filter "DojaangService"  # Filter specific tests
-.\run-tests.ps1 -Help              # Show all options
+### Static Web App Access
+```bash
+curl https://{appName}-swa.azurestaticapps.net
 ```
 
 
-**🔄 GitHub Actions:**
-- **Manual trigger**: Go to Actions → "Run Tests" → "Run workflow"
-- **Automatic**: Tests run on push/PR to master/develop branches
-- **Coverage reports**: Generated and uploaded as artifacts
-- **Security scanning**: Automated vulnerability scanning with Trivy
+### Database Connection Test
+Use Azure Data Studio or SQL Server Management Studio to connect:
+- **Server**: `{appName}-sql.database.windows.net`
+- **Database**: `TKDHubDb`
+- **Authentication**: SQL Server Authentication
 
 
-### **Database Migrations**
-```powershell
-# Add new migration
-dotnet ef migrations add MigrationName --project src/TKDHubAPI.Infrastructure
+## 🔄 Database Migrations
 
 
-# Update database
-dotnet ef database update --project src/TKDHubAPI.Infrastructure
-```
+### Using Entity Framework Core
 
 
-## 🛠️ **Configuration**
+1. **Install EF Core tools:**
+   ```bash
+   dotnet tool install --global dotnet-ef
+   ```
 
 
-### **Environment Variables**
+2. **Update connection string** in `appsettings.json` or use Azure connection string
 
 
-**Azure Functions (`local.settings.json`):**
-```json
-{
-  "Values": {
-    "DefaultConnection": "Server=.;Database=TkdHubDb;Trusted_Connection=true;",
-    "JWT_SECRET": "your-jwt-secret-key",
-    "MercadoPago__AccessToken": "your-access-token",
-    "MercadoPago__PublicKey": "your-public-key"
-  }
-}
-```
+3. **Run migrations:**
+   ```bash
+   cd src/TKDHubAPI.Infrastructure
+   dotnet ef database update --startup-project ../TKDHubAPI.WebAPI
+   ```
 
 
-**React SPA (`.env`):**
-```properties
-VITE_PUBLIC_API_URL=http://localhost:7071
-API_HOST=http://localhost:7071
-```
+### Using SQL Scripts
 
 
-## 🔍 **Troubleshooting**
+Execute scripts from the `sql.data/` folder in order:
+1. Core schema setup
+2. Sample data (optional)
+3. Permissions and security
 
 
-### **Common Issues**
+## 🚨 Troubleshooting
 
 
-**Functions not starting:**
-```powershell
-# Check if port is in use
-netstat -an | findstr 7071
+### Common Issues
 
 
-# Kill process using the port
-Get-Process | Where-Object {$_.ProcessName -eq "func"} | Stop-Process
-```
+1. **Function App won't start:**
+   - Check Application Insights connection string
+   - Verify Key Vault access permissions
+   - Check function app logs in Azure portal
 
 
-**Database connection issues:**
-- Verify SQL Server is running
-- Check connection string format
-- Ensure database exists (auto-created on first run)
+2. **Database connection failures:**
+   - Verify firewall rules allow Azure services
+   - Check connection string format
+   - Ensure SQL authentication is enabled
 
 
-**Build failures:**
-```powershell
-# Clean and rebuild
-dotnet clean
-dotnet build
-```
+3. **Static Web App routing issues:**
+   - Verify `staticwebapp.config.json` is in the `public` folder
+   - Check API routes configuration
+   - Ensure proper CORS settings
 
 
-**CORS issues:**
-- Ensure API URL is correct in `.env`
-- Check Functions CORS configuration
-- Verify Static Web Apps integration
+4. **Deployment failures:**
+   - Check Azure subscription limits/quotas
+   - Verify resource naming conventions
+   - Review deployment logs
 
 
-## 📚 **Additional Resources**
+### Monitoring
+
+
+- **Application Insights**: Monitor performance and errors
+- **Azure Monitor**: Resource health and metrics
+- **Function App Logs**: Real-time logging via Azure portal or CLI
+
+
+## 📚 Additional Resources
 
 
 - [Azure Functions Documentation](https://docs.microsoft.com/en-us/azure/azure-functions/)
-- [Azure Static Web Apps Guide](https://docs.microsoft.com/en-us/azure/static-web-apps/)
-- [Clean Architecture Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-- [Entity Framework Core Docs](https://docs.microsoft.com/en-us/ef/core/)
+- [Azure Static Web Apps Documentation](https://docs.microsoft.com/en-us/azure/static-web-apps/)
+- [Azure Bicep Documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/)
+- [Entity Framework Core Documentation](https://docs.microsoft.com/en-us/ef/core/)
 
 
-## 🤝 **Contributing**
+## 💰 Cost Estimation
 
 
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** and add tests
-4. **Commit your changes** (`git commit -m 'Add amazing feature'`)
-5. **Push to the branch** (`git push origin feature/amazing-feature`)
-6. **Open a Pull Request**
+### Monthly Costs (Estimated)
 
 
-## 📄 **License**
+| Resource | SKU | Estimated Cost |
+|----------|-----|---------------|
+| Function App | Flex Consumption | $0-10 |
+| Static Web App | Free | $0 |
+| SQL Database | Basic (5 DTU) | $5 |
+| Storage Account | Standard LRS | $1-2 |
+| Key Vault | Standard | $1 |
+| Application Insights | Pay-as-you-go | $1-5 |
+| **Total** | | **$8-23/month** |
 
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
+> Costs may vary based on usage patterns and region selection.
 
 
----
+## 🔒 Security Best Practices
 
 
-**🥋 Built for the Taekwondo community with ❤️**
+1. **Regular Updates**: Keep all packages and dependencies updated
+2. **Access Reviews**: Regularly review Key Vault access policies
+3. **Monitoring**: Set up alerts for unusual activity
+4. **Backup**: Enable point-in-time restore for SQL Database
+5. **SSL/TLS**: Ensure all communications use HTTPS/TLS 1.2+
+6. **Authentication**: Implement proper authentication for API endpoints
+7. **Secrets Rotation**: Regularly rotate passwords and keys
+
+
