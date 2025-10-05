@@ -237,4 +237,4 @@ The following files were removed due to schema mismatches or being outdated:
 - Use `Master_Argentine_Data.sql` for complete Argentine dataset
 - Individual files (Coaches.sql, Students.sql, etc.) for selective loading
 
-All active files have been verified against the current database schema and are ready for use.
+All active files have been verified against the current database schema and are ready for use
