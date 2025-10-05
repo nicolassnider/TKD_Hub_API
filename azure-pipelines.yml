@@ -1,7 +1,6 @@
 # Azure DevOps Pipeline for TKD Hub
 # Deploys Function App + Static Web App + Infrastructure
 
-
 trigger:
   branches:
     include:
@@ -12,173 +11,168 @@ trigger:
       - README.md
       - docs/*
 
-
 pr:
   branches:
     include:
       - main
       - master
 
-
 variables:
   - group: TKDHub-Variables # Create this variable group in Azure DevOps
   - name: buildConfiguration
-    value: 'Release'
+    value: "Release"
   - name: dotnetVersion
-    value: '8.0.x'
+    value: "8.0.x"
   - name: nodeVersion
-    value: '18.x'
+    value: "18.x"
   - name: webAppPath
-    value: './src/TKDHubAPI.WebAPI'
+    value: "./src/TKDHubAPI.WebAPI"
   - name: spaPath
-    value: './frontend/spa'
-
+    value: "./frontend/spa"
 
 stages:
   - stage: Test
-    displayName: 'Run Tests'
+    displayName: "Run Tests"
     jobs:
       - job: RunTests
-        displayName: 'Run Unit Tests'
+        displayName: "Run Unit Tests"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         steps:
           - task: UseDotNet@2
-            displayName: 'Setup .NET SDK'
+            displayName: "Setup .NET SDK"
             inputs:
-              packageType: 'sdk'
+              packageType: "sdk"
               version: $(dotnetVersion)
-             
+
           - task: DotNetCoreCLI@2
-            displayName: 'Restore NuGet packages'
+            displayName: "Restore NuGet packages"
             inputs:
-              command: 'restore'
-              projects: '**/*.csproj'
-             
+              command: "restore"
+              projects: "**/*.csproj"
+
           - task: DotNetCoreCLI@2
-            displayName: 'Build solution'
+            displayName: "Build solution"
             inputs:
-              command: 'build'
-              projects: '**/*.csproj'
-              arguments: '--configuration $(buildConfiguration) --no-restore'
-             
+              command: "build"
+              projects: "**/*.csproj"
+              arguments: "--configuration $(buildConfiguration) --no-restore"
+
           - task: DotNetCoreCLI@2
-            displayName: 'Run unit tests'
+            displayName: "Run unit tests"
             inputs:
-              command: 'test'
-              projects: '**/test/**/*.csproj'
+              command: "test"
+              projects: "**/test/**/*.csproj"
               arguments: '--configuration $(buildConfiguration) --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)/TestResults'
               publishTestResults: true
-             
+
           - task: PublishCodeCoverageResults@1
-            displayName: 'Publish code coverage'
+            displayName: "Publish code coverage"
             condition: succeededOrFailed()
             inputs:
-              codeCoverageTool: 'Cobertura'
-              summaryFileLocation: '$(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml'
-
+              codeCoverageTool: "Cobertura"
+              summaryFileLocation: "$(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml"
 
   - stage: Build
-    displayName: 'Build Applications'
+    displayName: "Build Applications"
     dependsOn: Test
     condition: succeeded()
     jobs:
       - job: BuildWebApp
-        displayName: 'Build Web API'
+        displayName: "Build Web API"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         steps:
           - task: UseDotNet@2
-            displayName: 'Setup .NET SDK'
+            displayName: "Setup .NET SDK"
             inputs:
-              packageType: 'sdk'
+              packageType: "sdk"
               version: $(dotnetVersion)
-             
+
           - task: DotNetCoreCLI@2
-            displayName: 'Restore Web API'
+            displayName: "Restore Web API"
             inputs:
-              command: 'restore'
-              projects: '$(webAppPath)/*.csproj'
-             
+              command: "restore"
+              projects: "$(webAppPath)/*.csproj"
+
           - task: DotNetCoreCLI@2
-            displayName: 'Build Web API'
+            displayName: "Build Web API"
             inputs:
-              command: 'build'
-              projects: '$(webAppPath)/*.csproj'
-              arguments: '--configuration $(buildConfiguration) --no-restore'
-             
+              command: "build"
+              projects: "$(webAppPath)/*.csproj"
+              arguments: "--configuration $(buildConfiguration) --no-restore"
+
           - task: DotNetCoreCLI@2
-            displayName: 'Publish Web API'
+            displayName: "Publish Web API"
             inputs:
-              command: 'publish'
-              projects: '$(webAppPath)/*.csproj'
-              arguments: '--configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/web-app'
+              command: "publish"
+              projects: "$(webAppPath)/*.csproj"
+              arguments: "--configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/web-app"
               publishWebProjects: true
               zipAfterPublish: false
-             
+
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Web API Artifact'
+            displayName: "Publish Web API Artifact"
             inputs:
-              pathtoPublish: '$(Build.ArtifactStagingDirectory)/web-app'
-              artifactName: 'web-app'
-             
+              pathtoPublish: "$(Build.ArtifactStagingDirectory)/web-app"
+              artifactName: "web-app"
+
       - job: BuildSPA
-        displayName: 'Build SPA'
+        displayName: "Build SPA"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         steps:
           - task: NodeTool@0
-            displayName: 'Setup Node.js'
+            displayName: "Setup Node.js"
             inputs:
               versionSpec: $(nodeVersion)
-             
+
           - task: Cache@2
-            displayName: 'Cache npm dependencies'
+            displayName: "Cache npm dependencies"
             inputs:
               key: 'npm | "$(Agent.OS)" | $(spaPath)/package-lock.json'
               restoreKeys: |
                 npm | "$(Agent.OS)"
               path: $(spaPath)/node_modules
-             
+
           - script: |
               cd $(spaPath)
               npm ci
-            displayName: 'Install npm dependencies'
-           
+            displayName: "Install npm dependencies"
+
           - script: |
               cd $(spaPath)
               npm run build
-            displayName: 'Build SPA'
-           
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish SPA Artifact'
-            inputs:
-              pathtoPublish: '$(spaPath)/dist'
-              artifactName: 'spa-dist'
+            displayName: "Build SPA"
 
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish SPA Artifact"
+            inputs:
+              pathtoPublish: "$(spaPath)/dist"
+              artifactName: "spa-dist"
 
   - stage: DeployInfrastructure
-    displayName: 'Deploy Infrastructure'
+    displayName: "Deploy Infrastructure"
     dependsOn: Build
     condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master'))
     jobs:
       - deployment: DeployInfra
-        displayName: 'Deploy Azure Infrastructure'
-        environment: 'Production'
+        displayName: "Deploy Azure Infrastructure"
+        environment: "Production"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
-               
+
                 - task: AzureCLI@2
-                  displayName: 'Deploy Bicep Template'
+                  displayName: "Deploy Bicep Template"
                   inputs:
-                    azureSubscription: '$(azureServiceConnection)'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
+                    azureSubscription: "$(azureServiceConnection)"
+                    scriptType: "bash"
+                    scriptLocation: "inlineScript"
                     inlineScript: |
                       # Deploy infrastructure using Bicep
                       az deployment group create \
@@ -190,27 +184,26 @@ stages:
                           sqlAdminLogin="$(sqlAdminLogin)" \
                           sqlAdminPassword="$(sqlAdminPassword)" \
                           environment="prod"
-                     
+
                       # Get outputs and set as pipeline variables
                       WEB_APP_NAME=$(az deployment group show \
                         --resource-group "$(resourceGroupName)" \
                         --name "main" \
                         --query "properties.outputs.webAppName.value" \
                         --output tsv)
-                     
+
                       STATIC_WEB_APP_NAME=$(az deployment group show \
                         --resource-group "$(resourceGroupName)" \
                         --name "main" \
                         --query "properties.outputs.staticWebAppName.value" \
                         --output tsv)
-                     
+
                       echo "##vso[task.setvariable variable=webAppName;isOutput=true]$WEB_APP_NAME"
                       echo "##vso[task.setvariable variable=staticWebAppName;isOutput=true]$STATIC_WEB_APP_NAME"
                   name: deployInfra
 
-
   - stage: Deploy
-    displayName: 'Deploy Applications'
+    displayName: "Deploy Applications"
     dependsOn: DeployInfrastructure
     condition: succeeded()
     variables:
@@ -218,64 +211,62 @@ stages:
       staticWebAppName: $[ stageDependencies.DeployInfrastructure.DeployInfra.outputs['deployInfra.staticWebAppName'] ]
     jobs:
       - deployment: DeployWebApp
-        displayName: 'Deploy Web API'
-        environment: 'Production'
+        displayName: "Deploy Web API"
+        environment: "Production"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         strategy:
           runOnce:
             deploy:
               steps:
                 - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Web API Artifact'
+                  displayName: "Download Web API Artifact"
                   inputs:
-                    buildType: 'current'
-                    downloadType: 'single'
-                    artifactName: 'web-app'
-                    downloadPath: '$(System.ArtifactsDirectory)'
-                   
-                - task: AzureWebApp@1
-                  displayName: 'Deploy Web App'
-                  inputs:
-                    azureSubscription: '$(azureServiceConnection)'
-                    appType: 'webAppLinux'
-                    appName: '$(webAppName)'
-                    package: '$(System.ArtifactsDirectory)/web-app'
-                    runtimeStack: 'DOTNETCORE|8.0'
+                    buildType: "current"
+                    downloadType: "single"
+                    artifactName: "web-app"
+                    downloadPath: "$(System.ArtifactsDirectory)"
 
+                - task: AzureWebApp@1
+                  displayName: "Deploy Web App"
+                  inputs:
+                    azureSubscription: "$(azureServiceConnection)"
+                    appType: "webAppLinux"
+                    appName: "$(webAppName)"
+                    package: "$(System.ArtifactsDirectory)/web-app"
+                    runtimeStack: "DOTNETCORE|8.0"
 
       - deployment: DeployStaticWebApp
-        displayName: 'Deploy Static Web App'
-        environment: 'Production'
+        displayName: "Deploy Static Web App"
+        environment: "Production"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
-               
+
                 - task: DownloadBuildArtifacts@0
-                  displayName: 'Download SPA Artifact'
+                  displayName: "Download SPA Artifact"
                   inputs:
-                    buildType: 'current'
-                    downloadType: 'single'
-                    artifactName: 'spa-dist'
-                    downloadPath: '$(System.ArtifactsDirectory)'
-                   
+                    buildType: "current"
+                    downloadType: "single"
+                    artifactName: "spa-dist"
+                    downloadPath: "$(System.ArtifactsDirectory)"
+
                 - task: AzureStaticWebApp@0
-                  displayName: 'Deploy Static Web App'
+                  displayName: "Deploy Static Web App"
                   inputs:
-                    azure_static_web_apps_api_token: '$(staticWebAppToken)'
-                    repo_token: '$(System.AccessToken)'
-                    action: 'upload'
-                    app_location: '$(System.ArtifactsDirectory)/spa-dist'
-                    output_location: ''
+                    azure_static_web_apps_api_token: "$(staticWebAppToken)"
+                    repo_token: "$(System.AccessToken)"
+                    action: "upload"
+                    app_location: "$(System.ArtifactsDirectory)/spa-dist"
+                    output_location: ""
                     skip_app_build: true
 
-
   - stage: PostDeploy
-    displayName: 'Post-Deployment'
+    displayName: "Post-Deployment"
     dependsOn: Deploy
     condition: succeeded()
     variables:
@@ -283,16 +274,16 @@ stages:
       staticWebAppName: $[ stageDependencies.DeployInfrastructure.DeployInfra.outputs['deployInfra.staticWebAppName'] ]
     jobs:
       - job: HealthChecks
-        displayName: 'Health Checks'
+        displayName: "Health Checks"
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: "ubuntu-latest"
         steps:
           - task: AzureCLI@2
-            displayName: 'Web API Health Check'
+            displayName: "Web API Health Check"
             inputs:
-              azureSubscription: '$(azureServiceConnection)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
+              azureSubscription: "$(azureServiceConnection)"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
               inlineScript: |
                 # Get Web App URL
                 WEB_APP_URL=$(az webapp show \
@@ -300,7 +291,7 @@ stages:
                   --resource-group "$(resourceGroupName)" \
                   --query "defaultHostName" \
                   --output tsv)
-               
+
                 # Health check with retry
                 echo "Testing Web API health at: https://$WEB_APP_URL/api/health"
                 for i in {1..5}; do
@@ -312,13 +303,13 @@ stages:
                     sleep 30
                   fi
                 done
-               
+
           - task: AzureCLI@2
-            displayName: 'Static Web App Health Check'
+            displayName: "Static Web App Health Check"
             inputs:
-              azureSubscription: '$(azureServiceConnection)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
+              azureSubscription: "$(azureServiceConnection)"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
               inlineScript: |
                 # Get Static Web App URL
                 STATIC_URL=$(az staticwebapp show \
@@ -326,7 +317,7 @@ stages:
                   --resource-group "$(resourceGroupName)" \
                   --query "defaultHostname" \
                   --output tsv)
-               
+
                 echo "Testing Static Web App at: https://$STATIC_URL"
                 if curl -f "https://$STATIC_URL"; then
                   echo "✅ Static Web App is accessible"
@@ -334,14 +325,13 @@ stages:
                   echo "⚠️ Static Web App health check failed"
                 fi
 
-
           - task: AzureCLI@2
-            displayName: 'Database Migration (Optional)'
+            displayName: "Database Migration (Optional)"
             condition: false # Set to true if you want to run migrations
             inputs:
-              azureSubscription: '$(azureServiceConnection)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
+              azureSubscription: "$(azureServiceConnection)"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
               inlineScript: |
                 echo "Database migrations would run here"
                 echo "Consider using Entity Framework migrations or SQL scripts"
