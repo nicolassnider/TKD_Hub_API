@@ -3,9 +3,17 @@ name: Deploy TKD Hub to Azure
 
 
 
+
+
+
+
 permissions:
     id-token: write
     contents: read
+
+
+
+
 
 
 
@@ -29,11 +37,19 @@ on:
 
 
 
+
+
+
+
 env:
     AZURE_WEBAPP_PACKAGE_PATH: "./src/TKDHubAPI.WebAPI"
     SPA_PATH: "./Frontend/spa"
     DOTNET_VERSION: "8.0.x"
     NODE_VERSION: "18.x"
+
+
+
+
 
 
 
@@ -48,10 +64,18 @@ jobs:
 
 
 
+
+
+
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
+
+
+
+
 
 
 
@@ -62,14 +86,26 @@ jobs:
 
 
 
+
+
+
+
             - name: Build
               run: dotnet build --no-restore --configuration Release
 
 
 
 
+
+
+
+
             - name: Test
               run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./test-results
+
+
+
+
 
 
 
@@ -84,12 +120,20 @@ jobs:
 
 
 
+
+
+
+
     build-api:
         name: Build Web API
         runs-on: ubuntu-latest
         needs: test
         steps:
             - uses: actions/checkout@v4
+
+
+
+
 
 
 
@@ -102,9 +146,17 @@ jobs:
 
 
 
+
+
+
+
             - name: Restore dependencies
               run: dotnet restore
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+
+
+
 
 
 
@@ -123,12 +175,20 @@ jobs:
 
 
 
+
+
+
+
             - name: Upload Web API artifact
               uses: actions/upload-artifact@v4
               with:
                   name: web-app
                   path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/publish
                   retention-days: 1
+
+
+
+
 
 
 
@@ -142,11 +202,19 @@ jobs:
 
 
 
+
+
+
+
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: "npm"
+
+
+
+
 
 
 
@@ -164,10 +232,18 @@ jobs:
 
 
 
+
+
+
+
             - name: Build SPA
               run: |
                   cd Frontend/spa
                   npm run build
+
+
+
+
 
 
 
@@ -178,6 +254,10 @@ jobs:
                   name: spa-dist
                   path: "Frontend/spa/dist"
                   retention-days: 1
+
+
+
+
 
 
 
@@ -198,6 +278,10 @@ jobs:
 
 
 
+
+
+
+
             - name: Azure Login
               uses: azure/login@v1
               with:
@@ -206,9 +290,17 @@ jobs:
 
 
 
+
+
+
+
             - name: Create Resource Group
               run: |
                   az group create --name ${{ secrets.AZURE_RG_NAME }} --location "${{ secrets.AZURE_LOCATION || 'eastus' }}"
+
+
+
+
 
 
 
@@ -226,6 +318,10 @@ jobs:
                       sqlAdminPassword="${{ secrets.SQL_ADMIN_PASSWORD }}" \
                       environment="${{ github.event.inputs.environment || 'prod' }}"
                   echo "Template validation completed"
+
+
+
+
 
 
 
@@ -274,6 +370,10 @@ jobs:
 
 
 
+
+
+
+
     deploy-web-app:
         name: Deploy Web API
         runs-on: ubuntu-latest
@@ -288,10 +388,14 @@ jobs:
                   path: ./web-app
 
 
+
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
 
 
             - name: Debug Infrastructure Outputs
@@ -326,6 +430,8 @@ jobs:
                     echo "webAppName found: ${{ needs.deploy-infrastructure.outputs.webAppName }}"
                     echo "webapp_name=${{ needs.deploy-infrastructure.outputs.webAppName }}" >> $GITHUB_ENV
                   fi
+
+
 
 
             - name: Deploy Azure Web App
@@ -365,14 +471,14 @@ jobs:
                   # Create a zip file from the web-app directory
                   echo "Creating optimized deployment package..."
                   cd ./web-app
-                  
+                 
                   # Check package size
                   echo "Package contents summary:"
                   du -sh . 2>/dev/null || echo "Size check not available"
-                  
+                 
                   zip -r ../web-app-deploy.zip . -x "*.pdb" "*.xml" "*.Development.*"
                   cd ..
-                  
+                 
                   echo "Package size: $(ls -lh web-app-deploy.zip | awk '{print $5}')"
                  
                   # Deploy using the newer command with timeout
@@ -392,16 +498,17 @@ jobs:
                         --timeout 600
                     }
 
+
             - name: Warmup Application
               env:
                   WEB_APP_NAME: ${{ needs.deploy-infrastructure.outputs.webAppName || format('{0}-api', secrets.APP_NAME) }}
               run: |
                   APP_URL="${{ needs.deploy-infrastructure.outputs.webAppUrl }}"
                   echo "Warming up application at: $APP_URL"
-                  
+                 
                   # Wait a bit for deployment to settle
                   sleep 30
-                  
+                 
                   # Warm up the application with multiple requests
                   for i in {1..3}; do
                     echo "Warmup request $i..."
@@ -412,8 +519,42 @@ jobs:
                       "$APP_URL" || echo "Warmup request $i failed"
                     sleep 10
                   done
-                  
+                 
                   echo "✅ Application warmup completed"
+
+
+            - name: Configure Database Access
+              env:
+                  WEB_APP_NAME: ${{ needs.deploy-infrastructure.outputs.webAppName || format('{0}-api', secrets.APP_NAME) }}
+              run: |
+                  echo "Configuring database access for managed identity..."
+                 
+                  # Get the Web App's managed identity object ID
+                  WEB_APP_IDENTITY=$(az webapp identity show \
+                    --name "$WEB_APP_NAME" \
+                    --resource-group "${{ secrets.AZURE_RG_NAME }}" \
+                    --query principalId \
+                    --output tsv)
+                 
+                  echo "Web App Managed Identity ID: $WEB_APP_IDENTITY"
+                 
+                  # Get SQL Server details
+                  SQL_SERVER="${{ secrets.APP_NAME }}-sql"
+                 
+                  # Set the Web App as Azure AD admin for the SQL server (this should be done by Bicep but let's ensure it)
+                  echo "Setting Azure AD administrator for SQL Server..."
+                  az sql server ad-admin create \
+                    --resource-group "${{ secrets.AZURE_RG_NAME }}" \
+                    --server-name "$SQL_SERVER" \
+                    --display-name "$WEB_APP_NAME" \
+                    --object-id "$WEB_APP_IDENTITY" \
+                    || echo "AD admin already configured or failed to set"
+                 
+                  echo "✅ Database access configuration completed"
+
+
+
+
 
 
 
@@ -430,6 +571,8 @@ jobs:
                   submodules: true
 
 
+
+
             - name: Download SPA artifact
               uses: actions/download-artifact@v4
               with:
@@ -437,10 +580,14 @@ jobs:
                   path: ./spa-dist
 
 
+
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
 
 
             - name: Configure API Endpoint and Get Deployment Token
@@ -531,6 +678,8 @@ jobs:
                   fi
 
 
+
+
             - name: Deploy Static Web App (Primary Method)
               id: swa-deploy-primary
               continue-on-error: true
@@ -542,6 +691,8 @@ jobs:
                   app_location: "./spa-dist"
                   output_location: "/"
                   skip_app_build: true
+
+
 
 
             - name: Deploy Static Web App (Fallback Method)
@@ -574,6 +725,10 @@ jobs:
 
 
 
+
+
+
+
     post-deployment:
         name: Post-Deployment Tasks
         runs-on: ubuntu-latest
@@ -589,10 +744,18 @@ jobs:
 
 
 
+
+
+
+
             - name: Run Database Migrations (Optional)
               run: |
                   echo "Database migrations would run here"
                   echo "Consider using Entity Framework migrations or SQL scripts"
+
+
+
+
 
 
 
@@ -610,6 +773,10 @@ jobs:
                       sleep 30
                     fi
                   done
+
+
+
+
 
 
 

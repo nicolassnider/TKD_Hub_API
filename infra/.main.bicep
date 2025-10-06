@@ -233,6 +233,18 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
   }
 }
 
+// Set Web App as Azure AD administrator for SQL Server
+resource sqlServerAADAdmin 'Microsoft.Sql/servers/administrators@2023-05-01-preview' = {
+  parent: sqlServer
+  name: 'ActiveDirectory'
+  properties: {
+    administratorType: 'ActiveDirectory'
+    login: webApp.name
+    sid: webApp.identity.principalId
+    tenantId: webApp.identity.tenantId
+  }
+}
+
 // Grant Web App access to Key Vault
 resource keyVaultAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-07-01' = {
   name: 'add'
@@ -258,7 +270,7 @@ resource connectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' =
   parent: keyVault
   name: 'ConnectionStrings--DefaultConnection'
   properties: {
-    value: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    value: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
   }
 }
 
