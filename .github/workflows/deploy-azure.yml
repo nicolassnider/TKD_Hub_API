@@ -112,7 +112,12 @@ jobs:
             - name: Build and publish
               run: |
                   dotnet build --configuration Release --no-restore
-                  dotnet publish --configuration Release --no-build --output ./publish
+                  dotnet publish --configuration Release --no-build --output ./publish \
+                    --self-contained false \
+                    --verbosity minimal \
+                    /p:PublishTrimmed=false \
+                    /p:DebugType=None \
+                    /p:DebugSymbols=false
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
 
@@ -337,18 +342,78 @@ jobs:
                     exit 1
                   fi
                  
-                  # Create a zip file from the web-app directory
-                  echo "Creating deployment package..."
-                  cd ./web-app
-                  zip -r ../web-app-deploy.zip .
-                  cd ..
+                  # Enable Always On to reduce cold starts
+                  echo "Configuring app settings for better performance..."
+                  az webapp config set \
+                    --name "$WEB_APP_NAME" \
+                    --resource-group "${{ secrets.AZURE_RG_NAME }}" \
+                    --always-on true \
+                    --http20-enabled true \
+                    --min-tls-version 1.2 \
+                    || echo "Could not update app configuration"
                  
-                  # Deploy using Azure CLI
-                  echo "Deploying web app package..."
-                  az webapp deployment source config-zip \
+                  # Set deployment settings for faster deployment
+                  az webapp config appsettings set \
+                    --name "$WEB_APP_NAME" \
+                    --resource-group "${{ secrets.AZURE_RG_NAME }}" \
+                    --settings \
+                      "SCM_DO_BUILD_DURING_DEPLOYMENT=false" \
+                      "ENABLE_ORYX_BUILD=false" \
+                      "WEBSITE_RUN_FROM_PACKAGE=1" \
+                    || echo "Could not set deployment settings"
+                 
+                  # Create a zip file from the web-app directory
+                  echo "Creating optimized deployment package..."
+                  cd ./web-app
+                  
+                  # Check package size
+                  echo "Package contents summary:"
+                  du -sh . 2>/dev/null || echo "Size check not available"
+                  
+                  zip -r ../web-app-deploy.zip . -x "*.pdb" "*.xml" "*.Development.*"
+                  cd ..
+                  
+                  echo "Package size: $(ls -lh web-app-deploy.zip | awk '{print $5}')"
+                 
+                  # Deploy using the newer command with timeout
+                  echo "Deploying web app package (this may take 5-10 minutes)..."
+                  timeout 900 az webapp deploy \
                     --resource-group "${{ secrets.AZURE_RG_NAME }}" \
                     --name "$WEB_APP_NAME" \
-                    --src "./web-app-deploy.zip"
+                    --src-path "./web-app-deploy.zip" \
+                    --type zip \
+                    --async false \
+                    || {
+                      echo "Deployment timed out or failed, trying legacy method..."
+                      az webapp deployment source config-zip \
+                        --resource-group "${{ secrets.AZURE_RG_NAME }}" \
+                        --name "$WEB_APP_NAME" \
+                        --src "./web-app-deploy.zip" \
+                        --timeout 600
+                    }
+
+            - name: Warmup Application
+              env:
+                  WEB_APP_NAME: ${{ needs.deploy-infrastructure.outputs.webAppName || format('{0}-api', secrets.APP_NAME) }}
+              run: |
+                  APP_URL="${{ needs.deploy-infrastructure.outputs.webAppUrl }}"
+                  echo "Warming up application at: $APP_URL"
+                  
+                  # Wait a bit for deployment to settle
+                  sleep 30
+                  
+                  # Warm up the application with multiple requests
+                  for i in {1..3}; do
+                    echo "Warmup request $i..."
+                    curl -s -o /dev/null -w "HTTP %{http_code} - Time: %{time_total}s\n" \
+                      --max-time 120 \
+                      --retry 2 \
+                      --retry-delay 10 \
+                      "$APP_URL" || echo "Warmup request $i failed"
+                    sleep 10
+                  done
+                  
+                  echo "✅ Application warmup completed"
 
 
 
