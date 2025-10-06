@@ -1,8 +1,10 @@
 name: Deploy TKD Hub to Azure
 
+
 permissions:
     id-token: write
     contents: read
+
 
 on:
     push:
@@ -20,11 +22,13 @@ on:
                     - dev
                     - prod
 
+
 env:
     AZURE_WEBAPP_PACKAGE_PATH: "./src/TKDHubAPI.WebAPI"
     SPA_PATH: "./frontend/spa"
     DOTNET_VERSION: "8.0.x"
     NODE_VERSION: "18.x"
+
 
 jobs:
     test:
@@ -33,19 +37,24 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
 
+
             - name: Restore dependencies
               run: dotnet restore
+
 
             - name: Build
               run: dotnet build --no-restore --configuration Release
 
+
             - name: Test
               run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./test-results
+
 
             - name: Upload test results
               uses: actions/upload-artifact@v4
@@ -54,6 +63,7 @@ jobs:
                   name: test-results
                   path: ./test-results
 
+
     build-api:
         name: Build Web API
         runs-on: ubuntu-latest
@@ -61,20 +71,24 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
 
+
             - name: Restore dependencies
               run: dotnet restore
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
 
             - name: Build and publish
               run: |
                   dotnet build --configuration Release --no-restore
                   dotnet publish --configuration Release --no-build --output ./publish
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
 
             - name: Upload Web API artifact
               uses: actions/upload-artifact@v4
@@ -83,11 +97,13 @@ jobs:
                   path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/publish
                   retention-days: 1
 
+
     build-spa:
         name: Build SPA
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
+
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -95,15 +111,25 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: "npm"
 
+
             - name: Install dependencies
               run: |
+                  echo "Current directory contents:"
+                  ls -la
+                  echo "Frontend directory contents:"
+                  ls -la frontend/ || echo "Frontend directory not found"
+                  echo "Changing to frontend/spa directory:"
                   cd frontend/spa
+                  echo "SPA directory contents:"
+                  ls -la
                   npm ci
+
 
             - name: Build SPA
               run: |
-                  cd frontend/spa  
+                  cd frontend/spa
                   npm run build
+
 
             - name: Upload SPA artifact
               uses: actions/upload-artifact@v4
@@ -111,6 +137,7 @@ jobs:
                   name: spa-dist
                   path: "frontend/spa/dist"
                   retention-days: 1
+
 
     deploy-infrastructure:
         name: Deploy Infrastructure
@@ -125,14 +152,17 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+
             - name: Create Resource Group
               run: |
-                  az group create --name ${{ secrets.AZURE_RG_NAME }} --location "${{ secrets.AZURE_LOCATION || 'East US' }}"
+                  az group create --name ${{ secrets.AZURE_RG_NAME }} --location "${{ secrets.AZURE_LOCATION || 'eastus' }}"
+
 
             - name: Deploy Bicep template
               id: deploy
@@ -144,11 +174,12 @@ jobs:
                   scope: resourcegroup
                   parameters: >
                       appName=${{ secrets.APP_NAME }}
-                      location=${{ secrets.AZURE_LOCATION || 'East US' }}
+                      location="${{ secrets.AZURE_LOCATION || 'eastus' }}"
                       sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }}
                       sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
                       environment=${{ github.event.inputs.environment || 'prod' }}
                   failOnStdErr: false
+
 
     deploy-web-app:
         name: Deploy Web API
@@ -163,16 +194,19 @@ jobs:
                   name: web-app
                   path: ./web-app
 
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
+
 
             - name: Deploy Azure Web App
               uses: azure/webapps-deploy@v2
               with:
                   app-name: ${{ needs.deploy-infrastructure.outputs.webAppName }}
                   package: ./web-app
+
 
     deploy-static-web-app:
         name: Deploy Static Web App
@@ -185,11 +219,13 @@ jobs:
               with:
                   submodules: true
 
+
             - name: Download SPA artifact
               uses: actions/download-artifact@v4
               with:
                   name: spa-dist
                   path: ./spa-dist
+
 
             - name: Build And Deploy Static Web App
               uses: Azure/static-web-apps-deploy@v1
@@ -200,6 +236,7 @@ jobs:
                   app_location: "./spa-dist"
                   output_location: "/"
                   skip_app_build: true
+
 
     post-deployment:
         name: Post-Deployment Tasks
@@ -213,10 +250,12 @@ jobs:
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+
             - name: Run Database Migrations (Optional)
               run: |
                   echo "Database migrations would run here"
                   echo "Consider using Entity Framework migrations or SQL scripts"
+
 
             - name: Health Check - Web API
               run: |
@@ -232,6 +271,7 @@ jobs:
                     fi
                   done
 
+
             - name: Health Check - Static Web App
               run: |
                   STATIC_URL="${{ needs.deploy-infrastructure.outputs.staticWebAppUrl }}"
@@ -241,3 +281,6 @@ jobs:
                   else
                     echo "⚠️ Static Web App health check failed"
                   fi
+
+
+
