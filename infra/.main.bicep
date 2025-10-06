@@ -17,11 +17,64 @@ param sqlAdminPassword string
 @description('Environment name')
 param environment string = 'prod'
 
+@description('JWT signing key for token authentication')
+@secure()
+param jwtKey string
+
+@description('JWT issuer URL')
+param jwtIssuer string
+
+@description('JWT audience URL')
+param jwtAudience string
+
+@description('MercadoPago public key')
+param mercadoPagoPublicKey string = ''
+
+@description('MercadoPago access token')
+@secure()
+param mercadoPagoAccessToken string = ''
+
+@description('Azure Service Bus connection string')
+@secure()
+param serviceBusConnectionString string = ''
+
+@description('Azure SignalR connection string')
+@secure()
+param signalRConnectionString string = ''
+
+@description('Dojang name')
+param dojaangName string = 'TKD Hub Central'
+
+@description('Dojang address')
+param dojaangAddress string = 'Main Street 123'
+
+@description('Dojang location')
+param dojaangLocation string = 'Central City'
+
+@description('Dojang phone number')
+param dojaangPhoneNumber string = ''
+
+@description('Dojang email')
+param dojaangEmail string = ''
+
+@description('Grand Master first name')
+param grandMasterFirstName string = 'Grand'
+
+@description('Grand Master last name')
+param grandMasterLastName string = 'Master'
+
+@description('Grand Master email')
+param grandMasterEmail string = ''
+
+@description('Grand Master password')
+@secure()
+param grandMasterPassword string
+
 // Variables
 var webAppName = '${appName}-api'
 var staticWebAppName = '${appName}-swa'
 var storageAccountName = replace(replace(toLower('${appName}storage'), '-', ''), '_', '')
-var keyVaultName = '${appName}-kv'
+var keyVaultName = '${appName}-kv-${uniqueString(resourceGroup().id)}'
 var sqlServerName = '${appName}-sql'
 var sqlDatabaseName = 'TKDHubDb'
 var applicationInsightsName = '${appName}-ai'
@@ -219,6 +272,86 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
           name: 'ConnectionStrings__DefaultConnection'
           value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=ConnectionStrings--DefaultConnection)'
         }
+        {
+          name: 'Jwt__Key'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Jwt--Key)'
+        }
+        {
+          name: 'Jwt__Issuer'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Jwt--Issuer)'
+        }
+        {
+          name: 'Jwt__Audience'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Jwt--Audience)'
+        }
+        {
+          name: 'Jwt__ExpiresInMinutes'
+          value: '120'
+        }
+        {
+          name: 'MercadoPago__PublicKey'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=MercadoPago--PublicKey)'
+        }
+        {
+          name: 'MercadoPago__AccessToken'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=MercadoPago--AccessToken)'
+        }
+        {
+          name: 'AzureServiceBus__ConnectionString'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=AzureServiceBus--ConnectionString)'
+        }
+        {
+          name: 'AzureServiceBus__PaymentQueue'
+          value: 'mercadopago-payments'
+        }
+        {
+          name: 'Azure__SignalR__ConnectionString'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Azure--SignalR--ConnectionString)'
+        }
+        {
+          name: 'DojaangSettings__Name'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DojaangSettings--Name)'
+        }
+        {
+          name: 'DojaangSettings__Address'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DojaangSettings--Address)'
+        }
+        {
+          name: 'DojaangSettings__Location'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DojaangSettings--Location)'
+        }
+        {
+          name: 'DojaangSettings__PhoneNumber'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DojaangSettings--PhoneNumber)'
+        }
+        {
+          name: 'DojaangSettings__Email'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DojaangSettings--Email)'
+        }
+        {
+          name: 'GrandMasterSettings__FirstName'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=GrandMasterSettings--FirstName)'
+        }
+        {
+          name: 'GrandMasterSettings__LastName'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=GrandMasterSettings--LastName)'
+        }
+        {
+          name: 'GrandMasterSettings__Email'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=GrandMasterSettings--Email)'
+        }
+        {
+          name: 'GrandMasterSettings__Password'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=GrandMasterSettings--Password)'
+        }
+        {
+          name: 'PaginationSettings__DefaultPageSize'
+          value: '10'
+        }
+        {
+          name: 'PaginationSettings__MaxPageSize'
+          value: '100'
+        }
       ]
       cors: {
         allowedOrigins: [
@@ -265,12 +398,140 @@ resource keyVaultAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-07-
   }
 }
 
-// Store connection string in Key Vault
+// Store all application secrets in Key Vault
 resource connectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'ConnectionStrings--DefaultConnection'
   properties: {
     value: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+  }
+}
+
+resource jwtKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'Jwt--Key'
+  properties: {
+    value: jwtKey
+  }
+}
+
+resource jwtIssuerSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'Jwt--Issuer'
+  properties: {
+    value: jwtIssuer
+  }
+}
+
+resource jwtAudienceSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'Jwt--Audience'
+  properties: {
+    value: jwtAudience
+  }
+}
+
+resource mercadoPagoPublicKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (mercadoPagoPublicKey != '') {
+  parent: keyVault
+  name: 'MercadoPago--PublicKey'
+  properties: {
+    value: mercadoPagoPublicKey
+  }
+}
+
+resource mercadoPagoAccessTokenSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (mercadoPagoAccessToken != '') {
+  parent: keyVault
+  name: 'MercadoPago--AccessToken'
+  properties: {
+    value: mercadoPagoAccessToken
+  }
+}
+
+resource serviceBusConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (serviceBusConnectionString != '') {
+  parent: keyVault
+  name: 'AzureServiceBus--ConnectionString'
+  properties: {
+    value: serviceBusConnectionString
+  }
+}
+
+resource signalRConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (signalRConnectionString != '') {
+  parent: keyVault
+  name: 'Azure--SignalR--ConnectionString'
+  properties: {
+    value: signalRConnectionString
+  }
+}
+
+resource dojaangNameSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'DojaangSettings--Name'
+  properties: {
+    value: dojaangName
+  }
+}
+
+resource dojaangAddressSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'DojaangSettings--Address'
+  properties: {
+    value: dojaangAddress
+  }
+}
+
+resource dojaangLocationSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'DojaangSettings--Location'
+  properties: {
+    value: dojaangLocation
+  }
+}
+
+resource dojaangPhoneSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'DojaangSettings--PhoneNumber'
+  properties: {
+    value: dojaangPhoneNumber
+  }
+}
+
+resource dojaangEmailSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'DojaangSettings--Email'
+  properties: {
+    value: dojaangEmail
+  }
+}
+
+resource grandMasterFirstNameSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'GrandMasterSettings--FirstName'
+  properties: {
+    value: grandMasterFirstName
+  }
+}
+
+resource grandMasterLastNameSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'GrandMasterSettings--LastName'
+  properties: {
+    value: grandMasterLastName
+  }
+}
+
+resource grandMasterEmailSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'GrandMasterSettings--Email'
+  properties: {
+    value: grandMasterEmail
+  }
+}
+
+resource grandMasterPasswordSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'GrandMasterSettings--Password'
+  properties: {
+    value: grandMasterPassword
   }
 }
 

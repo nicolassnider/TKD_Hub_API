@@ -298,12 +298,57 @@ jobs:
               run: |
                   az group create --name ${{ secrets.AZURE_RG_NAME }} --location "${{ secrets.AZURE_LOCATION || 'eastus' }}"
 
+            - name: Handle Soft-Deleted Key Vault
+              run: |
+                  # Check for and handle soft-deleted Key Vault
+                  # Note: Key Vault name includes unique string, but let's check for the base pattern
+                  KEY_VAULT_BASE="${{ secrets.APP_NAME }}-kv"
+                  LOCATION="${{ secrets.AZURE_LOCATION || 'eastus' }}"
+                  
+                  echo "Checking for soft-deleted Key Vaults matching pattern: $KEY_VAULT_BASE*"
+                  
+                  # List all soft-deleted Key Vaults that start with our base name
+                  DELETED_VAULTS=$(az keyvault list-deleted \
+                    --query "[?starts_with(name, '$KEY_VAULT_BASE') && properties.location=='$LOCATION'].name" \
+                    --output tsv 2>/dev/null || echo "")
+                  
+                  if [ ! -z "$DELETED_VAULTS" ]; then
+                    echo "Found soft-deleted Key Vault(s): $DELETED_VAULTS"
+                    
+                    # Purge each deleted vault
+                    for vault in $DELETED_VAULTS; do
+                      echo "Purging soft-deleted Key Vault: $vault"
+                      az keyvault purge \
+                        --name "$vault" \
+                        --location "$LOCATION" \
+                        || echo "Failed to purge Key Vault: $vault"
+                    done
+                    
+                    # Wait a bit for the purge to complete
+                    echo "Waiting for Key Vault purge operations to complete..."
+                    sleep 45
+                  else
+                    echo "No soft-deleted Key Vaults found matching pattern: $KEY_VAULT_BASE*"
+                  fi
 
-
-
-
-
-
+            - name: Generate JWT Secret Key
+              id: generate-jwt
+              run: |
+                  # Generate a secure JWT key if not provided
+                  if [ -z "${{ secrets.JWT_KEY }}" ]; then
+                    JWT_KEY=$(openssl rand -hex 32)
+                    echo "Generated new JWT key"
+                  else
+                    JWT_KEY="${{ secrets.JWT_KEY }}"
+                    echo "Using provided JWT key"
+                  fi
+                  echo "jwt-key=$JWT_KEY" >> $GITHUB_OUTPUT
+                  
+                  # Set JWT issuer and audience based on app URL
+                  JWT_ISSUER="https://${{ secrets.APP_NAME }}-api.azurewebsites.net"
+                  JWT_AUDIENCE="https://${{ secrets.APP_NAME }}-api.azurewebsites.net"
+                  echo "jwt-issuer=$JWT_ISSUER" >> $GITHUB_OUTPUT
+                  echo "jwt-audience=$JWT_AUDIENCE" >> $GITHUB_OUTPUT
 
             - name: Validate Bicep template
               run: |
@@ -316,7 +361,23 @@ jobs:
                       location="${{ secrets.AZURE_LOCATION || 'eastus' }}" \
                       sqlAdminLogin="${{ secrets.SQL_ADMIN_LOGIN }}" \
                       sqlAdminPassword="${{ secrets.SQL_ADMIN_PASSWORD }}" \
-                      environment="${{ github.event.inputs.environment || 'prod' }}"
+                      environment="${{ github.event.inputs.environment || 'prod' }}" \
+                      jwtKey="${{ steps.generate-jwt.outputs.jwt-key }}" \
+                      jwtIssuer="${{ steps.generate-jwt.outputs.jwt-issuer }}" \
+                      jwtAudience="${{ steps.generate-jwt.outputs.jwt-audience }}" \
+                      mercadoPagoPublicKey="${{ secrets.MERCADOPAGO_PUBLIC_KEY || '' }}" \
+                      mercadoPagoAccessToken="${{ secrets.MERCADOPAGO_ACCESS_TOKEN || '' }}" \
+                      serviceBusConnectionString="${{ secrets.SERVICEBUS_CONNECTION_STRING || '' }}" \
+                      signalRConnectionString="${{ secrets.SIGNALR_CONNECTION_STRING || '' }}" \
+                      dojaangName="${{ secrets.DOJANG_NAME || 'TKD Hub Central' }}" \
+                      dojaangAddress="${{ secrets.DOJANG_ADDRESS || 'Main Street 123' }}" \
+                      dojaangLocation="${{ secrets.DOJANG_LOCATION || 'Central City' }}" \
+                      dojaangPhoneNumber="${{ secrets.DOJANG_PHONE || '' }}" \
+                      dojaangEmail="${{ secrets.DOJANG_EMAIL || '' }}" \
+                      grandMasterFirstName="${{ secrets.GRANDMASTER_FIRST_NAME || 'Grand' }}" \
+                      grandMasterLastName="${{ secrets.GRANDMASTER_LAST_NAME || 'Master' }}" \
+                      grandMasterEmail="${{ secrets.GRANDMASTER_EMAIL || '' }}" \
+                      grandMasterPassword="${{ secrets.GRANDMASTER_PASSWORD }}"
                   echo "Template validation completed"
 
 
@@ -352,6 +413,22 @@ jobs:
                       sqlAdminLogin="${{ secrets.SQL_ADMIN_LOGIN }}" \
                       sqlAdminPassword="${{ secrets.SQL_ADMIN_PASSWORD }}" \
                       environment="${{ github.event.inputs.environment || 'prod' }}" \
+                      jwtKey="${{ steps.generate-jwt.outputs.jwt-key }}" \
+                      jwtIssuer="${{ steps.generate-jwt.outputs.jwt-issuer }}" \
+                      jwtAudience="${{ steps.generate-jwt.outputs.jwt-audience }}" \
+                      mercadoPagoPublicKey="${{ secrets.MERCADOPAGO_PUBLIC_KEY || '' }}" \
+                      mercadoPagoAccessToken="${{ secrets.MERCADOPAGO_ACCESS_TOKEN || '' }}" \
+                      serviceBusConnectionString="${{ secrets.SERVICEBUS_CONNECTION_STRING || '' }}" \
+                      signalRConnectionString="${{ secrets.SIGNALR_CONNECTION_STRING || '' }}" \
+                      dojaangName="${{ secrets.DOJANG_NAME || 'TKD Hub Central' }}" \
+                      dojaangAddress="${{ secrets.DOJANG_ADDRESS || 'Main Street 123' }}" \
+                      dojaangLocation="${{ secrets.DOJANG_LOCATION || 'Central City' }}" \
+                      dojaangPhoneNumber="${{ secrets.DOJANG_PHONE || '' }}" \
+                      dojaangEmail="${{ secrets.DOJANG_EMAIL || '' }}" \
+                      grandMasterFirstName="${{ secrets.GRANDMASTER_FIRST_NAME || 'Grand' }}" \
+                      grandMasterLastName="${{ secrets.GRANDMASTER_LAST_NAME || 'Master' }}" \
+                      grandMasterEmail="${{ secrets.GRANDMASTER_EMAIL || '' }}" \
+                      grandMasterPassword="${{ secrets.GRANDMASTER_PASSWORD }}" \
                     --verbose \
                     --output table
                  
