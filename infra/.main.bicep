@@ -28,12 +28,16 @@ var applicationInsightsName = '${appName}-ai'
 var logAnalyticsWorkspaceName = '${appName}-law'
 var appServicePlanName = '${appName}-asp'
 
+// Parameters
+@description('Deployment timestamp for tagging')
+param deploymentTime string = utcNow()
+
 // Tags
 var commonTags = {
   application: 'TKD-Hub'
   environment: environment
   deployedBy: 'Bicep'
-  deployedAt: utcNow()
+  deployedAt: deploymentTime
 }
 
 // Log Analytics Workspace
