@@ -439,3 +439,5 @@ FodyWeavers.xsd
 Frontend/spa/.env
 /Frontend/spa/src/.env
 Deploy-TKDHubToAzure.ps1
+GITHUB_ACTIONS_SETUP.md
+GITHUB_SECRETS_SETUP.MD
