@@ -1,9 +1,13 @@
 name: Deploy TKD Hub to Azure
 
 
+
+
 permissions:
     id-token: write
     contents: read
+
+
 
 
 on:
@@ -23,11 +27,17 @@ on:
                     - prod
 
 
+
+
 env:
     AZURE_WEBAPP_PACKAGE_PATH: "./src/TKDHubAPI.WebAPI"
     SPA_PATH: "./frontend/spa"
     DOTNET_VERSION: "8.0.x"
     NODE_VERSION: "18.x"
+
+
+
+
 
 
 
@@ -42,10 +52,18 @@ jobs:
 
 
 
+
+
+
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
+
+
+
+
 
 
 
@@ -56,14 +74,26 @@ jobs:
 
 
 
+
+
+
+
             - name: Build
               run: dotnet build --no-restore --configuration Release
 
 
 
 
+
+
+
+
             - name: Test
               run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./test-results
+
+
+
+
 
 
 
@@ -78,12 +108,20 @@ jobs:
 
 
 
+
+
+
+
     build-api:
         name: Build Web API
         runs-on: ubuntu-latest
         needs: test
         steps:
             - uses: actions/checkout@v4
+
+
+
+
 
 
 
@@ -96,9 +134,17 @@ jobs:
 
 
 
+
+
+
+
             - name: Restore dependencies
               run: dotnet restore
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+
+
+
 
 
 
@@ -108,6 +154,10 @@ jobs:
                   dotnet build --configuration Release --no-restore
                   dotnet publish --configuration Release --no-build --output ./publish
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+
+
+
 
 
 
@@ -122,11 +172,19 @@ jobs:
 
 
 
+
+
+
+
     build-spa:
         name: Build SPA
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
+
+
+
+
 
 
 
@@ -140,16 +198,28 @@ jobs:
 
 
 
+
+
+
+
             - name: Install dependencies
               run: npm ci
-              working-directory: ${{ env.SPA_PATH }}
+              working-directory: "./frontend/spa"
+
+
+
+
 
 
 
 
             - name: Build SPA
               run: npm run build
-              working-directory: ${{ env.SPA_PATH }}
+              working-directory: "./frontend/spa"
+
+
+
+
 
 
 
@@ -158,8 +228,12 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: spa-dist
-                  path: ${{ env.SPA_PATH }}/dist
+                  path: "./frontend/spa/dist"
                   retention-days: 1
+
+
+
+
 
 
 
@@ -180,12 +254,19 @@ jobs:
 
 
 
+
+
+
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
 
+            - name: Create Resource Group
+              run: |
+                  az group create --name ${{ secrets.AZURE_RG_NAME }} --location "${{ secrets.AZURE_LOCATION || 'East US' }}"
 
 
             - name: Deploy Bicep template
@@ -207,6 +288,10 @@ jobs:
 
 
 
+
+
+
+
     deploy-web-app:
         name: Deploy Web API
         runs-on: ubuntu-latest
@@ -223,10 +308,18 @@ jobs:
 
 
 
+
+
+
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
+
+
 
 
 
@@ -236,6 +329,10 @@ jobs:
               with:
                   app-name: ${{ needs.deploy-infrastructure.outputs.webAppName }}
                   package: ./web-app
+
+
+
+
 
 
 
@@ -254,11 +351,19 @@ jobs:
 
 
 
+
+
+
+
             - name: Download SPA artifact
               uses: actions/download-artifact@v4
               with:
                   name: spa-dist
                   path: ./spa-dist
+
+
+
+
 
 
 
@@ -272,6 +377,10 @@ jobs:
                   app_location: "./spa-dist"
                   output_location: "/"
                   skip_app_build: true
+
+
+
+
 
 
 
@@ -291,10 +400,18 @@ jobs:
 
 
 
+
+
+
+
             - name: Run Database Migrations (Optional)
               run: |
                   echo "Database migrations would run here"
                   echo "Consider using Entity Framework migrations or SQL scripts"
+
+
+
+
 
 
 
@@ -312,6 +429,10 @@ jobs:
                       sleep 30
                     fi
                   done
+
+
+
+
 
 
 
