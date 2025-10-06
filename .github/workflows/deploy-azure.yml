@@ -1,9 +1,13 @@
 name: Deploy TKD Hub to Azure
 
 
+
+
 permissions:
     id-token: write
     contents: read
+
+
 
 
 on:
@@ -23,11 +27,15 @@ on:
                     - prod
 
 
+
+
 env:
     AZURE_WEBAPP_PACKAGE_PATH: "./src/TKDHubAPI.WebAPI"
     SPA_PATH: "./Frontend/spa"
     DOTNET_VERSION: "8.0.x"
     NODE_VERSION: "18.x"
+
+
 
 
 jobs:
@@ -38,22 +46,32 @@ jobs:
             - uses: actions/checkout@v4
 
 
+
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
 
 
+
+
             - name: Restore dependencies
               run: dotnet restore
+
+
 
 
             - name: Build
               run: dotnet build --no-restore --configuration Release
 
 
+
+
             - name: Test
               run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./test-results
+
+
 
 
             - name: Upload test results
@@ -64,6 +82,8 @@ jobs:
                   path: ./test-results
 
 
+
+
     build-api:
         name: Build Web API
         runs-on: ubuntu-latest
@@ -72,10 +92,14 @@ jobs:
             - uses: actions/checkout@v4
 
 
+
+
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
+
+
 
 
             - name: Restore dependencies
@@ -83,11 +107,15 @@ jobs:
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
 
+
+
             - name: Build and publish
               run: |
                   dotnet build --configuration Release --no-restore
                   dotnet publish --configuration Release --no-build --output ./publish
               working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+
 
 
             - name: Upload Web API artifact
@@ -98,6 +126,8 @@ jobs:
                   retention-days: 1
 
 
+
+
     build-spa:
         name: Build SPA
         runs-on: ubuntu-latest
@@ -105,11 +135,15 @@ jobs:
             - uses: actions/checkout@v4
 
 
+
+
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: "npm"
+
+
 
 
             - name: Install dependencies
@@ -123,10 +157,14 @@ jobs:
                   npm ci
 
 
+
+
             - name: Build SPA
               run: |
                   cd Frontend/spa
                   npm run build
+
+
 
 
             - name: Upload SPA artifact
@@ -135,6 +173,8 @@ jobs:
                   name: spa-dist
                   path: "Frontend/spa/dist"
                   retention-days: 1
+
+
 
 
     deploy-infrastructure:
@@ -151,15 +191,21 @@ jobs:
             - uses: actions/checkout@v4
 
 
+
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
 
+
+
             - name: Create Resource Group
               run: |
                   az group create --name ${{ secrets.AZURE_RG_NAME }} --location "${{ secrets.AZURE_LOCATION || 'eastus' }}"
+
+
 
 
             - name: Validate Bicep template
@@ -175,6 +221,8 @@ jobs:
                       sqlAdminPassword="${{ secrets.SQL_ADMIN_PASSWORD }}" \
                       environment="${{ github.event.inputs.environment || 'prod' }}"
                   echo "Template validation completed"
+
+
 
 
             - name: Deploy Bicep template
@@ -219,6 +267,8 @@ jobs:
                   echo "staticWebAppUrl=$(echo $deployment_output | jq -r '.properties.outputs.staticWebAppUrl.value')" >> $GITHUB_OUTPUT
 
 
+
+
     deploy-web-app:
         name: Deploy Web API
         runs-on: ubuntu-latest
@@ -232,10 +282,12 @@ jobs:
                   name: web-app
                   path: ./web-app
 
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
+
 
             - name: Debug Infrastructure Outputs
               run: |
@@ -244,19 +296,19 @@ jobs:
                   echo "webAppUrl: '${{ needs.deploy-infrastructure.outputs.webAppUrl }}'"
                   echo "staticWebAppName: '${{ needs.deploy-infrastructure.outputs.staticWebAppName }}'"
                   echo "staticWebAppUrl: '${{ needs.deploy-infrastructure.outputs.staticWebAppUrl }}'"
-                  
+                 
                   # Check if webAppName is empty
                   if [ -z "${{ needs.deploy-infrastructure.outputs.webAppName }}" ]; then
                     echo "ERROR: webAppName is empty! Infrastructure deployment may have failed."
                     echo "Attempting to find the web app name manually..."
-                    
+                   
                     # Try to find the web app in the resource group
                     az webapp list --resource-group "${{ secrets.AZURE_RG_NAME }}" --output table
-                    
+                   
                     # Get the app name pattern
                     expected_app_name="${{ secrets.APP_NAME }}-api"
                     echo "Expected app name: $expected_app_name"
-                    
+                   
                     # Check if it exists
                     if az webapp show --name "$expected_app_name" --resource-group "${{ secrets.AZURE_RG_NAME }}" >/dev/null 2>&1; then
                       echo "Found web app: $expected_app_name"
@@ -270,12 +322,13 @@ jobs:
                     echo "webapp_name=${{ needs.deploy-infrastructure.outputs.webAppName }}" >> $GITHUB_ENV
                   fi
 
+
             - name: Deploy Azure Web App
               env:
                   WEB_APP_NAME: ${{ needs.deploy-infrastructure.outputs.webAppName || format('{0}-api', secrets.APP_NAME) }}
               run: |
                   echo "Deploying to web app: $WEB_APP_NAME"
-                  
+                 
                   # Verify the web app exists
                   if ! az webapp show --name "$WEB_APP_NAME" --resource-group "${{ secrets.AZURE_RG_NAME }}" >/dev/null 2>&1; then
                     echo "ERROR: Web app '$WEB_APP_NAME' not found in resource group '${{ secrets.AZURE_RG_NAME }}'"
@@ -283,19 +336,21 @@ jobs:
                     az webapp list --resource-group "${{ secrets.AZURE_RG_NAME }}" --output table
                     exit 1
                   fi
-                  
+                 
                   # Create a zip file from the web-app directory
                   echo "Creating deployment package..."
                   cd ./web-app
                   zip -r ../web-app-deploy.zip .
                   cd ..
-                  
+                 
                   # Deploy using Azure CLI
                   echo "Deploying web app package..."
                   az webapp deployment source config-zip \
                     --resource-group "${{ secrets.AZURE_RG_NAME }}" \
                     --name "$WEB_APP_NAME" \
                     --src "./web-app-deploy.zip"
+
+
 
 
     deploy-static-web-app:
@@ -309,25 +364,29 @@ jobs:
               with:
                   submodules: true
 
+
             - name: Download SPA artifact
               uses: actions/download-artifact@v4
               with:
                   name: spa-dist
                   path: ./spa-dist
 
+
             - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-            - name: Get Static Web App Deployment Token
+
+            - name: Configure API Endpoint and Get Deployment Token
               id: get-token
               run: |
                   echo "=== Static Web App Deployment Debug ==="
                   echo "Static Web App Name from outputs: '${{ needs.deploy-infrastructure.outputs.staticWebAppName }}'"
+                  echo "Web API URL from outputs: '${{ needs.deploy-infrastructure.outputs.webAppUrl }}'"
                   echo "SPA artifact contents:"
                   ls -la ./spa-dist/
-                  
+                 
                   # Get the static web app name
                   SWA_NAME="${{ needs.deploy-infrastructure.outputs.staticWebAppName }}"
                   if [ -z "$SWA_NAME" ]; then
@@ -336,7 +395,44 @@ jobs:
                   else
                     echo "Using SWA name from outputs: $SWA_NAME"
                   fi
-                  
+                 
+                  # Create environment configuration for the SPA
+                  API_URL="${{ needs.deploy-infrastructure.outputs.webAppUrl }}"
+                  if [ ! -z "$API_URL" ]; then
+                    echo "Creating environment configuration for SPA..."
+                   
+                    # Create a runtime configuration file that can be loaded by the SPA
+                    cat > ./spa-dist/config.js << EOF
+                  window.ENV = {
+                    VITE_PUBLIC_API_URL: '$API_URL'
+                  };
+                  console.log('Runtime config loaded:', window.ENV);
+                  EOF
+                   
+                    # Also create a JSON config file for fetch-based loading
+                    cat > ./spa-dist/config.json << EOF
+                  {
+                    "VITE_PUBLIC_API_URL": "$API_URL"
+                  }
+                  EOF
+                   
+                    # Inject the config script into index.html
+                    if [ -f "./spa-dist/index.html" ]; then
+                      echo "Injecting runtime config into index.html..."
+                      sed -i 's|<head>|<head>\n    <script src="/config.js"></script>|' ./spa-dist/index.html
+                      echo "✅ Runtime configuration injected into index.html"
+                    else
+                      echo "⚠️ index.html not found, config.js will need to be loaded manually"
+                    fi
+                   
+                    echo "✅ API configuration created with base URL: $API_URL"
+                    echo "   - JavaScript config: config.js"
+                    echo "   - JSON config: config.json"
+                  else
+                    echo "⚠️ WARNING: No API URL found in deployment outputs"
+                    echo "   SPA will use default/localhost API endpoint"
+                  fi
+                 
                   # Get the deployment token from Azure
                   echo "Getting deployment token for Static Web App: $SWA_NAME"
                   DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
@@ -344,16 +440,31 @@ jobs:
                     --resource-group "${{ secrets.AZURE_RG_NAME }}" \
                     --query "properties.apiKey" \
                     --output tsv)
-                  
+                 
                   if [ -z "$DEPLOYMENT_TOKEN" ]; then
                     echo "ERROR: Could not get deployment token for Static Web App"
                     echo "Available Static Web Apps in resource group:"
                     az staticwebapp list --resource-group "${{ secrets.AZURE_RG_NAME }}" --output table
                     exit 1
                   fi
-                  
+                 
                   echo "✅ Successfully retrieved deployment token"
                   echo "deployment-token=$DEPLOYMENT_TOKEN" >> $GITHUB_OUTPUT
+                 
+                  # Configure the Static Web App to use the deployed Web API as backend
+                  if [ ! -z "$API_URL" ] && [ ! -z "${{ needs.deploy-infrastructure.outputs.webAppName }}" ]; then
+                    echo "Configuring Static Web App API backend..."
+                   
+                    # Set the backend configuration
+                    az staticwebapp appsettings set \
+                      --name "$SWA_NAME" \
+                      --resource-group "${{ secrets.AZURE_RG_NAME }}" \
+                      --setting-names "API_BASE_URL=$API_URL" \
+                      || echo "⚠️ Could not set app settings"
+                   
+                    echo "✅ Static Web App configured with API backend: $API_URL"
+                  fi
+
 
             - name: Deploy Static Web App (Primary Method)
               id: swa-deploy-primary
@@ -367,32 +478,35 @@ jobs:
                   output_location: "/"
                   skip_app_build: true
 
+
             - name: Deploy Static Web App (Fallback Method)
               if: steps.swa-deploy-primary.outcome == 'failure'
               run: |
                   echo "Primary deployment failed, trying alternative method..."
                   SWA_NAME="${{ needs.deploy-infrastructure.outputs.staticWebAppName || format('{0}-swa', secrets.APP_NAME) }}"
-                  
+                 
                   # Try using Azure CLI to deploy
                   echo "Attempting deployment via Azure CLI..."
-                  
+                 
                   # Create a zip of the SPA dist
                   cd ./spa-dist
                   zip -r ../spa-package.zip .
                   cd ..
-                  
+                 
                   # Deploy using Azure CLI (this is a simpler approach)
                   echo "Uploading SPA files to blob storage or using alternative deployment..."
-                  
+                 
                   # For now, let's just report what we would do
                   echo "SPA files are ready for deployment:"
                   echo "- Static Web App: $SWA_NAME"
                   echo "- Resource Group: ${{ secrets.AZURE_RG_NAME }}"
                   echo "- Package: spa-package.zip"
-                  
+                 
                   # Note: Azure CLI doesn't have direct static web app deployment
                   # This would typically require uploading to the static web app's storage
                   echo "Manual deployment may be required - check Azure Portal"
+
+
 
 
     post-deployment:
@@ -408,10 +522,14 @@ jobs:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
 
+
+
             - name: Run Database Migrations (Optional)
               run: |
                   echo "Database migrations would run here"
                   echo "Consider using Entity Framework migrations or SQL scripts"
+
+
 
 
             - name: Health Check - Web API
@@ -429,6 +547,8 @@ jobs:
                   done
 
 
+
+
             - name: Health Check - Static Web App
               run: |
                   STATIC_URL="${{ needs.deploy-infrastructure.outputs.staticWebAppUrl }}"
@@ -438,11 +558,3 @@ jobs:
                   else
                     echo "⚠️ Static Web App health check failed"
                   fi
-
-
-
-
-
-
-
-
