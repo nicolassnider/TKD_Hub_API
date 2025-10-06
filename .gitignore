@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# GitHub Secrets Configuration (SECURITY: Never commit secrets!)
+secrets-config.json
+secrets-config.*.json
+*.secrets.json
 
 # User-specific files
 *.rsuser
